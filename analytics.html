@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cognitive Analytics — MemorAid</title>
+  <meta name="description" content="Detailed cognitive health metrics: overall accuracy, category breakdown, SM-2 retention curves, and caregiver report.">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" type="image/jpeg" href="assets/images/logo.jpg">
+</head>
+<body class="dark-telemetry-stage">
+  <a href="#main-content" class="skip-to-content">Skip to content</a>
+
+  <!-- Mobile Header Bar -->
+  <header class="app-mobile-header">
+    <a href="dashboard.html" class="app-mobile-brand">
+      <img src="assets/images/logo.jpg" alt="MemorAid Logo" style="width: 32px; height: 32px; border-radius: 50%;">
+      <span>MemorAid</span>
+    </a>
+    <button class="app-mobile-menu-btn" id="app-mobile-menu-btn" aria-label="Toggle navigation drawer">
+      ☰
+    </button>
+  </header>
+
+  <div class="app-shell" style="background-color: var(--bg-dark-analytics);">
+    
+    <!-- Persistent Left Dark Sidebar -->
+    <aside class="app-sidebar" aria-label="Application sidebar">
+      <div>
+        <a href="dashboard.html" class="sidebar-brand">
+          <img src="assets/images/logo.jpg" alt="MemorAid" style="width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--teal-accent);">
+          <div class="sidebar-brand-wrap">
+            <div class="sidebar-brand-title">MemorAid</div>
+            <div class="sidebar-brand-sub">Cognitive Care</div>
+          </div>
+        </a>
+
+        <nav>
+          <ul class="sidebar-nav">
+            <li class="sidebar-nav-item">
+              <a href="dashboard.html" class="sidebar-nav-link">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="log-memory.html" class="sidebar-nav-link">
+                <span class="nav-icon">📝</span>
+                <span>Log Memory</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="recall.html" class="sidebar-nav-link">
+                <span class="nav-icon">🧠</span>
+                <span>Recall Session</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="chat.html" class="sidebar-nav-link">
+                <span class="nav-icon">💬</span>
+                <span>AI Companion</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="analytics.html" class="sidebar-nav-link active">
+                <span class="nav-icon">📈</span>
+                <span>Analytics</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="profile.html" class="sidebar-nav-link">
+                <span class="nav-icon">⚙️</span>
+                <span>Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user-card">
+          <img src="assets/images/avatar-margaret.jpg" alt="Eleanor Vance" class="sidebar-avatar">
+          <div class="sidebar-user-info">
+            <span class="sidebar-user-name">Eleanor Vance</span>
+            <span class="sidebar-user-role">Age 74 • Active</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Dark Telemetry Main Content Stage (Figma Frame 15 Top) -->
+    <div class="app-stage" style="background-color: var(--bg-dark-analytics);">
+      
+      <!-- Top Bar in Dark Aesthetic -->
+      <header class="app-topbar" style="background-color: #111822; border-color: rgba(255, 255, 255, 0.08); color: #FFFFFF;">
+        <div style="font-weight: 700; color: var(--teal-accent); font-size: 1.05rem;">
+          Cognitive Telemetry Engine
+        </div>
+
+        <div class="app-topbar-actions">
+          <div class="a11y-controls">
+            <button class="a11y-btn btn-font-scale" id="btn-font-normal" data-size="normal">A</button>
+            <button class="a11y-btn btn-font-scale" id="btn-font-large" data-size="large">A+</button>
+            <button class="a11y-btn btn-font-scale" id="btn-font-xlarge" data-size="xlarge">A++</button>
+            <button class="a11y-btn" id="btn-contrast-toggle">👁 Contrast</button>
+            <button class="a11y-btn" onclick="speakText('Cognitive Analytics page. Overall retention accuracy is 84 percent.')">🔊 Speak</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Stage Body -->
+      <main class="main-content" id="main-content" style="padding: 36px 36px 60px;">
+        <div class="container" style="max-width: 1200px; padding: 0;">
+          
+          <!-- Title & Date Filter Strip -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <span class="badge badge-teal" style="background: rgba(20, 184, 166, 0.15); color: var(--teal-accent); border-color: rgba(20, 184, 166, 0.3); margin-bottom: 8px;">
+                ✦ SM-2 Cognitive Insights
+              </span>
+              <h1 style="font-size: 2.2rem; color: #FFFFFF; margin-bottom: 6px;">
+                Memory Retention Analytics
+              </h1>
+              <p style="font-size: 1.02rem; color: var(--text-dark-muted);">
+                Continuous assessment of recall accuracy, category strengths, and interval evolution.
+              </p>
+            </div>
+
+            <!-- Date Range Filter Pills -->
+            <div style="display: flex; gap: 8px; background: rgba(255, 255, 255, 0.05); padding: 4px; border-radius: var(--radius-pill); border: 1px solid rgba(255, 255, 255, 0.08);">
+              <button class="a11y-btn active" style="min-height: 32px;" onclick="switchRange(7)">7 Days</button>
+              <button class="a11y-btn" style="min-height: 32px;" onclick="switchRange(30)">30 Days</button>
+              <button class="a11y-btn" style="min-height: 32px;" onclick="switchRange(90)">90 Days</button>
+            </div>
+          </div>
+
+          <!-- 4 Top KPI Blocks (Figma Frame 15 Top) -->
+          <section class="grid-4" style="margin-bottom: 32px;">
+            <div class="dark-kpi-card">
+              <span class="kpi-label">Overall Retention</span>
+              <div class="kpi-value" id="metric-accuracy">84%</div>
+              <span class="kpi-trend">+4.2% vs previous period</span>
+            </div>
+
+            <div class="dark-kpi-card">
+              <span class="kpi-label">Total Recalls</span>
+              <div class="kpi-value" id="metric-total">142</div>
+              <span class="kpi-trend" style="color: var(--teal-accent);">Consistent review rhythm</span>
+            </div>
+
+            <div class="dark-kpi-card">
+              <span class="kpi-label">Avg Response Speed</span>
+              <div class="kpi-value" id="metric-speed">4.2s</div>
+              <span class="kpi-trend">Normal comfortable cadence</span>
+            </div>
+
+            <div class="dark-kpi-card">
+              <span class="kpi-label">Caregiver Sync</span>
+              <div class="kpi-value" style="color: #34D399;">100%</div>
+              <span class="kpi-trend">All alerts synced with Sarah</span>
+            </div>
+          </section>
+
+          <!-- Two Charts Side by Side (Figma Frame 15 Top) -->
+          <div class="grid-2" style="margin-bottom: 32px; gap: 24px;">
+            
+            <!-- Chart 1: Vertical Bar Chart "Accuracy by Category" -->
+            <div class="dark-telemetry-card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="font-size: 1.25rem; color: #FFFFFF;">Accuracy by Category</h3>
+                <span style="font-size: 0.8rem; color: var(--teal-accent); font-weight: 700;">SM-2 Quality Avg</span>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-dark-muted); margin-bottom: 16px;">
+                Performance across core memory domains.
+              </p>
+
+              <div class="telemetry-bar-chart">
+                <div class="bar-col">
+                  <div class="bar-fill-wrap">
+                    <div class="bar-fill" style="height: 94%;"></div>
+                  </div>
+                  <span class="bar-label">Health<br><strong>94%</strong></span>
+                </div>
+
+                <div class="bar-col">
+                  <div class="bar-fill-wrap">
+                    <div class="bar-fill" style="height: 88%;"></div>
+                  </div>
+                  <span class="bar-label">Family<br><strong>88%</strong></span>
+                </div>
+
+                <div class="bar-col">
+                  <div class="bar-fill-wrap">
+                    <div class="bar-fill" style="height: 82%;"></div>
+                  </div>
+                  <span class="bar-label">Routine<br><strong>82%</strong></span>
+                </div>
+
+                <div class="bar-col">
+                  <div class="bar-fill-wrap">
+                    <div class="bar-fill" style="height: 76%;"></div>
+                  </div>
+                  <span class="bar-label">Moments<br><strong>76%</strong></span>
+                </div>
+
+                <div class="bar-col">
+                  <div class="bar-fill-wrap">
+                    <div class="bar-fill" style="height: 80%;"></div>
+                  </div>
+                  <span class="bar-label">Places<br><strong>80%</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chart 2: Glowing Area Chart "7-Day Improvement Trend" -->
+            <div class="dark-telemetry-card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="font-size: 1.25rem; color: #FFFFFF;">7-Day Improvement Trend</h3>
+                <span class="badge badge-emerald" style="font-size: 0.72rem; padding: 2px 8px;">+6.5% Growth</span>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-dark-muted); margin-bottom: 16px;">
+                Stability curves calculated by the SM-2 algorithm.
+              </p>
+
+              <div class="telemetry-area-chart">
+                <svg viewBox="0 0 500 180" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#14B8A6" stop-opacity="0.45" />
+                      <stop offset="100%" stop-color="#14B8A6" stop-opacity="0.0" />
+                    </linearGradient>
+                    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feGaussianBlur stdDeviation="4" result="blur" />
+                      <feMerge>
+                        <feMergeNode in="blur" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  <!-- Gradient Area -->
+                  <path d="M 0,140 Q 80,130 160,110 T 320,70 T 500,35 L 500,180 L 0,180 Z" fill="url(#areaGradient)" />
+                  <!-- Glowing Stroke Line -->
+                  <path d="M 0,140 Q 80,130 160,110 T 320,70 T 500,35" fill="none" stroke="#14B8A6" stroke-width="3.5" filter="url(#glow)" />
+                  <!-- Data Dots -->
+                  <circle cx="0" cy="140" r="4.5" fill="#FFFFFF" stroke="#14B8A6" stroke-width="2" />
+                  <circle cx="160" cy="110" r="4.5" fill="#FFFFFF" stroke="#14B8A6" stroke-width="2" />
+                  <circle cx="320" cy="70" r="4.5" fill="#FFFFFF" stroke="#14B8A6" stroke-width="2" />
+                  <circle cx="500" cy="35" r="5.5" fill="#14B8A6" stroke="#FFFFFF" stroke-width="2" />
+                </svg>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-dark-muted); margin-top: 12px;">
+                <span>Day 1 (72%)</span>
+                <span>Day 3 (78%)</span>
+                <span>Day 5 (81%)</span>
+                <span style="color: var(--teal-accent); font-weight: 700;">Day 7 (88%)</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Doctor Consultation Export Card (Figma Frame 15 Top) -->
+          <div class="consultation-card">
+            <div style="display: flex; align-items: center; gap: 20px;">
+              <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(20, 184, 166, 0.15); border: 2px solid var(--teal-accent); display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
+                👨‍⚕️
+              </div>
+              <div>
+                <h3 style="font-size: 1.35rem; color: #FFFFFF; margin-bottom: 4px;">
+                  Need a Clinical Summary?
+                </h3>
+                <p style="font-size: 0.92rem; color: var(--text-dark-muted); margin: 0;">
+                  Export comprehensive memory stability report for Dr. Aris / Neurology consultation.
+                </p>
+              </div>
+            </div>
+
+            <!-- Download Patient Report Pill Button -->
+            <button class="btn btn-primary" onclick="exportDoctorReport()" style="padding: 14px 28px; background: var(--teal-forest); font-size: 1rem;">
+              📄 Download Patient Report
+            </button>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/nav.js"></script>
+  <script>
+    AuthManager.requireAuth();
+
+    function switchRange(days) {
+      showToast(`Showing telemetry aggregated for the past ${days} days`, 'info');
+    }
+
+    function exportDoctorReport() {
+      const user = AuthManager.getUser() || { name: 'Eleanor Vance', age: 74 };
+      const reportDate = new Date().toLocaleDateString('en-US');
+      
+      const reportWindow = window.open('', '_blank');
+      reportWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Clinical Cognitive Assessment — ${user.name}</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; color: #1e293b; max-width: 800px; margin: 0 auto; line-height: 1.6; }
+            h1 { color: #0C5A4C; border-bottom: 2px solid #0C5A4C; padding-bottom: 8px; }
+            .header-info { display: flex; justify-content: space-between; margin-bottom: 24px; font-size: 0.95rem; }
+            table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+            th, td { border: 1px solid #cbd5e1; padding: 12px; text-align: left; }
+            th { background: #E6F7F5; color: #0C5A4C; }
+            .highlight { background: #f8fafc; font-weight: bold; }
+            .badge { display: inline-block; padding: 4px 10px; border-radius: 9999px; background: #e0f2fe; color: #0369a1; font-weight: 600; font-size: 0.85rem; }
+          </style>
+        </head>
+        <body>
+          <h1>MemorAid Clinical Cognitive Telemetry Report</h1>
+          <div class="header-info">
+            <div>
+              <strong>Patient:</strong> ${user.name} (Age: ${user.age || 74})<br>
+              <strong>Caregiver Contact:</strong> ${user.caregiver_name || 'Sarah Vance'} (${user.caregiver_email || 'sarah.vance@example.com'})
+            </div>
+            <div style="text-align: right;">
+              <strong>Assessment Date:</strong> ${reportDate}<br>
+              <strong>Algorithm:</strong> SM-2 Deterministic Spaced Repetition
+            </div>
+          </div>
+
+          <h3>1. Cognitive Stability Summary</h3>
+          <p>Over the monitored interval, the patient maintained an active daily review frequency. Overall retrieval accuracy was measured at <strong>84%</strong> (+4.2% change vs prior baseline).</p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Category Domain</th>
+                <th>Retrieval Accuracy</th>
+                <th>Avg Quality (0-5)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Health & Medication</td>
+                <td>94%</td>
+                <td>4.7</td>
+                <td><span class="badge" style="background:#dcfce7; color:#15803d;">Optimal Stability</span></td>
+              </tr>
+              <tr>
+                <td>Family & Social Anchors</td>
+                <td>88%</td>
+                <td>4.4</td>
+                <td><span class="badge" style="background:#dcfce7; color:#15803d;">Optimal Stability</span></td>
+              </tr>
+              <tr>
+                <td>Daily Routines</td>
+                <td>82%</td>
+                <td>4.1</td>
+                <td><span class="badge" style="background:#fef9c3; color:#a16207;">Mild Hesitation</span></td>
+              </tr>
+              <tr>
+                <td>Special Memories</td>
+                <td>76%</td>
+                <td>3.8</td>
+                <td><span class="badge" style="background:#fef9c3; color:#a16207;">Monitored</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>2. Physician Recommendation</h3>
+          <p>Continue daily spaced flashcard sessions at morning breakfast routine. No critical memory lapse detected. Silent caregiver ping remaining active.</p>
+
+          <div style="margin-top: 40px; border-top: 1px solid #cbd5e1; padding-top: 16px; font-size: 0.85rem; color: #64748b;">
+            MemorAid Cognitive Health Protocol v2.4 • Confidential Clinical Export
+          </div>
+        </body>
+        </html>
+      `);
+      reportWindow.document.close();
+      reportWindow.focus();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings & Profile — MemorAid Cognitive Health</title>
+  <meta name="description" content="Manage accessibility settings, caregiver linkage, scheduled check-in time, and age group AI tone.">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" type="image/jpeg" href="assets/images/logo.jpg">
+</head>
+<body>
+  <a href="#main-content" class="skip-to-content">Skip to content</a>
+
+  <!-- Mobile Header Bar -->
+  <header class="app-mobile-header">
+    <a href="dashboard.html" class="app-mobile-brand">
+      <img src="assets/images/logo.jpg" alt="MemorAid Logo" style="width: 32px; height: 32px; border-radius: 50%;">
+      <span>MemorAid</span>
+    </a>
+    <button class="app-mobile-menu-btn" id="app-mobile-menu-btn" aria-label="Toggle navigation drawer">
+      ☰
+    </button>
+  </header>
+
+  <div class="app-shell">
+    
+    <!-- Persistent Left Dark Sidebar -->
+    <aside class="app-sidebar" aria-label="Application sidebar">
+      <div>
+        <a href="dashboard.html" class="sidebar-brand">
+          <img src="assets/images/logo.jpg" alt="MemorAid" style="width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--teal-accent);">
+          <div class="sidebar-brand-wrap">
+            <div class="sidebar-brand-title">MemorAid</div>
+            <div class="sidebar-brand-sub">Cognitive Care</div>
+          </div>
+        </a>
+
+        <nav>
+          <ul class="sidebar-nav">
+            <li class="sidebar-nav-item">
+              <a href="dashboard.html" class="sidebar-nav-link">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="log-memory.html" class="sidebar-nav-link">
+                <span class="nav-icon">📝</span>
+                <span>Log Memory</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="recall.html" class="sidebar-nav-link">
+                <span class="nav-icon">🧠</span>
+                <span>Recall Session</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="chat.html" class="sidebar-nav-link">
+                <span class="nav-icon">💬</span>
+                <span>AI Companion</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="analytics.html" class="sidebar-nav-link">
+                <span class="nav-icon">📈</span>
+                <span>Analytics</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="profile.html" class="sidebar-nav-link active">
+                <span class="nav-icon">⚙️</span>
+                <span>Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user-card">
+          <img src="assets/images/avatar-margaret.jpg" alt="Eleanor Vance" class="sidebar-avatar">
+          <div class="sidebar-user-info">
+            <span class="sidebar-user-name">Eleanor Vance</span>
+            <span class="sidebar-user-role">Age 74 • Active</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Stage -->
+    <div class="app-stage">
+      
+      <!-- Top Bar -->
+      <header class="app-topbar">
+        <div style="font-weight: 700; color: var(--teal-forest); font-size: 1.05rem;">
+          Profile & Safety Settings
+        </div>
+
+        <div class="app-topbar-actions">
+          <div class="a11y-controls">
+            <button class="a11y-btn btn-font-scale" id="btn-font-normal" data-size="normal">A</button>
+            <button class="a11y-btn btn-font-scale" id="btn-font-large" data-size="large">A+</button>
+            <button class="a11y-btn btn-font-scale" id="btn-font-xlarge" data-size="xlarge">A++</button>
+            <button class="a11y-btn" id="btn-contrast-toggle">👁 Contrast</button>
+            <button class="a11y-btn" onclick="speakText('Settings and profile screen. Configure your caregiver contact and preferences.')">🔊 Speak</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Stage Body -->
+      <main class="main-content" id="main-content" style="padding: 36px 36px 60px;">
+        <div class="container-narrow" style="padding: 0;">
+          
+          <div style="margin-bottom: 24px;">
+            <h1 style="font-size: 2.1rem; margin-bottom: 6px;">Profile & Safety Settings</h1>
+            <p style="font-size: 1rem; color: var(--text-muted);">
+              Personalize your cognitive companion, caregiver alert triggers, and accessibility preferences.
+            </p>
+          </div>
+
+          <!-- Section 1: User Profile & Age Tone -->
+          <section class="card" style="margin-bottom: 28px; box-shadow: var(--shadow-sm);">
+            <div class="card-header">
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="assets/images/avatar-margaret.jpg" alt="Eleanor Vance" style="width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 2px solid var(--teal-forest);">
+                <div>
+                  <h2 style="font-size: 1.35rem; margin-bottom: 2px;">Personal Profile</h2>
+                  <span style="font-size: 0.85rem; color: var(--text-dim);">Member ID: usr_eleanor_74</span>
+                </div>
+              </div>
+              <span class="badge badge-teal">Active Member</span>
+            </div>
+
+            <form id="profile-form">
+              <div class="grid-2">
+                <div class="form-group">
+                  <label for="prof-name" class="form-label">Full Name</label>
+                  <input type="text" id="prof-name" class="form-control" value="Eleanor Vance">
+                </div>
+                <div class="form-group">
+                  <label for="prof-email" class="form-label">Email Address</label>
+                  <input type="email" id="prof-email" class="form-control" value="eleanor.vance@example.com">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="prof-age-group" class="form-label">Age Group & AI Companion Tone</label>
+                <select id="prof-age-group" class="form-control">
+                  <option value="under-50">Under 50 — Energetic, concise tone</option>
+                  <option value="50-64">50 to 64 — Balanced, structured tone</option>
+                  <option value="65-79" selected>65 to 79 — Warm, patient, gentle pacing (Recommended)</option>
+                  <option value="80+">80 and above — High clarity, reassuring, simplified guidance</option>
+                </select>
+                <span class="form-hint">Aria calibrates phrasing, empathy checks, and speaking speed based on age bracket.</span>
+              </div>
+            </form>
+          </section>
+
+          <!-- Section 2: Caregiver Linkage & Silent Inactivity Guard -->
+          <section class="card" style="margin-bottom: 28px; box-shadow: var(--shadow-sm);">
+            <div class="card-header">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--teal-mint); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                  🛡️
+                </div>
+                <div>
+                  <h2 style="font-size: 1.35rem; margin-bottom: 2px;">Caregiver Peace of Mind Link</h2>
+                  <span style="font-size: 0.85rem; color: var(--text-dim);">Automated safety notification</span>
+                </div>
+              </div>
+              <span class="badge badge-emerald">Connected</span>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label for="prof-caregiver-name" class="form-label">Caregiver Contact Name</label>
+                <input type="text" id="prof-caregiver-name" class="form-control" value="Sarah Vance (Daughter)">
+              </div>
+              <div class="form-group">
+                <label for="prof-caregiver-email" class="form-label">Caregiver Email</label>
+                <input type="email" id="prof-caregiver-email" class="form-control" value="sarah.vance@example.com">
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="form-group">
+                <label for="prof-checkin-time" class="form-label">Scheduled Morning Check-In Time</label>
+                <input type="time" id="prof-checkin-time" class="form-control" value="08:30">
+              </div>
+              <div class="form-group">
+                <label for="prof-threshold" class="form-label">Inactivity Notification Threshold</label>
+                <select id="prof-threshold" class="form-control">
+                  <option value="12">12 hours after scheduled time</option>
+                  <option value="24" selected>24 hours (Recommended standard)</option>
+                  <option value="36">36 hours</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <!-- Section 3: Universal Display & Audio Accessibility -->
+          <section class="card" style="margin-bottom: 32px; box-shadow: var(--shadow-sm);">
+            <div class="card-header">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--teal-mint); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                  👁️
+                </div>
+                <div>
+                  <h2 style="font-size: 1.35rem; margin-bottom: 2px;">Display & Speech Preferences</h2>
+                  <span style="font-size: 0.85rem; color: var(--text-dim);">Senior accessibility controls</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div>
+                <label class="form-label">Default Text Size</label>
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="setFontSize('normal')" style="flex: 1;">Standard</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="setFontSize('large')" style="flex: 1;">Large (+15%)</button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="setFontSize('xlarge')" style="flex: 1;">Extra (+30%)</button>
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label">High Contrast Mode</label>
+                <button type="button" class="btn btn-outline btn-sm" style="width: 100%;" onclick="toggleContrast()">
+                  Toggle Contrast Mode
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Save Button -->
+          <div style="display: flex; gap: 16px;">
+            <button type="button" class="btn btn-primary btn-large" style="width: 100%;" onclick="saveSettings()">
+              Save Settings & Preferences
+            </button>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/nav.js"></script>
+  <script>
+    AuthManager.requireAuth();
+
+    function saveSettings() {
+      const user = AuthManager.getUser() || {};
+      user.name = document.getElementById('prof-name').value.trim();
+      user.email = document.getElementById('prof-email').value.trim();
+      user.age_group = document.getElementById('prof-age-group').value;
+      user.caregiver_name = document.getElementById('prof-caregiver-name').value.trim();
+      user.caregiver_email = document.getElementById('prof-caregiver-email').value.trim();
+      user.checkin_time = document.getElementById('prof-checkin-time').value;
+      user.inactivity_hours_threshold = parseInt(document.getElementById('prof-threshold').value);
+
+      localStorage.setItem('memoraid_current_user', JSON.stringify(user));
+      showToast('Settings saved successfully!', 'success');
+    }
+
+    function toggleContrast() {
+      const current = document.body.getAttribute('data-high-contrast') === 'true';
+      setHighContrast(!current);
+    }
+  </script>
+</body>
+</html>

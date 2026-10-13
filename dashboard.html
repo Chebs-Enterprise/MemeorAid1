@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — MemorAid Cognitive Health</title>
+  <meta name="description" content="Personal cognitive health dashboard with daily recall questions, morning check-in, and recent memories bank.">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" type="image/jpeg" href="assets/images/logo.jpg">
+</head>
+<body>
+  <a href="#main-content" class="skip-to-content">Skip to content</a>
+
+  <!-- Mobile Header Bar -->
+  <header class="app-mobile-header">
+    <a href="dashboard.html" class="app-mobile-brand">
+      <img src="assets/images/logo.jpg" alt="MemorAid Logo" style="width: 32px; height: 32px; border-radius: 50%;">
+      <span>MemorAid</span>
+    </a>
+    <button class="app-mobile-menu-btn" id="app-mobile-menu-btn" aria-label="Toggle navigation drawer">
+      ☰
+    </button>
+  </header>
+
+  <div class="app-shell">
+    
+    <!-- Persistent Left Dark Sidebar (Figma Frames 7, 10, 12, 14, 15) -->
+    <aside class="app-sidebar" aria-label="Application sidebar">
+      <div>
+        <a href="dashboard.html" class="sidebar-brand">
+          <img src="assets/images/logo.jpg" alt="MemorAid" style="width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--teal-accent);">
+          <div class="sidebar-brand-wrap">
+            <div class="sidebar-brand-title">MemorAid</div>
+            <div class="sidebar-brand-sub">Cognitive Care</div>
+          </div>
+        </a>
+
+        <nav>
+          <ul class="sidebar-nav">
+            <li class="sidebar-nav-item">
+              <a href="dashboard.html" class="sidebar-nav-link active">
+                <span class="nav-icon">📊</span>
+                <span>Dashboard</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="log-memory.html" class="sidebar-nav-link">
+                <span class="nav-icon">📝</span>
+                <span>Log Memory</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="recall.html" class="sidebar-nav-link">
+                <span class="nav-icon">🧠</span>
+                <span>Recall Session</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="chat.html" class="sidebar-nav-link">
+                <span class="nav-icon">💬</span>
+                <span>AI Companion</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="analytics.html" class="sidebar-nav-link">
+                <span class="nav-icon">📈</span>
+                <span>Analytics</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="profile.html" class="sidebar-nav-link">
+                <span class="nav-icon">⚙️</span>
+                <span>Settings</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user-card">
+          <img src="assets/images/avatar-margaret.jpg" alt="Eleanor Vance" class="sidebar-avatar">
+          <div class="sidebar-user-info">
+            <span class="sidebar-user-name" id="sidebar-user-name">Eleanor Vance</span>
+            <span class="sidebar-user-role">Age 74 • Active</span>
+          </div>
+        </div>
+        <button onclick="AuthManager.logout()" class="a11y-btn" style="width: 100%; margin-top: 10px; justify-content: center; background: rgba(255,255,255,0.06);">
+          Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Stage on Warm Canvas -->
+    <div class="app-stage">
+      
+      <!-- Top Bar: Search, Accessibility, Status -->
+      <header class="app-topbar">
+        <div class="app-search-wrap">
+          <span class="app-search-icon">🔍</span>
+          <input type="text" id="memory-search-input" class="app-search-input" placeholder="Search memories, routines, family..." aria-label="Search memories">
+        </div>
+
+        <div class="app-topbar-actions">
+          <div class="a11y-controls">
+            <span style="font-size: 0.8rem; margin-right: 4px; color: var(--text-dim);">Text:</span>
+            <button class="a11y-btn btn-font-scale" id="btn-font-normal" data-size="normal" style="color: var(--text-main); background: var(--bg-cream); border-color: var(--border-subtle);">A</button>
+            <button class="a11y-btn btn-font-scale" id="btn-font-large" data-size="large" style="color: var(--text-main); background: var(--bg-cream); border-color: var(--border-subtle);">A+</button>
+            <button class="a11y-btn btn-font-scale" id="btn-font-xlarge" data-size="xlarge" style="color: var(--text-main); background: var(--bg-cream); border-color: var(--border-subtle);">A++</button>
+            <button class="a11y-btn" id="btn-contrast-toggle" style="color: var(--text-main); background: var(--bg-cream); border-color: var(--border-subtle);">👁 Contrast</button>
+            <button class="a11y-btn" onclick="speakText('Good morning Eleanor. You have three recall cards scheduled today.')" style="color: var(--text-main); background: var(--bg-cream); border-color: var(--border-subtle);">🔊 Speak</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard Body -->
+      <main class="main-content" id="main-content" style="padding: 32px 36px 60px;">
+        <div class="container" style="max-width: 1200px; padding: 0;">
+          
+          <!-- Greeting Header -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <div style="font-size: 0.88rem; font-weight: 700; color: var(--teal-forest); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;" id="today-date-string">
+                Tuesday, Oct 6
+              </div>
+              <h1 style="font-size: 2.3rem; margin-bottom: 4px;" id="greeting-title">
+                Welcome, Eleanor 👋
+              </h1>
+              <p style="font-size: 1.05rem; color: var(--text-muted);">
+                Here is your gentle cognitive overview for today.
+              </p>
+            </div>
+
+            <!-- Action Pill Buttons matching Figma -->
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <a href="log-memory.html" class="btn btn-primary">
+                + Log New Memory
+              </a>
+              <a href="recall.html" class="btn btn-secondary">
+                🧠 Start Daily Recall
+              </a>
+            </div>
+          </div>
+
+          <!-- Morning Check-In Bar -->
+          <div class="card" style="background: #FFFFFF; border: 1px solid var(--border-card); padding: 18px 24px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <div style="width: 44px; height: 44px; border-radius: 50%; background: #ECFDF5; border: 1.5px solid #10B981; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #10B981;">
+                ✓
+              </div>
+              <div>
+                <div style="font-weight: 800; font-size: 1.05rem; color: var(--text-main);">
+                  Morning Check-In Confirmed
+                </div>
+                <div style="font-size: 0.85rem; color: var(--text-dim);">
+                  Caregiver link status: <strong style="color: var(--teal-forest);" id="caregiver-link-info">Sarah Notified (Safe)</strong> • Paced for 08:30 AM
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="confirmCheckin()">
+              Update Status Today
+            </button>
+          </div>
+
+          <!-- 4 Vibrant Turquoise KPI Stat Cards (Figma Frame 7) -->
+          <section class="grid-4" style="margin-bottom: 32px;">
+            <div class="stat-card-teal">
+              <span class="stat-label">Due Today</span>
+              <div class="stat-value" id="stat-due-count">3</div>
+              <span class="stat-sub">Ready for gentle recall</span>
+            </div>
+
+            <div class="stat-card-teal">
+              <span class="stat-label">Memories Saved</span>
+              <div class="stat-value" id="stat-total-memories">24</div>
+              <span class="stat-sub">Across 4 core life categories</span>
+            </div>
+
+            <div class="stat-card-teal">
+              <span class="stat-label">Retention Rate</span>
+              <div class="stat-value" id="stat-retention">88%</div>
+              <span class="stat-sub">SM-2 algorithm verified</span>
+            </div>
+
+            <div class="stat-card-teal">
+              <span class="stat-label">Active Streak</span>
+              <div class="stat-value" id="stat-streak">7 Days</div>
+              <span class="stat-sub">Consistent cognitive cadence</span>
+            </div>
+          </section>
+
+          <!-- Memory Bank List / Table matching Frame 7 -->
+          <section class="card" style="padding: 28px 32px;">
+            <div class="card-header">
+              <div>
+                <h2 style="font-size: 1.4rem; margin-bottom: 4px;">Recent Memory Bank</h2>
+                <p style="font-size: 0.9rem; color: var(--text-dim);">Review your preserved memories, routines, and generated recall anchors.</p>
+              </div>
+              <div style="display: flex; gap: 8px;" id="filter-pills">
+                <button class="btn btn-secondary btn-sm filter-pill active" data-filter="all" onclick="filterMemories('all')">All</button>
+                <button class="btn btn-secondary btn-sm filter-pill" data-filter="Family" onclick="filterMemories('Family')">Family</button>
+                <button class="btn btn-secondary btn-sm filter-pill" data-filter="Medical" onclick="filterMemories('Medical')">Health</button>
+                <button class="btn btn-secondary btn-sm filter-pill" data-filter="Daily Routine" onclick="filterMemories('Daily Routine')">Routines</button>
+              </div>
+            </div>
+
+            <!-- List Container -->
+            <div id="memory-cards-grid" style="display: flex; flex-direction: column; gap: 14px;">
+              <!-- Dynamic Cards loaded via API -->
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/nav.js"></script>
+  <script>
+    AuthManager.requireAuth();
+
+    let allMemories = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      displayCurrentDate();
+      await loadDashboardData();
+      setupSearch();
+    });
+
+    function displayCurrentDate() {
+      const options = { weekday: 'long', month: 'short', day: 'numeric' };
+      const today = new Date().toLocaleDateString('en-US', options);
+      const dateEl = document.getElementById('today-date-string');
+      if (dateEl) dateEl.textContent = today;
+    }
+
+    async function loadDashboardData() {
+      try {
+        const user = AuthManager.getUser();
+        if (user && user.name) {
+          const greetingEl = document.getElementById('greeting-title');
+          if (greetingEl) greetingEl.textContent = `Welcome, ${user.name.split(' ')[0]} 👋`;
+          const sidebarUser = document.getElementById('sidebar-user-name');
+          if (sidebarUser) sidebarUser.textContent = user.name;
+        }
+
+        const memRes = await MemorAidAPI.request('/memories');
+        allMemories = memRes.memories || [];
+        document.getElementById('stat-total-memories').textContent = allMemories.length;
+
+        const recallRes = await MemorAidAPI.request('/recall/due');
+        const dueList = recallRes.due || [];
+        document.getElementById('stat-due-count').textContent = dueList.length;
+
+        renderMemoryList(allMemories);
+      } catch (err) {
+        showToast('Error loading dashboard: ' + err.message, 'danger');
+      }
+    }
+
+    function renderMemoryList(memories) {
+      const container = document.getElementById('memory-cards-grid');
+      container.innerHTML = '';
+
+      if (memories.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px; color: var(--text-dim);">
+            <div style="font-size: 2rem; margin-bottom: 8px;">📖</div>
+            <p>No memories match your selection. Tap "+ Log New Memory" to record one.</p>
+          </div>
+        `;
+        return;
+      }
+
+      memories.forEach(mem => {
+        const item = document.createElement('div');
+        item.style.cssText = 'background: var(--bg-cream); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; transition: transform 0.2s ease;';
+        
+        let categoryIcon = '🌱';
+        if (mem.category === 'Family') categoryIcon = '👨‍👩‍👧';
+        if (mem.category === 'Medical') categoryIcon = '💊';
+        if (mem.category === 'Special Moments') categoryIcon = '✨';
+
+        item.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 44px; height: 44px; border-radius: var(--radius-pill); background: var(--teal-mint); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+              ${categoryIcon}
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <span class="badge badge-teal" style="font-size: 0.75rem;">${mem.category || 'General'}</span>
+                <span style="font-size: 0.8rem; color: var(--text-dim);">${mem.date || 'Recent'}</span>
+              </div>
+              <h3 style="font-size: 1.12rem; margin-bottom: 4px; color: var(--text-main); font-weight: 700;">
+                ${mem.title}
+              </h3>
+              <p style="font-size: 0.88rem; color: var(--text-muted); max-width: 600px; margin: 0;">
+                ${mem.notes ? (mem.notes.substring(0, 110) + '...') : ''}
+              </p>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <button class="a11y-btn" onclick="speakText('${(mem.notes || mem.title).replace(/'/g, "\\'")}')" title="Listen to this memory">
+              🔊 Listen
+            </button>
+            <a href="recall.html" class="btn btn-outline btn-sm">
+              Practice
+            </a>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function filterMemories(category) {
+      document.querySelectorAll('.filter-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-filter') === category);
+      });
+      if (category === 'all') {
+        renderMemoryList(allMemories);
+      } else {
+        const filtered = allMemories.filter(m => m.category === category);
+        renderMemoryList(filtered);
+      }
+    }
+
+    function setupSearch() {
+      const input = document.getElementById('memory-search-input');
+      input.addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase();
+        const filtered = allMemories.filter(m => 
+          m.title.toLowerCase().includes(q) || 
+          (m.notes && m.notes.toLowerCase().includes(q)) ||
+          (m.category && m.category.toLowerCase().includes(q))
+        );
+        renderMemoryList(filtered);
+      });
+    }
+
+    async function confirmCheckin() {
+      await MemorAidAPI.request('/checkin', 'POST');
+      showToast('Morning Check-in confirmed! Sarah has been notified.', 'success');
+    }
+  </script>
+</body>
+</html>
