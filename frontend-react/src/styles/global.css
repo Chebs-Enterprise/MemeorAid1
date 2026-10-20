@@ -1,0 +1,1117 @@
+@import url('https://fonts.googleapis.com/css2?family=ABeeZee:ital@0;1&family=Lilita+One&family=Ubuntu+Mono:wght@400;700&display=swap');
+
+/* ==========================================================================
+   MemorAid — global design system
+   Migrated from the vanilla build; the document's BINDING accessibility
+   rules (section 3.5.2) are preserved verbatim:
+
+     - all inputs min-height 56px (large touch targets)
+     - labels ABOVE fields, never placeholder-only
+     - body text >= 18px, headings >= 24px
+     - friendly, plain-language errors
+     - password show/hide toggle
+     - text-size presets + high contrast mode
+
+   Palette (Figma — MEMORAID export): teal-900 #006B62, teal-500 #00B5A5,
+   teal-300 #2DD4BF, teal-text #1F8478, mint #F3FBFA, cream #FAF0E4,
+   brown #7A4A00, sidebar #1A1D1C, sidebar-active #25524C, gold #F5A623.
+   Type: ABeeZee (body), Lilita One (celebration), Ubuntu Mono (labels).
+
+   The Figma palette is mapped onto the token names the rest of the
+   stylesheet already uses, so every component inherits the new look without
+   touching its markup.
+   ========================================================================== */
+
+:root {
+  /* -- Figma teal ramp ------------------------------------------------- */
+  --teal-900: #006b62;   /* primary actions, headings, active chips        */
+  --teal-500: #00b5a5;   /* stat cards                                     */
+  --teal-300: #2dd4bf;   /* active nav, links, focus ring                  */
+  --teal-text: #1f8478;  /* secondary text                                 */
+  --cream: #faf0e4;      /* memory cards                                   */
+  --brown: #7a4a00;      /* field labels, SOCIAL tag                       */
+  --gold: #f5a623;       /* celebration modal                              */
+
+  --teal-forest: #006b62;
+  --teal-forest-hover: #00564f;
+  --teal-mint: #f3fbfa;
+  --teal-mint-hover: #e2f5f2;
+  --teal-mint-text: #006b62;
+
+  --bg-cream: #ffffff;
+  --bg-card: #ffffff;
+  --bg-surface: #f3fbfa;
+
+  --bg-sidebar: #1a1d1c;
+  --bg-sidebar-hover: #25524c;
+  --bg-sidebar-active: #25524c;
+  --text-sidebar: #9a9e9d;
+  --text-sidebar-hover: #2dd4bf;
+  --border-sidebar: rgba(255, 255, 255, 0.08);
+
+  --bg-dark-analytics: #1a1d1c;
+  --bg-dark-card: #222624;
+  --border-dark: rgba(45, 212, 191, 0.24);
+  --text-dark-main: #ffffff;
+  --text-dark-muted: #9a9e9d;
+
+  --text-main: #006b62;
+  --text-muted: #5c6f6c;
+  --text-dim: #9a9e9d;
+
+  --font-base: 'ABeeZee', system-ui, -apple-system, sans-serif;
+  --font-display: 'ABeeZee', system-ui, sans-serif;
+  --font-mono: 'Ubuntu Mono', ui-monospace, monospace;
+  --font-celebrate: 'Lilita One', 'ABeeZee', sans-serif;
+
+  --rose-danger: #c0392b;
+  /* Chart fills. These are the palette values the SVG charts draw with, kept
+     as tokens so the charts stay in step with the rest of the UI. */
+  --chart-pass: #00b5a5;
+  --chart-forget: #c0392b;
+  --chart-axis: #9a9e9d;
+  --chart-grid: rgba(0, 181, 165, 0.16);
+
+  --border-subtle: #e6f1ef;
+  --border-card: #dfe9e4;
+  --border-focus: #006b62;
+  --shadow-sm: 0 1px 2px rgba(0, 62, 57, 0.04), 0 2px 8px rgba(0, 62, 57, 0.04);
+  --shadow-lg: 0 16px 40px rgba(0, 62, 57, 0.12);
+  --shadow-pill: 0 6px 18px rgba(0, 107, 98, 0.22);
+
+  /* One radius per role. Previously cards mixed 16px and 20px while a
+     --radius-field token sat unused, which read as unintentional. */
+  --radius-xs: 6px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-field: 14px;
+  --radius-pill: 28px;
+
+  /* 4px-based spacing scale. Every gap and padding below steps through these,
+     so rhythm is consistent instead of ad-hoc 14/18/22/26px values. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 48px;
+  --space-10: 64px;
+
+  --input-height: 56px;
+  --body-font-size: 18px;
+  --heading-min-size: 24px;
+  --min-touch-target: 56px;
+
+  --font-scale: 1;
+  --transition-fast: 0.16s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-high-contrast='true'] {
+  --bg-cream: #000000;
+  --bg-card: #0a0a0a;
+  --bg-surface: #141414;
+  --bg-sidebar: #000000;
+  --text-main: #ffffff;
+  --text-muted: #e2e8f0;
+  --text-dim: #cbd5e1;
+  --teal-forest: #2dd4bf;
+  --teal-mint: #0d3b35;
+  --teal-mint-text: #7de3d4;
+  /* On black the teal tiles would lose their edge, so they drop to the darker
+     brand teal and carry a border. Contrast is the whole point of this mode. */
+  --teal-500: #006b62;
+  --border-card: #3a6b64;
+  --border-subtle: #2b3331;
+}
+
+body[data-font-size='large'] { --font-scale: 1.15; }
+body[data-font-size='xlarge'] { --font-scale: 1.3; }
+
+/* The solid teal chips and badges invert in high-contrast so the type on them
+   stays readable against the dark surfaces. */
+[data-high-contrast='true'] .badge-teal { background: var(--teal-300); color: #00201d; }
+[data-high-contrast='true'] .badge-gold { background: var(--gold); color: #2b1c00; }
+[data-high-contrast='true'] .memory-item { background: #1c1f1e; border-color: #2f3331; }
+[data-high-contrast='true'] .memory-icon { background: #141414; border-color: #2f3331; color: var(--teal-300); }
+[data-high-contrast='true'] .stat-card { background: var(--teal-900); border-color: var(--teal-300); }
+[data-high-contrast='true'] .stat-card::before { display: none; }
+[data-high-contrast='true'] .stat-card::after { display: none; }
+[data-high-contrast='true'] .stat-icon { background: #141414; color: var(--teal-300); }
+[data-high-contrast='true'] .stat-card.is-due { background: #00332f; border-color: var(--teal-300); }
+[data-high-contrast='true'] .next-up,
+[data-high-contrast='true'] .upnext-card { background: #0d0f0e; border-color: #2f3331; border-left-color: var(--teal-300); }
+[data-high-contrast='true'] .next-up-icon,
+[data-high-contrast='true'] .upnext-icon { background: #141414; color: var(--teal-300); }
+[data-high-contrast='true'] .stat-label,
+[data-high-contrast='true'] .stat-value { color: #ffffff; }
+[data-high-contrast='true'] .stat-body .stat-label { color: var(--text-muted); }
+[data-high-contrast='true'] .stat-card.is-due .stat-label { color: #ffffff; }
+[data-high-contrast='true'] .greeting-card {
+  background: #0d0f0e; border-color: var(--teal-300);
+}
+[data-high-contrast='true'] .greeting-card::after { display: none; }
+[data-high-contrast='true'] .greeting-card h2 { color: #fff; }
+[data-high-contrast='true'] .greeting-eyebrow { color: #e2e8f0; }
+[data-high-contrast='true'] .greeting-card .btn-primary { background: var(--teal-300); color: #00201d; }
+[data-high-contrast='true'] .checkin-done { background: #141414; border-color: var(--teal-300); color: var(--teal-300); }
+[data-high-contrast='true'] .header-btn { color: #e2e8f0; }
+[data-high-contrast='true'] .header-btn:hover,
+[data-high-contrast='true'] .header-btn.is-open { background: #141414; color: var(--teal-300); }
+[data-high-contrast='true'] .header-avatar { background: #141414; color: var(--teal-300); border-color: var(--teal-300); }
+[data-high-contrast='true'] .header-panel { background: #0d0f0e; border-color: #2f3331; }
+[data-high-contrast='true'] .header-list-item { background: #141414; color: #fff; }
+[data-high-contrast='true'] .header-account-name { color: #fff; }
+[data-high-contrast='true'] .a11y-trigger { background: #0d0f0e; border-color: #2f3331; color: var(--text-muted); }
+[data-high-contrast='true'] .a11y-panel { background: #0d0f0e; border-color: #2f3331; }
+[data-high-contrast='true'] .a11y-opt { background: #141414; border-color: #2f3331; color: var(--text-muted); }
+[data-high-contrast='true'] .a11y-opt.is-active { background: var(--teal-300); border-color: var(--teal-300); color: #00201d; }
+[data-high-contrast='true'] .technique-chip { border-color: #3a3f3d; color: var(--text-muted); }
+[data-high-contrast='true'] .technique-chip.is-current { background: var(--teal-mint); color: var(--teal-mint-text); border-color: var(--teal-300); }
+[data-high-contrast='true'] .steps-list li { background: #1c1f1e; }
+[data-high-contrast='true'] .form-message { background: #1c1f1e; }
+[data-high-contrast='true'] .form-message.is-success { color: #7de3d4; }
+[data-high-contrast='true'] .form-message.is-error { color: #ffcf9a; }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: calc(16px * var(--font-scale)); scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-base);
+  font-size: var(--body-font-size);
+  line-height: 1.6;
+  color: var(--text-main);
+  background: var(--bg-cream);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Type scale. The display face (ABeeZee) only ships 400, so hierarchy is
+   carried by size and colour rather than faux-bold weights — h3 was the odd
+   one out at 700, which the font renders as a synthesised smear. */
+h1, h2, h3, h4 { font-family: var(--font-display); color: var(--text-main); }
+h1 { font-size: max(32px, var(--heading-min-size)); font-weight: 400; line-height: 1.18; letter-spacing: -0.01em; }
+h2 { font-size: max(26px, var(--heading-min-size)); font-weight: 400; line-height: 1.24; letter-spacing: -0.005em; }
+h3 { font-size: var(--heading-min-size); font-weight: 400; line-height: 1.32; }
+h4 { font-size: 20px; font-weight: 400; line-height: 1.4; }
+p { color: var(--text-muted); line-height: 1.65; }
+a { color: var(--teal-forest); text-decoration: none; font-weight: 600; }
+a:hover { text-decoration: underline; text-underline-offset: 2px; }
+
+/* Figma applies one focus ring everywhere; the document requires keyboard
+   visibility for every control, so this is app-wide rather than button-only. */
+:focus-visible {
+  outline: 3px solid var(--teal-300); outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute; left: -9999px; top: 0; z-index: 999;
+  background: var(--teal-forest); color: #fff; padding: 14px 22px;
+  border-radius: 0 0 var(--radius-md) 0; font-weight: 700;
+}
+.skip-link:focus { left: 0; }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ icons */
+/* Inline SVGs inherit colour from their container, so a sidebar icon turns
+   white automatically when its link becomes active. flex-shrink:0 stops them
+   being squashed in narrow flex rows (buttons, list items). */
+.icon-svg { flex-shrink: 0; display: block; }
+.btn .icon-svg, .sidebar-link .icon-svg { display: inline-block; vertical-align: middle; }
+
+/* Tinted badge carrying the feature-card icons on the landing page. */
+.feature-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 52px; height: 52px; border-radius: var(--radius-md);
+  background: var(--teal-mint); color: var(--teal-forest);
+}
+
+/* ---------------------------------------------------------------- buttons */
+/* Every variant carries the same 2px border so outlined and filled buttons
+   occupy identical boxes; an outlined button next to a filled one used to sit
+   2px shorter on each axis. */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-height: var(--min-touch-target); padding: 12px 28px;
+  border: 2px solid transparent; border-radius: var(--radius-pill);
+  font-family: var(--font-base); font-size: 18px; font-weight: 400; line-height: 1.2;
+  cursor: pointer; text-align: center;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast),
+              box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+.btn:hover { text-decoration: none; }
+.btn:active { transform: translateY(1px); }
+.btn:focus-visible { outline: 3px solid var(--teal-300); outline-offset: 2px; }
+
+.btn-primary { background: var(--teal-forest); color: #fff; box-shadow: var(--shadow-pill); }
+.btn-primary:hover { background: var(--teal-forest-hover); color: #fff; transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-secondary { background: var(--teal-mint); color: var(--teal-mint-text); }
+.btn-secondary:hover { background: var(--teal-mint-hover); color: var(--teal-mint-text); }
+
+.btn-outline { background: transparent; border-color: var(--border-card); color: var(--teal-forest); }
+.btn-outline:hover { background: var(--teal-forest); border-color: var(--teal-forest); color: #fff; }
+
+.btn-ghost { background: transparent; color: var(--text-muted); }
+.btn-ghost:hover { background: var(--bg-surface); color: var(--text-main); }
+
+.btn-danger { background: #fdf0f0; color: var(--rose-danger); border-color: #f6dede; }
+.btn-danger:hover { background: var(--rose-danger); border-color: var(--rose-danger); color: #fff; }
+
+.btn-block { width: 100%; }
+.btn-lg { min-height: 64px; font-size: 20px; padding: 16px 36px; }
+.btn[disabled], .btn[aria-disabled='true'] { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* ------------------------------------------------------------------ forms */
+/* Label, then hint, then field — a tight 6/8px rhythm that keeps the control
+   visually bound to its own label rather than floating between groups. */
+.form-group { margin-bottom: var(--space-6); }
+.form-group label {
+  display: block; margin-bottom: var(--space-2);
+  font-size: 18px; font-weight: 400; line-height: 1.4; color: var(--text-main);
+}
+.form-hint {
+  display: block; margin-bottom: var(--space-2);
+  font-size: 16px; line-height: 1.5; color: var(--text-dim);
+}
+
+/* Figma's mono label treatment (chips, panel labels, voice hint). It is
+   opt-in via .label-mono so the default label keeps the document's 18px
+   minimum body-text size. */
+.label-mono {
+  font-family: var(--font-mono);
+  font-size: 16px; font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase;
+}
+
+input[type='text'], input[type='email'], input[type='password'],
+input[type='time'], input[type='number'], select, textarea {
+  width: 100%; min-height: var(--input-height); padding: 12px 16px;
+  border: 2px solid var(--border-card); border-radius: var(--radius-field);
+  background: var(--bg-card); color: var(--text-main);
+  font-family: var(--font-base); font-size: 18px; line-height: 1.4;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
+              background-color var(--transition-fast);
+}
+input:hover:not(:disabled), select:hover:not(:disabled), textarea:hover:not(:disabled) {
+  border-color: #c9dcd6;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--border-focus);
+  box-shadow: 0 0 0 4px rgba(0, 107, 98, 0.14);
+}
+input:disabled, select:disabled, textarea:disabled {
+  background: var(--bg-surface); color: var(--text-muted); cursor: not-allowed;
+}
+textarea { min-height: 140px; resize: vertical; line-height: 1.6; }
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath fill='%23006b62' d='M1 1l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 16px center; padding-right: 44px;
+}
+
+.password-wrap { position: relative; }
+.password-wrap input { padding-right: 126px; }
+.password-toggle {
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  min-height: 48px; padding: 8px 22px; border: none; border-radius: var(--radius-pill);
+  background: var(--teal-mint); color: var(--teal-mint-text);
+  font-size: 16px; font-weight: 400; cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+.password-toggle:hover { background: var(--teal-mint-hover); }
+
+/* Friendly inline messages (3.5.2: plain language, never alarming) */
+.form-message {
+  margin-top: var(--space-4); padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md); border-left: 4px solid currentColor;
+  font-size: 17px; font-weight: 400; line-height: 1.55;
+  background: #fdf6ee; color: #8a5a10;
+}
+.form-message.is-success { background: #eefaf7; color: #0f6b5c; }
+.form-message.is-error { background: #fdf6ee; color: #8a5a10; }
+
+/* ------------------------------------------------------------------ cards */
+/* One surface treatment for every content card: hairline border, single
+   radius, one low shadow. Previously .card, .question-card and .info panels
+   each picked their own radius and only some had a shadow. */
+.card {
+  background: var(--bg-card); border: 1px solid var(--border-card);
+  border-radius: var(--radius-xl); padding: var(--space-7);
+  box-shadow: var(--shadow-sm);
+}
+.card-title { font-size: 20px; font-weight: 400; margin-bottom: var(--space-1); color: var(--text-main); }
+
+.badge {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  padding: 5px 12px; border-radius: var(--radius-xs);
+  font-size: 14px; font-weight: 400; letter-spacing: 0.06em; line-height: 1.5;
+  text-transform: uppercase; white-space: nowrap;
+}
+.badge-teal { background: var(--teal-900); color: #fff; }
+.badge-gold { background: var(--brown); color: #fff; }
+.badge-green { background: #e3f7f4; color: #006b62; }
+.badge-dim { background: var(--bg-surface); color: var(--text-muted); }
+
+/* ------------------------------------------------- display settings menu */
+/* The document (3.5.2) requires text-size presets and a high-contrast toggle.
+   It requires them to exist and be reachable — not to sit in a bar across the
+   top of every page, which pushed each screen down by ~70px. They now live
+   behind one button in the page chrome, so the page starts at its own top and
+   the controls remain one click away everywhere. */
+.a11y-menu { position: relative; }
+
+.a11y-trigger {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  min-height: var(--min-touch-target); padding: 8px var(--space-5);
+  border: 2px solid var(--border-card); border-radius: var(--radius-pill);
+  background: var(--bg-card); color: var(--text-muted);
+  font-family: var(--font-base); font-size: 16px; cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast),
+              border-color var(--transition-fast);
+}
+.a11y-trigger:hover { border-color: var(--teal-forest); color: var(--teal-forest); }
+.a11y-trigger.is-open { background: var(--teal-mint); border-color: var(--teal-forest); color: var(--teal-mint-text); }
+
+/* The panel opens upward when the trigger is in the sidebar footer, and
+   downward inside the top navigation; `bottom: 100%` covers the sidebar case
+   and the top-nav case is corrected below. */
+.a11y-panel {
+  position: absolute; bottom: calc(100% + var(--space-2)); left: 0;
+  z-index: 80; width: 264px;
+  display: flex; flex-direction: column; gap: var(--space-2);
+  background: var(--bg-card); border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg); padding: var(--space-4);
+  box-shadow: var(--shadow-lg);
+}
+.top-nav .a11y-panel { bottom: auto; top: calc(100% + var(--space-2)); left: auto; right: 0; }
+
+.a11y-panel-label {
+  font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.07em;
+  text-transform: uppercase; color: var(--text-dim);
+  margin-top: var(--space-1);
+}
+.a11y-panel-label:first-child { margin-top: 0; }
+
+.a11y-seg { display: flex; gap: var(--space-1); }
+.a11y-opt {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-height: 48px; padding: 8px var(--space-3);
+  border: 2px solid var(--border-card); border-radius: var(--radius-md);
+  background: var(--bg-card); color: var(--text-muted);
+  font-family: var(--font-base); font-size: 15px; cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast),
+              border-color var(--transition-fast);
+}
+.a11y-seg .a11y-opt { flex: 1 1 0; padding: 8px var(--space-1); }
+.a11y-opt-wide { width: 100%; }
+.a11y-opt:hover { border-color: var(--teal-forest); color: var(--teal-forest); }
+.a11y-opt.is-active { background: var(--teal-forest); border-color: var(--teal-forest); color: #fff; }
+
+/* In the dark sidebar the trigger adopts the sidebar's own link styling so it
+   sits with Sign out rather than looking pasted in. */
+.app-sidebar .a11y-menu { width: 100%; }
+.app-sidebar .a11y-trigger {
+  width: 100%; justify-content: flex-start;
+  background: transparent; border-color: transparent; color: var(--text-sidebar);
+  padding-left: var(--space-3);
+}
+.app-sidebar .a11y-trigger:hover { background: var(--bg-sidebar-hover); color: var(--text-sidebar-hover); border-color: transparent; }
+.app-sidebar .a11y-trigger.is-open { background: var(--bg-sidebar-active); color: var(--text-sidebar-hover); border-color: transparent; }
+.app-sidebar .a11y-panel { width: 100%; }
+
+/* --------------------------------------------------- public page chrome */
+.top-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-3) 5%; background: var(--bg-card);
+  border-bottom: 1px solid var(--border-subtle); flex-wrap: wrap; gap: var(--space-4);
+}
+.brand {
+  display: flex; align-items: center; gap: var(--space-3);
+  font-family: var(--font-display); font-size: 24px; font-weight: 400;
+  color: var(--teal-forest); letter-spacing: -0.01em;
+}
+.brand:hover { text-decoration: none; }
+.brand-mark {
+  width: 40px; height: 40px; border-radius: var(--radius-md);
+  background: var(--teal-forest);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 20px; font-weight: 400;
+  box-shadow: var(--shadow-pill);
+}
+.nav-links { display: flex; align-items: center; gap: var(--space-1); flex-wrap: wrap; }
+.nav-links a {
+  padding: 10px 20px; border-radius: var(--radius-pill); color: var(--text-muted);
+  font-weight: 400; min-height: 48px; display: inline-flex; align-items: center;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+.nav-links a:hover { background: var(--bg-surface); color: var(--teal-forest); text-decoration: none; }
+.nav-links a.is-active { background: var(--teal-mint); color: var(--teal-mint-text); }
+
+.public-main { max-width: 1120px; margin: 0 auto; padding: var(--space-9) 5% 80px; }
+
+.auth-shell { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-9); align-items: center; }
+.auth-panel { max-width: 480px; width: 100%; }
+.auth-aside {
+  background: var(--teal-forest);
+  border-radius: var(--radius-xl); padding: var(--space-8); color: #fff; min-height: 420px;
+  display: flex; flex-direction: column; justify-content: center; gap: var(--space-4);
+}
+.auth-aside h2 { color: #fff; }
+.auth-aside p { color: rgba(255, 255, 255, 0.88); font-size: 18px; }
+
+/* The two figures in the landing aside. Previously inline styles; now a class
+   so they inherit the spacing scale and don't drift from the token palette. */
+.aside-stats { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-top: var(--space-2); }
+.aside-stat {
+  display: flex; flex-direction: column; gap: var(--space-1);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-md); padding: var(--space-4);
+}
+.aside-stat-value {
+  font-family: var(--font-display); font-size: 32px; line-height: 1;
+  color: #fff; font-variant-numeric: tabular-nums;
+}
+.aside-stat-label { font-size: 16px; line-height: 1.35; color: rgba(255, 255, 255, 0.82); }
+
+/* -------------------------------------------------------------- app shell */
+.app-shell { display: grid; grid-template-columns: 272px 1fr; min-height: 100vh; }
+.app-sidebar {
+  background: var(--bg-sidebar); padding: var(--space-6) var(--space-3);
+  display: flex; flex-direction: column; gap: var(--space-1);
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.app-sidebar .brand { color: #fff; padding: 0 var(--space-3) var(--space-6); }
+.app-sidebar .brand-mark { background: var(--teal-forest); box-shadow: none; }
+.sidebar-link {
+  display: flex; align-items: center; gap: var(--space-3);
+  min-height: var(--min-touch-target); padding: 12px var(--space-3);
+  border-radius: var(--radius-md); color: var(--text-sidebar);
+  font-size: 18px; font-weight: 400;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  position: relative;
+}
+/* The active marker is an inset pseudo-element rather than a border-right, so
+   selecting an item no longer nudges its text 3px to the left. */
+.sidebar-link::after {
+  content: ''; position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 0; border-radius: 3px 0 0 3px; background: var(--teal-300);
+  transition: height var(--transition-fast);
+}
+.sidebar-link:hover { background: var(--bg-sidebar-hover); color: var(--text-sidebar-hover); text-decoration: none; }
+.sidebar-link.is-active { background: var(--bg-sidebar-active); color: var(--text-sidebar-hover); }
+.sidebar-link.is-active::after { height: 60%; }
+.sidebar-footer {
+  margin-top: auto; padding: var(--space-4) var(--space-3) 0;
+  border-top: 1px solid var(--border-sidebar);
+  display: flex; flex-direction: column; gap: var(--space-1);
+}
+.sidebar-footer button.sidebar-link { width: 100%; border: none; background: none; cursor: pointer; font-family: var(--font-base); }
+
+.app-main { display: flex; flex-direction: column; background: var(--bg-cream); min-width: 0; }
+
+/* ---------------------------------------------------------- page header */
+/* A slim utility strip holding exactly three controls — notifications,
+   settings and the avatar — anchored to the right-hand side of the content
+   area. It carries no title, no brand and no name beside the avatar, so it
+   reads as chrome and never competes with the page heading below it. */
+.app-header {
+  display: flex; align-items: center; justify-content: flex-end;
+  padding: var(--space-5) var(--space-7) 0;
+  background: var(--bg-cream);
+}
+.header-actions { display: flex; align-items: center; gap: var(--space-3); }
+
+/* Each control is a 48px square — comfortably above the document's minimum
+   pointer-target intent at this density — so the three read as one cluster. */
+.header-slot { position: relative; }
+/* Notifications and settings are outline-less: they sit directly on the page
+   background and are read by their icon alone. Only the avatar carries a ring,
+   which is what marks it as the account control. */
+.header-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 48px; height: 48px; padding: 0;
+  border: none; border-radius: var(--radius-md);
+  background: none; color: var(--text-muted); cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+.header-btn:hover { background: var(--bg-surface); color: var(--teal-forest); }
+.header-btn.is-open { background: var(--teal-mint); color: var(--teal-mint-text); }
+
+/* The unread count sits on the bell as a small filled dot. */
+.header-dot {
+  position: absolute; top: -5px; right: -5px;
+  min-width: 20px; height: 20px; padding: 0 5px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--teal-500); color: #fff;
+  font-size: 12px; font-weight: 400; line-height: 1;
+  border: 2px solid var(--bg-cream);
+}
+
+.header-avatar {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 48px; height: 48px; padding: 0;
+  border: 1px solid var(--border-card); border-radius: 50%;
+  background: var(--teal-mint); color: var(--teal-mint-text);
+  font-family: var(--font-base); font-size: 18px; letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+.header-avatar:hover { border-color: var(--teal-forest); }
+.header-avatar.is-open { border-color: var(--teal-forest); box-shadow: var(--shadow-sm); }
+
+/* Popovers open downward from the right edge, so they never push the page
+   around and never leave the viewport. */
+.header-panel {
+  position: absolute; top: calc(100% + var(--space-2)); right: 0;
+  z-index: 90; width: 272px;
+  display: flex; flex-direction: column; gap: var(--space-2);
+  background: var(--bg-card); border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg); padding: var(--space-4);
+  box-shadow: var(--shadow-lg);
+}
+.header-panel-wide { width: 340px; }
+.header-panel-title {
+  font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.07em;
+  text-transform: uppercase; color: var(--text-dim);
+}
+.header-panel-title + .header-panel-title { margin-top: var(--space-2); }
+.header-account-name { font-size: 18px; color: var(--text-main); margin: 0; }
+.header-empty { font-size: 16px; color: var(--text-muted); margin: 0; }
+.header-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; }
+.header-list-item {
+  font-size: 16px; line-height: 1.45; color: var(--text-main);
+  padding: var(--space-3); border-radius: var(--radius-md);
+  background: var(--bg-surface);
+}
+.header-panel-link {
+  display: flex; align-items: center;
+  min-height: 44px; padding: 8px var(--space-3);
+  border: none; background: none; cursor: pointer;
+  border-radius: var(--radius-md);
+  font-family: var(--font-base); font-size: 16px; color: var(--teal-text);
+  text-align: left;
+}
+.header-panel-link:hover { background: var(--bg-surface); text-decoration: none; }
+.header-panel-link.is-danger { color: var(--rose-danger); }
+
+/* The mobile menu strip: hidden on desktop, where the sidebar is always
+   visible, and shown alongside the header on small screens. */
+.app-menu-bar { display: none; padding: var(--space-3) var(--space-7) 0; }
+
+/* The stage is the content column beside the sidebar: a centred 1140px reading
+   column with real horizontal padding. Pages wrap their normal content in
+   `.stage-inner`; a page-level banner escapes the 1140px cap with
+   `.banner-bleed`, which cancels the stage's side padding so the fill reaches
+   both edges of the content column — and no further, so it never runs under
+   the sidebar. */
+.app-stage { padding: var(--space-5) var(--space-7) var(--space-8); width: 100%; }
+/* Inside `.banner-bleed` the column is already edge-to-edge, so `.stage-inner`
+   contributes only its vertical rhythm there — no padding, no cap. */
+.banner-bleed .stage-inner { max-width: none; padding: 0; }
+.stage-header { margin-bottom: var(--space-7); }
+.stage-header h1 { margin-bottom: var(--space-2); }
+.stage-header p { font-size: 18px; }
+
+.menu-toggle {
+  display: none; min-height: 48px; min-width: 48px;
+  border: 1px solid var(--border-card); border-radius: var(--radius-md);
+  background: var(--bg-card); color: var(--text-main); cursor: pointer;
+}
+.sidebar-backdrop { display: none; }
+
+/* -------------------------------------------------------------- dashboard */
+/* The greeting is a plain band: it carries the page's own background and no
+   fill of its own, so the coloured elements below it are what draw the eye.
+   It still spans the full width of the content column via `.banner-bleed`. */
+.banner-bleed {
+  margin-left: calc(-1 * var(--space-7));
+  margin-right: calc(-1 * var(--space-7));
+  margin-bottom: var(--space-7);
+}
+.greeting-card {
+  position: relative; overflow: hidden;
+  background: var(--bg-cream);
+  padding: var(--space-7) var(--space-7);
+  margin: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-6); flex-wrap: wrap;
+}
+/* The copy is held to the same content column as the rest of the page. */
+.greeting-copy, .greeting-side { position: relative; z-index: 1; }
+/* The banner fill reaches the edges of the content column, but the copy inside
+   keeps the page's normal side padding so it lines up with the sections below. */
+.greeting-inner {
+  width: 100%; max-width: 1140px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-6); flex-wrap: wrap;
+  padding: 0;
+}
+/* Outside the banner the page's content column narrows again; the banner is
+   the one band that spans the full column width. */
+.banner-bleed + .stage-inner { padding-top: 0; }
+/* A soft teal wash in the corner keeps the band from reading as empty space
+   without giving it a fill of its own. */
+.greeting-card::after {
+  content: ''; position: absolute; right: -60px; top: -60px;
+  width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(45, 212, 191, 0.16), transparent 70%);
+  pointer-events: none;
+}
+.greeting-copy { position: relative; z-index: 1; min-width: 260px; flex: 1 1 420px; }
+.greeting-eyebrow {
+  display: block; margin-bottom: var(--space-2);
+  font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--teal-text);
+}
+.greeting-card h2 {
+  color: var(--teal-900); margin-bottom: 0; font-size: 31px; line-height: 1.2;
+}
+.greeting-side { position: relative; z-index: 1; flex-shrink: 0; }
+/* On the plain band the check-in button is the brand action, so it fills. */
+.greeting-card .btn-primary {
+  background: var(--teal-forest); color: #fff; box-shadow: var(--shadow-pill);
+}
+.greeting-card .btn-primary:hover { background: var(--teal-900); color: #fff; }
+.checkin-done {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  min-height: var(--min-touch-target); padding: 12px var(--space-5);
+  border-radius: var(--radius-pill);
+  background: var(--bg-card); border: 1px solid var(--border-card);
+  color: var(--teal-forest); font-size: 17px;
+}
+
+/* Stat tiles carry the colour now that the greeting band does not. The fill
+   runs from the brand teal to the deep forest across the diagonal, with a light
+   sheen and a bright top edge for a glassy highlight.
+
+   The gradient deliberately stops at `--teal-forest`, not at the lighter
+   `--teal-500`: white 17px labels on `--teal-500` measure 2.6:1, below the
+   document's 4.5:1 requirement for body text. Against `--teal-forest` the same
+   text measures 6.4:1, so the whole tile stays compliant no matter which end of
+   the gradient a label happens to sit over. */
+.stat-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: var(--space-4); margin-bottom: var(--space-6);
+}
+.stat-card {
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; gap: var(--space-4);
+  background: linear-gradient(150deg, var(--teal-forest), var(--teal-900) 96%);
+  border: 1px solid var(--teal-900);
+  border-radius: var(--radius-lg); padding: var(--space-6);
+  min-height: 132px; box-shadow: var(--shadow-pill);
+}
+/* The sheen: a wide, low-opacity highlight across the upper-left corner, which
+   is what makes the surface read as glossy rather than flat. */
+.stat-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 58%);
+  pointer-events: none;
+}
+/* A hairline of light along the top edge, as if catching a light source. */
+.stat-card::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 0;
+  height: 1px; background: rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+}
+.stat-card > * { position: relative; z-index: 1; }
+.stat-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 58px; height: 58px; flex-shrink: 0;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+.stat-body { min-width: 0; }
+.stat-value {
+  font-family: var(--font-display); font-size: 42px; font-weight: 400;
+  color: #fff; line-height: 1.05; letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 2px rgba(0, 62, 57, 0.22);
+}
+.stat-label {
+  font-size: 17px; color: rgba(255, 255, 255, 0.9); font-weight: 400;
+  line-height: 1.35; margin-top: var(--space-1);
+}
+/* The tile that is asking for something deepens rather than changes hue, so it
+   still stands out from its siblings without introducing a second colour. */
+.stat-card.is-due { background: linear-gradient(150deg, var(--teal-900), #00332f 96%); }
+.stat-card.is-due .stat-value,
+.stat-card.is-due .stat-label { color: #fff; }
+.stat-card.is-due .stat-icon { background: rgba(255, 255, 255, 0.2); color: #fff; }
+
+/* The stat cards inside the recall summary and the analytics panel stack their
+   figure above the label and use the smaller figure they were sized for; the
+   dashboard's larger figure and taller tile apply to the dashboard only. They
+   keep the brand fill, so the tiles read the same on every page. */
+.session-summary .stat-card,
+.analytics-page .stat-card {
+  flex-direction: column; align-items: flex-start; justify-content: center;
+  padding: var(--space-5); min-height: 0; gap: var(--space-1);
+}
+.session-summary .stat-value,
+.analytics-page .stat-value { font-size: 32px; }
+
+/* "Up next" band: the page's single most important call to action, presented
+   as a quiet bordered strip rather than another filled card. */
+.next-up {
+  display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap;
+  background: var(--bg-card); border: 1px solid var(--border-card);
+  border-left: 4px solid var(--teal-forest);
+  border-radius: var(--radius-lg); padding: var(--space-5) var(--space-6);
+  margin-bottom: var(--space-7); box-shadow: var(--shadow-sm);
+}
+.next-up-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 52px; height: 52px; flex-shrink: 0;
+  border-radius: var(--radius-md);
+  background: var(--teal-mint); color: var(--teal-mint-text);
+}
+.next-up-body { flex: 1 1 320px; min-width: 220px; }
+.next-up-body h3 { font-size: 20px; color: var(--text-main); margin-bottom: var(--space-1); }
+.next-up-body p { font-size: 17px; color: var(--text-muted); margin: 0; }
+
+/* Section header: title on the left, its action on the right. */
+.dash-section { margin-bottom: var(--space-7); }
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-4);
+}
+.section-head h2 { font-size: 24px; }
+.section-link {
+  font-size: 17px; color: var(--teal-forest); font-weight: 400;
+}
+
+.memory-list { display: flex; flex-direction: column; gap: var(--space-3); }
+/* Memory card: cream panel, hairline edge, category icon on the left so a row
+   can be identified at a glance without reading it. */
+.memory-item {
+  display: flex; align-items: center; gap: var(--space-4);
+  background: var(--cream); border: 1px solid #f2e7d6;
+  border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5);
+  flex-wrap: wrap;
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+.memory-item:hover { box-shadow: var(--shadow-sm); border-color: #e6d5bd; }
+.memory-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 42px; height: 42px; flex-shrink: 0;
+  border-radius: var(--radius-md);
+  background: #fdf7ee; border: 1px solid #f2e7d6;
+  color: var(--brown);
+}
+.memory-item .content { font-size: 18px; font-weight: 400; flex: 1 1 320px; color: var(--text-main); line-height: 1.5; }
+.memory-item .meta { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+/* Notification rows sit on the plain page surface, not the cream memory tone. */
+.memory-item.is-note { background: var(--bg-card); border-color: var(--border-card); }
+.memory-item.is-note .content { color: var(--text-muted); }
+.memory-icon.is-note { background: var(--bg-surface); border-color: var(--border-card); color: var(--teal-text); }
+
+/* "Up next" spotlight: one memory, given room, with its review timing called
+   out on the right. */
+.upnext-card {
+  display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap;
+  background: var(--bg-card); border: 1px solid var(--border-card);
+  border-radius: var(--radius-xl); padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+.upnext-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 54px; height: 54px; flex-shrink: 0;
+  border-radius: var(--radius-md);
+  background: var(--teal-mint); color: var(--teal-mint-text);
+}
+.upnext-body { flex: 1 1 340px; min-width: 220px; }
+.upnext-category {
+  display: block; margin-bottom: var(--space-1);
+  font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--teal-text);
+}
+.upnext-text { font-size: 20px; color: var(--text-main); line-height: 1.45; margin: 0; }
+.upnext-when { text-align: right; flex-shrink: 0; }
+.upnext-when-label {
+  display: block; font-size: 14px; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.upnext-when-value { display: block; font-size: 18px; color: var(--teal-forest); margin-top: var(--space-1); }
+
+.empty-state {
+  text-align: center; padding: var(--space-10) var(--space-7);
+  background: var(--bg-card);
+  border: 2px dashed var(--border-card); border-radius: var(--radius-xl);
+}
+.empty-state h3 { margin-bottom: var(--space-2); }
+.empty-state p { margin-bottom: var(--space-6); max-width: 46ch; margin-inline: auto; }
+
+/* ----------------------------------------------------------------- recall */
+.recall-shell { max-width: 720px; margin: 0 auto; }
+
+/* A segmented progress bar, one segment per question. */
+.recall-progress {
+  display: flex; gap: 3px;
+  height: 6px; background: var(--border-subtle); border-radius: 3px;
+  margin-bottom: var(--space-6); overflow: hidden;
+}
+.recall-progress .dot { display: block; height: 100%; background: transparent; transition: background-color var(--transition-normal); }
+.recall-progress .dot.is-done { background: var(--teal-300) !important; }
+.recall-progress .dot.is-current { background: var(--teal-900) !important; }
+
+/* Shares the card surface treatment so the question reads as the page's
+   primary panel rather than a differently-styled box. */
+.question-card {
+  background: var(--bg-card); border: 1px solid var(--border-card);
+  border-radius: var(--radius-xl); padding: var(--space-8);
+  box-shadow: var(--shadow-sm);
+}
+.question-text {
+  font-size: 34px; font-weight: 400; line-height: 1.25;
+  margin: var(--space-5) 0 var(--space-6); color: var(--teal-900);
+}
+
+.reveal-panel {
+  margin: var(--space-5) 0; padding: var(--space-5) var(--space-6);
+  background: var(--teal-mint); border-radius: var(--radius-md);
+  border-left: 4px solid var(--teal-forest);
+}
+.reveal-panel h3 { color: var(--teal-mint-text); margin-bottom: var(--space-2); font-size: 18px; }
+.reveal-panel p { color: var(--teal-mint-text); font-size: 18px; }
+
+.rating-scale { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-2); margin: var(--space-4) 0 var(--space-3); }
+.rating-btn {
+  min-height: 84px; border: 2px solid var(--border-card); border-radius: var(--radius-md);
+  background: var(--bg-card); color: var(--text-main); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--space-1); padding: var(--space-2);
+  font-family: var(--font-base);
+  transition: border-color var(--transition-fast), background-color var(--transition-fast),
+              transform var(--transition-fast);
+}
+.rating-btn .num { font-size: 26px; font-weight: 400; color: var(--teal-forest); line-height: 1; }
+.rating-btn .word { font-size: 14px; font-weight: 400; color: var(--text-dim); text-align: center; line-height: 1.3; }
+.rating-btn:hover { border-color: var(--teal-forest); transform: translateY(-2px); }
+.rating-btn.is-selected { border-color: var(--teal-forest); background: var(--teal-mint); }
+.rating-btn.is-selected .num { color: var(--teal-900); }
+.rating-btn.is-selected .word { color: var(--teal-mint-text); }
+
+.session-summary { text-align: center; padding: var(--space-9) var(--space-7); }
+.session-summary .big {
+  font-family: var(--font-display); font-size: 64px; font-weight: 400;
+  color: var(--teal-forest); line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+/* The session-complete moment is MemorAid's one celebration, so the headline
+   and the accuracy figure switch to the celebration face. It is used nowhere
+   else, which keeps the moment distinct. */
+.session-summary h1 { font-family: var(--font-celebrate); letter-spacing: 0.01em; }
+.session-summary .animation .big { font-family: var(--font-celebrate); }
+.session-summary .animation { margin: var(--space-7) 0; }
+.session-summary .animation p { margin-top: var(--space-1); }
+
+/* ------------------------------------------------------------- exercises */
+.technique-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-3); margin-bottom: var(--space-7);
+}
+/* Chip: mono type on the panel surface. Height clears the document's 56px
+   minimum touch target. */
+.technique-chip {
+  display: flex; flex-direction: column; justify-content: center;
+  min-height: var(--min-touch-target);
+  background: var(--bg-card); border: 1px solid var(--border-card);
+  border-radius: var(--radius-md); padding: var(--space-3) var(--space-5);
+  font-family: var(--font-mono); font-size: 17px;
+  color: var(--text-muted);
+  transition: border-color var(--transition-fast), background-color var(--transition-fast),
+              color var(--transition-fast);
+}
+.technique-chip small {
+  display: block; font-family: var(--font-base); font-weight: 400;
+  color: var(--text-dim); margin-top: var(--space-1); font-size: 15px;
+}
+.technique-chip.is-current {
+  border-color: var(--teal-forest); background: var(--teal-mint);
+  color: var(--teal-mint-text); box-shadow: var(--shadow-sm);
+}
+.technique-chip.is-current small { color: var(--teal-text); }
+
+.steps-list {
+  list-style: none; display: flex; flex-direction: column; gap: var(--space-3);
+  margin: var(--space-5) 0; counter-reset: step;
+}
+.steps-list li {
+  counter-increment: step; position: relative;
+  padding: var(--space-4) var(--space-5) var(--space-4) 64px;
+  background: var(--bg-surface); border-radius: var(--radius-md);
+  font-size: 18px; line-height: 1.55; color: var(--text-main);
+}
+.steps-list li::before {
+  content: counter(step); position: absolute; left: var(--space-4); top: 50%; transform: translateY(-50%);
+  width: 34px; height: 34px; border-radius: 50%; background: var(--teal-forest); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ chat */
+.chat-shell { display: flex; flex-direction: column; height: calc(100vh - 240px); min-height: 420px; }
+.chat-thread { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-3) var(--space-1) var(--space-5); }
+.chat-row { display: flex; }
+.chat-row.is-user { justify-content: flex-end; }
+.chat-bubble {
+  max-width: 76%; padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg); font-size: 18px; line-height: 1.6;
+  white-space: pre-wrap;
+}
+.chat-row.is-user .chat-bubble {
+  background: var(--teal-forest); color: #fff; border-bottom-right-radius: var(--radius-xs);
+}
+.chat-row.is-ai .chat-bubble {
+  background: var(--bg-card); border: 1px solid var(--border-card);
+  border-bottom-left-radius: var(--radius-xs); box-shadow: var(--shadow-sm);
+}
+.chat-sender { font-size: 14px; font-weight: 400; color: var(--text-dim); margin-bottom: var(--space-1); letter-spacing: 0.03em; }
+.chat-row.is-user .chat-sender { color: rgba(255, 255, 255, 0.75); }
+.chat-input-row {
+  display: flex; align-items: flex-end; gap: var(--space-3);
+  padding-top: var(--space-4); border-top: 1px solid var(--border-subtle);
+}
+.chat-input-field { flex: 1; }
+.chat-input-field label { display: block; margin-bottom: var(--space-2); font-size: 18px; font-weight: 400; }
+.chat-input-row textarea { min-height: 64px; }
+
+/* ------------------------------------------------------------- analytics */
+.analytics-page {
+  background: var(--bg-dark-analytics); border-radius: var(--radius-xl);
+  padding: var(--space-8); color: var(--text-dark-main);
+}
+.analytics-page h1, .analytics-page h2 { color: var(--text-dark-main); }
+.analytics-page p { color: var(--text-dark-muted); }
+.analytics-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4); margin: var(--space-6) 0;
+}
+.dark-card {
+  background: var(--bg-dark-card); border: 1px solid var(--border-dark);
+  border-radius: var(--radius-lg); padding: var(--space-5);
+  display: flex; flex-direction: column; gap: var(--space-1);
+}
+.dark-card .stat-value { color: var(--teal-300); font-size: 32px; }
+.dark-card .stat-label { color: var(--text-dark-muted); font-size: 16px; max-width: none; }
+.chart-card {
+  background: var(--bg-dark-card); border: 1px solid var(--border-dark);
+  border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-5);
+}
+.chart-card h3 { color: var(--text-dark-main); margin-bottom: var(--space-4); }
+.motivation-banner {
+  background: rgba(0, 181, 165, 0.12);
+  border: 1px solid var(--border-dark); border-left: 4px solid var(--teal-300);
+  border-radius: var(--radius-md);
+  padding: var(--space-5) var(--space-6); font-size: 19px; font-weight: 400;
+  color: #fff; margin-top: var(--space-3); line-height: 1.6;
+}
+.chart-empty { color: var(--text-dark-muted); font-size: 16px; padding: var(--space-6) 0; }
+.chart-legend {
+  display: flex; gap: var(--space-5); flex-wrap: wrap;
+  font-size: 15px; margin-top: var(--space-3); color: var(--text-dark-muted);
+}
+.chart-legend span { display: inline-flex; align-items: center; gap: var(--space-2); }
+.chart-legend .swatch { width: 14px; height: 14px; border-radius: var(--radius-xs); flex-shrink: 0; }
+
+/* ----------------------------------------------------------------- toast */
+.toast {
+  position: fixed; left: 50%; bottom: var(--space-7);
+  transform: translateX(-50%) translateY(16px);
+  background: var(--bg-sidebar); color: #fff; padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-pill); font-size: 17px; font-weight: 400;
+  box-shadow: var(--shadow-lg); opacity: 0; pointer-events: none;
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+  z-index: 1000; max-width: min(90vw, 520px); text-align: center;
+}
+.toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ------------------------------------------------------------ responsive */
+/* Two breakpoints: 1024px (tablet — sidebar collapses, stat grids relax) and
+   640px (phone — single column, tighter stage padding). */
+@media (max-width: 1024px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .app-sidebar {
+    position: fixed; inset: 0 auto 0 0; width: 280px; z-index: 60;
+    transform: translateX(-100%); transition: transform var(--transition-normal);
+  }
+  .app-sidebar.is-open { transform: translateX(0); }
+  .sidebar-backdrop {
+    display: block; position: fixed; inset: 0; background: rgba(10, 15, 20, 0.5);
+    opacity: 0; pointer-events: none; transition: opacity var(--transition-normal); z-index: 55;
+  }
+  .sidebar-backdrop.is-open { opacity: 1; pointer-events: auto; }
+  .menu-toggle { display: inline-flex; align-items: center; justify-content: center; }
+  .app-menu-bar { display: block; padding: var(--space-3) var(--space-6); }
+  .app-header { padding: var(--space-4) var(--space-6) 0; }
+  .app-stage { padding: var(--space-5) var(--space-6) var(--space-8); }
+  .banner-bleed {
+    margin-left: calc(-1 * var(--space-6));
+    margin-right: calc(-1 * var(--space-6));
+  }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .analytic-stats, .analytics-stats { grid-template-columns: repeat(2, 1fr); }
+  .auth-shell { grid-template-columns: 1fr; gap: var(--space-7); }
+  .auth-panel { max-width: 100%; }
+  .auth-aside { display: none; }
+  .rating-scale { grid-template-columns: repeat(3, 1fr); }
+  .recall-shell { max-width: 100%; }
+}
+
+@media (max-width: 640px) {
+  .app-stage { padding: var(--space-5) var(--space-4) var(--space-8); }
+  .app-header { padding: var(--space-4) var(--space-4) 0; }
+  .app-menu-bar { display: block; padding: var(--space-3) var(--space-4); }
+  .header-panel, .header-panel-wide { width: min(320px, calc(100vw - 32px)); }
+  .banner-bleed {
+    margin-left: calc(-1 * var(--space-4));
+    margin-right: calc(-1 * var(--space-4));
+  }
+  .public-main { padding: var(--space-6) 5% 64px; }
+  .top-nav { padding: var(--space-2) 5%; }
+  .nav-links { gap: 0; }
+  .stat-grid { grid-template-columns: 1fr; }
+  .analytic-stats, .analytics-stats { grid-template-columns: 1fr; }
+  .stat-label { max-width: 65%; }
+  .greeting-card {
+    padding: var(--space-6) var(--space-5);
+    flex-direction: column; align-items: flex-start;
+  }
+  .greeting-card h2 { font-size: 26px; }
+  .greeting-side { width: 100%; }
+  .greeting-side .btn, .checkin-done { width: 100%; justify-content: center; }
+  .stat-card { min-height: 108px; padding: var(--space-5); }
+  .stat-icon { width: 50px; height: 50px; }
+  .stat-value { font-size: 34px; }
+  .a11y-panel { width: min(264px, calc(100vw - 40px)); }
+  .next-up { padding: var(--space-5); }
+  .next-up .btn { width: 100%; }
+  .upnext-card { padding: var(--space-5); }
+  .upnext-when { text-align: left; }
+  .memory-item { padding: var(--space-4); gap: var(--space-3); }
+  .memory-icon { width: 38px; height: 38px; }
+  .card, .question-card, .analytics-page { padding: var(--space-5); }
+  .question-text { font-size: 26px; }
+  .memory-item { padding: var(--space-4) var(--space-5); }
+  .chat-bubble { max-width: 88%; }
+  .chat-input-row { flex-direction: column; align-items: stretch; }
+  .chat-shell { height: auto; min-height: 0; }
+  .chat-thread { max-height: 60vh; }
+  .steps-list li { padding: var(--space-4) var(--space-4) var(--space-4) 56px; }
+  .steps-list li::before { left: var(--space-3); width: 30px; height: 30px; font-size: 15px; }
+  .toast { width: calc(100vw - 32px); }
+}

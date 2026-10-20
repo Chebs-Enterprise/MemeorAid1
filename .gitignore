@@ -1,0 +1,45 @@
+# ---------------------------------------------------------------- secrets
+# Real configuration lives in backend/.env and must never be committed.
+# The .env.example templates are safe and should be committed.
+backend/.env
+frontend-react/.env
+!backend/.env.example
+!frontend-react/.env.example
+
+# ------------------------------------------------------------ runtime data
+# The local SQLite fallback database (document 3.5.1) is generated at runtime.
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# --------------------------------------------------------- python / flask
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# --------------------------------------------------------------- node/vite
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# ------------------------------------------------------- editor / OS noise
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Word/Office lock files (Memoraid-123.docx is open in Word)
+~$*
+
+# ---------------------------------------------------------------- archives
+# Local backups of the stylesheet, kept during refinement passes.
+*.pre-refine-backup
+*.pre-figma-backup
