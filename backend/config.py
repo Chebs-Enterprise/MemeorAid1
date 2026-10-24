@@ -24,9 +24,18 @@ def _postgres_reachable(url: str):
     """
     try:
         import psycopg2
+        from urllib.parse import urlparse, parse_qsl, urlencode, urlunparse
 
         dsn = url.replace("postgresql+psycopg2://", "postgresql://")
-        conn = psycopg2.connect(dsn, connect_timeout=3)
+        # Ensure SSL is used for common managed Postgres (e.g. Supabase/Render)
+        parsed = urlparse(dsn)
+        query = dict(parse_qsl(parsed.query, keep_blank_values=True))
+        if parsed.hostname and parsed.hostname not in ('localhost', '127.0.0.1', '::1'):
+            if 'sslmode' not in query:
+                query['sslmode'] = 'require'
+        if query:
+            dsn = urlunparse(parsed._replace(query=urlencode(query)))
+        conn = psycopg2.connect(dsn, connect_timeout=5)
         conn.close()
         return None
     except Exception as exc:
@@ -39,6 +48,15 @@ def _database_uri() -> str:
         "postgresql+psycopg2://memoraid:memoraid@localhost:5432/memoraid",
     )
     if url.startswith("sqlite"):
+        return url
+    # If running in production-like environments, try to use Postgres directly
+    # even if quick reachability check behaves differently
+    if os.getenv("VERCEL") or os.getenv("RENDER") or os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("SUPABASE_URL"):
+        # Normalize for SQLAlchemy + psycopg2
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql+psycopg2://", 1)
+        elif url.startswith("postgresql://") and "+psycopg2" not in url:
+            url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
         return url
     failure = _postgres_reachable(url)
     if failure is None:
