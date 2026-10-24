@@ -7,7 +7,7 @@ due queue -> question WITHOUT the original memory -> user types an answer
 adjusts difficulty, updates the AnalyticsRecord for the category, and
 updates the recall streak -> session summary.
 """
-from datetime import date
+from datetime import date, datetime
 
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
@@ -169,7 +169,10 @@ def reveal_answer(questionid):
 def session_summary():
     """End-of-session summary data (figure 3.4: display summary + streak)."""
     user = current_user()
-    today = date.today()
+    # Sessions are stamped with ``datetime.utcnow`` (models.py), so "today"
+    # must be the UTC date too — comparing against the local date drops every
+    # attempt made in the evening of a timezone ahead of UTC.
+    today = datetime.utcnow().date()
     sessions = [
         s for s in RecallSession.query.filter_by(userid=user.userid).all()
         if s.sessiondate and s.sessiondate.date() == today

@@ -24,9 +24,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from config import Config  # noqa: E402
 from models import (  # noqa: E402
-    AnalyticsRecord, BehaviorPattern, ChatMessage, ExerciseSession,
-    MemoryCategory, MemoryEntry, Notification, RecallQuestion,
-    RecallSession, ReviewSchedule, User, db,
+    AnalyticsRecord, BehaviorPattern, ChatMessage, EmbeddingRecord,
+    ExerciseSession, MemoryCategory, MemoryEntry, Notification, RecallQuestion,
+    RecallSession, ReviewSchedule, User, UserFact, db,
 )
 
 MODELS = {
@@ -35,6 +35,7 @@ MODELS = {
     "RecallSession": RecallSession, "ExerciseSession": ExerciseSession,
     "AnalyticsRecord": AnalyticsRecord, "BehaviorPattern": BehaviorPattern,
     "ChatMessage": ChatMessage, "Notification": Notification,
+    "UserFact": UserFact, "EmbeddingRecord": EmbeddingRecord,
 }
 
 FRONTEND_DIR = os.path.join(
@@ -47,8 +48,14 @@ def create_app(config_object=Config):
     app.config.from_object(config_object)
 
     db.init_app(app)
-    JWTManager(app)
+    jwt = JWTManager(app)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+    @jwt.invalid_token_loader
+    def invalid_token(reason):
+        # A malformed or stale signature means the session is over. Return 401
+        # (not Flask-JWT-Extended's default 422) so every client can log out.
+        return jsonify(msg="Your session has ended. Please sign in again."), 401
 
     from routes import analytics, auth, checkin, chat, exercises, memories, notifications, profile, recall
     for module in (auth, profile, memories, recall, exercises, chat, analytics, checkin, notifications):
@@ -76,6 +83,10 @@ def create_app(config_object=Config):
     # Database bootstrap + seed (categories, demo account).
     with app.app_context():
         db.create_all()
+        from db.migrate import ensure_schema
+        added = ensure_schema(db)  # add columns to pre-existing tables
+        if added:
+            print(f"[MemorAid] Schema upgraded: added {', '.join(added)}")
         from db.db import seed
         seed(db.session, MODELS)
 

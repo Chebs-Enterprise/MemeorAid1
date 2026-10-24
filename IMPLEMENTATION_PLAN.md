@@ -11,21 +11,21 @@
 MemorAid is a **web-based cognitive-training system for everyday forgetfulness among elderly users (aged 51+)**, originally motivated by the Nigerian elder-care context. It does **not** merely store information — it actively **trains** the user's memory through:
 
 1. **Active recall** — the user retrieves an answer from memory *before* it is shown (not a reminder app).
-2. **AI-generated recall questioning** — the **Claude API** (Anthropic) generates a personalised question for every logged memory; the user never authors flashcards.
+2. **AI-generated recall questioning** — the **Gemini API** (Google) generates a personalised question for every logged memory; the user never authors flashcards.
 3. **Spaced repetition** — the **SM-2 algorithm** (Wozniak, 1990) schedules each memory's next review from the user's 0–5 quality rating.
 4. **Progressive difficulty** — questions scale 1 (easy) → 2 (medium) → 3 (hard) based on demonstrated performance.
 5. **Six validated memory exercise techniques** — Method of Loci, Elaborative Encoding, Spaced Retrieval Training (SRT), Face-Name Association, Chunking, Active Observation — selected **adaptively** by the user's weak categories.
-6. **Conversational AI companion** — chat powered by Claude, personalised from the user's memory history, recall performance, and detected behaviour patterns, with **age-based tone adaptation**.
+6. **Conversational AI companion** — chat powered by Gemini, personalised from the user's memory history, recall performance, and detected behaviour patterns, with **age-based tone adaptation**.
 7. **Pattern Confidence Module** — a backend component that silently observes behaviour, scores each pattern with a confidence value that **decays** if not reinforced, and guarantees the AI **never asserts that an event occurred** without explicit confirmation (phrased as possibility, not fact).
 8. **Adherence features (not memory-strengthening mechanisms, per §1.4):** daily **morning check-in**, simplified AI voice, and **family connection mode** (inactivity alert to a linked family member).
 9. **Dual streak system** — separate `exercise_streak` and `recall_streak` counters.
 10. **Forgetting-pattern analytics** — recall accuracy %, forgetting frequency by category (bar), accuracy over time (line), streaks, and an AI motivational message.
 
-**Actors (Figure 3.1):** Elderly User · Family Member (linked contact) · AI Service (Claude API) · Scheduler (automated backend job).
+**Actors (Figure 3.1):** Elderly User · Family Member (linked contact) · AI Service (Gemini API) · Scheduler (automated backend job).
 
 **Stated methodology:** OOADM supported by prototyping. The design objects are: User, MemoryEntry, MemoryCategory, RecallQuestion, ReviewSchedule, RecallSession, ExerciseSession, ChatMessage, BehaviorPattern, AnalyticsRecord, Notification — plus service objects AIQuestionGenerator, SM2Scheduler, AnalyticsDashboard.
 
-**Stated tech stack (§2.2.2, §3.4.3):** Frontend HTML/CSS/JavaScript · Backend **Python + Flask (REST API)** · Database **PostgreSQL** · AI **Claude API** (no custom model training; personalisation via structured context in prompts) · bcrypt password hashing.
+**Stated tech stack (§2.2.2, §3.4.3):** Frontend HTML/CSS/JavaScript · Backend **Python + Flask (REST API)** · Database **PostgreSQL** · AI **Gemini API** (no custom model training; personalisation via structured context in prompts) · bcrypt password hashing.
 
 ---
 
@@ -36,7 +36,7 @@ MemorAid is a **web-based cognitive-training system for everyday forgetfulness a
 | FR-01 | User registration & login (bcrypt hash, JWT session) | §3.5.1 users, use cases Register/Login |
 | FR-02 | Profile & settings: age group (51–65 / above-65), accessibility prefs, family contact email, check-in time | §3.5.1 users, Manage Profile |
 | FR-03 | Memory logging with exactly **three fields**: category (5 options), memory content, optional context note — loggable in <30 s | §1.5, §3.5.2 |
-| FR-04 | On save: backend builds structured prompt (content, category, context note, difficulty 1) → Claude returns a recall question → stored 1:1 with the memory; initial ReviewSchedule = **next day** | §3.4.3 sequence |
+| FR-04 | On save: backend builds structured prompt (content, category, context note, difficulty 1) → Gemini returns a recall question → stored 1:1 with the memory; initial ReviewSchedule = **next day** | §3.4.3 sequence |
 | FR-05 | SM-2 scheduling per memory (quality 0–5, interval, ease factor ≥1.3, repetition) | §3.4.4, §2.2.1 |
 | FR-06 | Recall session: due queue; **one question at a time**; user **types an answer**, then **Reveal**, then rates **0–5** with plain-English labels; summary + streak update at end | §3.4.4, §3.5.3 |
 | FR-07 | Progressive difficulty 1/2/3, adjusted after each review based on rating | §1.5, §3.4.4 |
@@ -71,10 +71,10 @@ MemorAid is a **web-based cognitive-training system for everyday forgetfulness a
 │              chat · analytics · checkin · notifications             │
 │  ─────────────────────────────────────────────────────────          │
 │  Services:                                                          │
-│   • AIQuestionGenerator  → Claude API (fallback: template engine)   │
-│   • ExerciseGuide        → Claude API (fallback: canned guidance)   │
-│   • ChatCompanion        → Claude API + ToneAdapter + PC rules      │
-│   • CheckInGenerator     → Claude API (fallback: template)          │
+│   • AIQuestionGenerator  → Gemini API (fallback: template engine)   │
+│   • ExerciseGuide        → Gemini API (fallback: canned guidance)   │
+│   • ChatCompanion        → Gemini API + ToneAdapter + PC rules      │
+│   • CheckInGenerator     → Gemini API (fallback: template)          │
 │   • PatternConfidence    → observe / score / decay (pure Python)    │
 │   • SM2Scheduler         → SM-2 math (port of sm2.js, unit-tested)  │
 │   • StreakManager · AnalyticsEngine · EmailSender (smtplib)         │
@@ -83,9 +83,9 @@ MemorAid is a **web-based cognitive-training system for everyday forgetfulness a
 │  APScheduler (in-process jobs): morning check-in · pattern decay ·  │
 │              family inactivity alert                                │
 └─────────────────────────────────────────────────────────────────────┘
-        │ (HTTPS, anthropic SDK)                │ (SMTP)
+        │ (HTTPS, Gemini REST)                │ (SMTP)
         ▼                                       ▼
-   Claude API (Anthropic)                 Family contact email
+   Gemini API (Google)                 Family contact email
 ```
 
 **Proposed repository layout** (backend added alongside the existing static frontend):
@@ -95,9 +95,9 @@ MemeorAid1/
 ├── Memoraid-123.docx              ← document of proof (do not modify)
 ├── app.py                         ← Flask app factory + scheduler bootstrap
 ├── config.py                      ← env-driven config (DATABASE_URL, SECRET_KEY,
-│                                     ANTHROPIC_API_KEY, SMTP_*, thresholds)
+│                                     GEMINI_API_KEY, SMTP_*, thresholds)
 ├── requirements.txt               ← flask, flask-sqlalchemy, flask-cors,
-│                                     flask-jwt-extended, bcrypt, anthropic,
+│                                     flask-jwt-extended, bcrypt,
 │                                     apscheduler, psycopg2-binary, python-dotenv
 ├── .env.example · .gitignore
 ├── db/
@@ -279,7 +279,7 @@ Base URL `/api`, JSON, `Authorization: Bearer <JWT>` on everything except regist
 | POST | `/auth/register` | Create account (bcrypt), seed default check-in | Register Account |
 | POST | `/auth/login` | Verify → JWT | Login |
 | GET / PUT | `/profile` | Read/update profile, family contact, check-in time, accessibility prefs | Manage Profile & Settings |
-| POST | `/memories` | Save entry → Claude question → save question + ReviewSchedule(next day) → return question & date | Log Memory Entry |
+| POST | `/memories` | Save entry → Gemini question → save question + ReviewSchedule(next day) → return question & date | Log Memory Entry |
 | GET | `/memories` | List active entries with next-review dates | Dashboard |
 | POST | `/memories/:id/archive` | Soft-delete (`status='archived'`) | Manage Profile |
 | GET | `/recall/due` | Questions due today (`nextreviewdate <= CURRENT_DATE`) | View Due Reviews |
@@ -296,9 +296,9 @@ The **Family Member has no login** (§3.4.1 lists only *Receive Inactivity Alert
 
 ---
 
-## 6. AI Integration (Claude API)
+## 6. AI Integration (Gemini API)
 
-One shared client (`services/ai/client.py`): Anthropic SDK, model from config (e.g. `claude-sonnet-4`), per-user context pack builder, retry/timeout, and a **deterministic fallback** for every generation task so the system remains functional when the API is unavailable (§1.6 acknowledges API dependency). Fallback questions set `generatedbyai = FALSE`.
+One shared client (`services/ai/client.py`): Gemini REST API behind a small provider adapter, model tiers from config (e.g. `gemini-3.6-flash`), per-user context pack builder, retry/timeout, and a **deterministic fallback** for every generation task so the system remains functional when the API is unavailable (§1.6 acknowledges API dependency). Fallback questions set `generatedbyai = FALSE`.
 
 **Context pack (built fresh per call, per §2.2.2 "backend logic that collects and structures user data"):** age group · recent memories (title-less content + category) · recall performance per category · current streaks · confirmed behaviour patterns (confidence ≥ 0.6 only) · current difficulty levels.
 
@@ -323,7 +323,7 @@ One shared client (`services/ai/client.py`): Anthropic SDK, model from config (e
 
 | Job | Schedule | Action |
 |-----|----------|--------|
-| Morning check-in | Every minute, match users by `checkintime` | Generate Claude message → `notifications` row → dashboard greeting |
+| Morning check-in | Every minute, match users by `checkintime` | Generate Gemini message → `notifications` row → dashboard greeting |
 | Pattern confidence decay | Daily 02:00 | Decay scores, mark stale (§6) |
 | Family connection alert | Hourly | Users whose `last_checkin_date`/`last_activity_date` exceed `inactivity_threshold_hours` (default 24) → email `family_contact_email` + `notifications` row (`type='family_alert'`) |
 
@@ -371,7 +371,7 @@ Production note: for multi-process deployments switch the job store to PostgreSQ
 
 - **Unit:** SM-2 parity vs `sm2.js`; streak transitions (incl. day-boundary reset); decay math; difficulty rules; analytics computations.
 - **Integration:** every endpoint against a throwaway Postgres schema (pytest + Flask test client); auth guards (401 without token).
-- **AI:** prompt builders tested with a mocked Anthropic client (assert structure, not prose); fallback path tested with the API forced down.
+- **AI:** prompt builders tested with a mocked AI client (assert structure, not prose); fallback path tested with the API forced down.
 - **Scheduler:** job functions invoked directly with seeded data (inactivity → alert row + console email).
 - **Manual/accessibility:** §11 checklist; Chrome + Firefox + mobile Safari; screen-reader smoke test on the recall flow.
 
@@ -414,7 +414,7 @@ The earlier vanilla build is retained unchanged in `frontend/` for reference and
 | # | Document requires | Existing code has | Resolution |
 |---|-------------------|-------------------|------------|
 | G1 | Flask + PostgreSQL backend, JWT auth, bcrypt | `app.py` = 0 bytes; mock JWT auto-minted in localStorage | Build backend per §3–§7; delete mock auth |
-| G2 | Claude API for questions/exercises/chat/check-in | Keyword-based `simulateAIQuestionGeneration` / `simulateChatResponse` | Replace with real service + deterministic fallback |
+| G2 | Gemini API for questions/exercises/chat/check-in | Keyword-based `simulateAIQuestionGeneration` / `simulateChatResponse` | Replace with real service + deterministic fallback |
 | G3 | Categories: Names, Appointments, Tasks, Conversations, Medications | Family, Medical, Daily Routine, Special Moments | Re-seed five document categories everywhere |
 | G4 | Memory = `content` + `contextnote` (3-field form) | title/date/notes/mood | Drop title/mood; form per §3.5.2 |
 | G5 | Separate `recallquestions` (1:1) + `reviewschedules` tables; difficulty 1–3 | Question/answer/SM-2 embedded in each memory | Normalize to document schema |
@@ -439,7 +439,7 @@ The earlier vanilla build is retained unchanged in `frontend/` for reference and
 |-------|-------|-------------|-----------------|
 | **0. Foundation** | Repo layout, venv, `requirements.txt`, config, `.env.example`, Postgres provision, CORS, Flask skeleton, CI-less pytest harness | App boots; `/api/health` | 1–2 |
 | **1. Data + Auth** | DDL, ORM models, seeds (5 categories, demo user Eleanor + family contact), register/login/profile endpoints | FR-01, FR-02 | 2–3 |
-| **2. Memory + AI questions** | POST/GET/archive memories; Claude question generator + fallback; ReviewSchedule creation (next day) | FR-03, FR-04 | 2–3 |
+| **2. Memory + AI questions** | POST/GET/archive memories; Gemini question generator + fallback; ReviewSchedule creation (next day) | FR-03, FR-04 | 2–3 |
 | **3. Recall engine** | `/recall/due`, `/recall/submit`, SM-2 port, difficulty rules, streaks, analytics records | FR-05, FR-06, FR-07, FR-12 | 3–4 |
 | **4. Exercises** | Technique rotation, adaptive weak-category selection, AI guidance, completion flow | FR-08 | 3–4 |
 | **5. Chat + Pattern Confidence** | Context pack, tone adapter, PC module (observe/score/decay), chat history | FR-09, FR-10, FR-11 | 3–4 |
@@ -466,7 +466,7 @@ Indicative total: **≈25–35 dev-days**. Phases 2–3 and 8 are the critical p
 
 | Risk | Mitigation |
 |------|------------|
-| Claude API cost/latency/outage (§1.6 acknowledges) | Deterministic fallback generators; `generatedbyai` flag; caching of questions (1:1 per memory, regenerate only on difficulty reset) |
+| Gemini API cost/latency/outage (§1.6 acknowledges) | Deterministic fallback generators; `generatedbyai` flag; caching of questions (1:1 per memory, regenerate only on difficulty reset) |
 | Elderly users can't sustain engagement (§1.4: adherence > efficacy) | Adherence features (check-in, streaks, family alert) exactly per document; prototyping iterations with real elderly users |
 | Email deliverability for family alerts | `EMAIL_BACKEND=console` dev mode; app-password SMTP config documented |
 | Scheduler reliability in dev | In-process APScheduler for prototype; documented path to external cron for production |
@@ -476,7 +476,7 @@ Indicative total: **≈25–35 dev-days**. Phases 2–3 and 8 are the critical p
 
 ## 16. Definition of Done
 
-1. Every FR-01…FR-16 demonstrable end-to-end against PostgreSQL with Claude enabled **and** with the API key removed (fallback).
+1. Every FR-01…FR-16 demonstrable end-to-end against PostgreSQL with Gemini enabled **and** with the API key removed (fallback).
 2. All §11 input/output rules visually verified.
 3. Test suite green; SM-2 parity proven.
 4. Scheduler jobs demonstrable (console email counts as demonstration).
@@ -582,7 +582,7 @@ The dashboard read as flat: four small, identical teal number tiles, a thin list
 
 ## 21. Display Settings Moved Off the Page Top; Greeting Becomes a Banner
 
-**Display settings.** The text-size presets and high-contrast toggle sat in a bar pinned above all ten screens, pushing each page down ~70px and reading as chrome the user could not dismiss. §3.5.2 requires that these controls *exist and be reachable* — it does not require a permanent top strip. They now live behind a single "Display settings" button: in the sidebar footer for the signed-in shell, and in the top navigation for the public pages. The panel closes on outside click and on Escape, and both the trigger (56px) and every option (48px) stay comfortably above the document's touch-target intent.
+**Display settings.** The text-size presets and high-contrast toggle sat in a bar pinned above all ten screens, pushing each page down ~70px and reading as chrome the user could not dismiss. §3.5.2 requires that these controls *exist and be reachable* — it does not require a permanent top strip. They moved behind a single "Display settings" button: initially in the sidebar footer for the signed-in shell, and in the top navigation for the public pages. The signed-in control later moved into the header settings panel only (§29). The panel closes on outside click and on Escape, and both the trigger (56px) and every option (48px) stay comfortably above the document's touch-target intent.
 
 **Greeting becomes a banner.** It was a mint tile that looked like one more card. It is now a full-width brand-teal gradient banner — 190px tall, 40px heading, white check-in button (flipped so it stays the obvious action on the dark fill), and a soft radial glow for depth without a busy gradient. It stacks and shrinks correctly on phone, and high-contrast swaps it to a dark surface with the glow disabled.
 
@@ -632,7 +632,7 @@ This **supersedes** the document-driven layout for the shell chrome. The user wa
 
 **Layout.** `.app-header` is `display: flex; justify-content: flex-end` with the page's own background, so it sits flush on the cream surface as a utility strip rather than as a second toolbar. Controls are 48px squares. `.app-menu-bar` replaces `.app-topbar`: hidden on desktop, shown at ≤1024px where the sidebar becomes a drawer.
 
-**One note on the settings control.** The document requires text-size presets and high contrast to be reachable, and they already live behind "Display settings" in the sidebar. Rather than duplicate that logic, the header's settings panel renders the same `A11yBar` component, so there is one implementation reachable from two places.
+**One note on the settings control.** The document requires text-size presets and high contrast to be reachable, and they already lived behind "Display settings" in the sidebar. Rather than duplicate that logic, the header's settings panel rendered the same `A11yBar` component, so there was one implementation reachable from two places. The sidebar instance was later removed on request; the header settings panel is now the only signed-in home (§29).
 
 **Superseded on request, not on evidence.** The document remains the tie-breaker for conflicts *within the implementation*; this header is a deliberate user-directed departure from it, recorded here so the divergence is traceable.
 
@@ -651,4 +651,69 @@ This **supersedes** the document-driven layout for the shell chrome. The user wa
 **Token hygiene.** `--mint` became unused when the banner lost its fill and was removed.
 
 **Verified:** build clean; 22 backend tests pass; all ten routes and every asset 200; contrast re-measured (6.4:1 / 10.2:1, both pass AA); no dangling CSS variables; braces balanced.
+
+## 26. Notifications Move to Their Own Page
+
+Notification messages were shown in the dashboard's "Recent messages" feed and again in the header bell popover — the same content in two places, neither of them a page you could link to. They now live on a dedicated `/notifications` screen.
+
+**New page.** `frontend-react/src/pages/Notifications.jsx` lists every notification newest first (up to 100), with a type badge (Morning check-in · Reviews due · We missed you · Family alert), the date, an unread accent, per-row "Mark read" and **Delete**, and a "Mark all as read" action. Deleting asks for confirmation, updates the list and unread badge optimistically, and hides the message for good. Loading, empty and error states reuse the existing `Loading`, `empty-state`, `Toast` and `.memory-item.is-note` treatments, so no new visual language was introduced. A link through to Profile points at the reminder preferences (`NotificationPreferences`).
+
+**Delete endpoint.** `DELETE /api/notifications/<id>` hides one row and returns the refreshed unread count. It is scoped to the signed-in user (another account gets a 404), and it is a **soft delete**: `deletedat` is set, every list/unread/read query filters deleted rows out, but the dedupe check still sees them so a scheduler run cannot recreate a reminder the user just deleted. `deletedat` is added to the startup schema upgrader (`db/migrate.py`), so existing SQLite/PostgreSQL databases upgrade in place. Scheduling, wording, preferences, push and email are unchanged.
+
+**Dashboard.** The "Recent messages" section, its `notifications` state, the `getNotifications()` call and the duplicate-filtering rule were removed. Everything else on the dashboard — greeting band, stat tiles, up-next strip, recent memories, up-next card — is untouched; the page now fetches only the check-in and memories endpoints.
+
+**Header.** The bell is now a plain link to `/notifications` instead of a popover, so notification text no longer appears on every screen. It keeps the unread dot, polls `/notifications/unread-count` once a minute, and listens for a `memoraid:notifications-changed` event the page fires after a read action so the badge clears immediately. Settings and avatar popovers are unchanged.
+
+**Navigation and routing.** `/notifications` is registered inside `RequireAuth` + `AppLayout`, and a "Notifications" item with the bell icon was added to the sidebar directly after Dashboard. The API client's `getNotifications()` gained optional `limit` (the page asks for 100); the backend contract is unchanged.
+
+**Not touched.** No Python notification logic, scheduler job, preference endpoint, push path or email delivery was modified.
+
+**Verified:** `npm run build` clean (50 modules); `npm run lint` adds no new errors (warnings are pre-existing); all 57 notification tests pass (including 5 delete tests: hides the row from the list, refreshes the unread count, keeps the dedupe key effective, rejects another user's row, requires auth); `/notifications` and the rebuilt bundle return 200 from the served app.
+
+## 27. Exercises Become a Tutor-Guided Session
+
+The Exercises page used to describe a technique and offer one "Mark as complete" button, so an exercise was recorded after a single click. It now runs as a guided conversation: one instruction or question at a time, a response from the user, feedback, and a summary that is only saved after the final step.
+
+**Session lifecycle.** `intro → running → paused → summary`. The intro keeps the existing technique badge, name, summary, focus area and "How it works" list, then adds **Start exercise** and keeps **Show me a different one**. Running shows a segmented progress bar and the current step only, with **Pause** and either **Continue** or **Check my answer**. Paused offers **Resume** and **Start again**. The summary shows the score, steps completed, recall performance, day streak, an encouraging message, **Repeat exercise** and **Finish**. Nothing is posted to `/exercises/complete` until the last step is reached; opening the page leaves the session incomplete.
+
+**Six interactive scripts.** The scripts live in the new `frontend-react/src/lib/exerciseTutor.js`, one per existing technique:
+
+- **Method of Loci** — choose three stops on a familiar route, place one item at each, walk the route and recall each item.
+- **Elaborative Encoding** — use a saved memory or choose one, make a personal connection, put it in a full sentence, then repeat the connection.
+- **Spaced Retrieval** — choose or use a saved memory, read it, recall it, take two guided breaths and recall it twice more.
+- **Face–Name Association** — name a person, choose a facial feature, make a silly picture or rhyme, then recall name → feature and feature → name.
+- **Chunking** — study a six-item shopping list, group it into three pairs, then recall the pairs twice in different orders.
+- **Active Observation** — study a scene (a saved memory when available, otherwise a six-detail scene), recall as much as possible, review the full scene, and try again.
+
+**Feedback and encouragement.** Recall answers are compared on meaningful words with a forgiving half-match rule, so "tea" works for "a cup of tea". A missed item never advances as a failure: the feedback repeats the correct item or pair in plain language, automatically reveals the step's hint, and invites one more mental picture. Any non-empty personal answer is accepted on the open-ended steps. Earlier wrong answers never block progress; the user always reaches the summary.
+
+**Scoring.** Only self-test steps count towards the percentage (for example, three route recalls or three spaced retrievals); the score stored on the existing `ExerciseSession.score` field is that percentage. Techniques made entirely of open reflection show the percentage of steps completed instead. The existing `/api/exercises/complete` route, streak logic, model and history list are unchanged.
+
+**Backend change.** `services/ai/exercise_guide.py` now includes `sample_content` in the `/api/exercises/next` response so the tutor can use the user's own memory. It is an additive field: generation, technique selection, session recording and all other endpoints are untouched.
+
+**Design.** The session reuses `.question-card`, `.recall-progress`, `.reveal-panel`, `.form-group`, `.form-message`, `.stat-grid`, `.session-summary`, `.steps-list` and the existing button variants. The only new CSS is a wrapping `.tutor-actions` row and a calm teal `.form-message.is-info`; no existing styles were reworked.
+
+**Verified:** `npm run build` clean (51 modules); `npm run lint` adds no new errors (warnings are pre-existing); a Node smoke check built all six scripts with and without a saved memory and resolved every prompt, example, evaluation and step count; the full backend suite passes (133 tests); `/exercises` and the rebuilt bundle return 200 from the served app.
+
+## 28. Signed-In Layout Matches the 80% Browser-Zoom View
+
+The first attempt only tightened spacing; the user confirmed the app still felt too zoomed in but liked the result at **80% browser zoom** and asked for that view to become the default at 100%. The signed-in shell now uses CSS `zoom: 0.8`, which scales layout as well as paint, so the 100% view is the previously approved 80% view.
+
+**Zoom mechanics.** The override lives on `.app-shell`, so the public landing and auth surfaces are untouched. CSS `zoom` (unlike `transform`) shrinks the element's layout box, and the auto-width grid still fills the window. Viewport lengths inside the zoomed shell are divided by the zoom factor: `100 / 0.8 = 125`. `.app-shell` and the sidebar use `125vh`, the chat column uses `calc(125vh - 240px)`, and viewport-based caps (`100vw` / `70vw` / `84vw` / `90vw` / `60vh`) are scaled by 1.25 so popovers, toasts and chat bubbles keep the physical size they would have at real 80% browser zoom.
+
+**Density adjustments retained.** The earlier pass also removed oversized chrome: 248px rail, 24px gutters, 30px app headings, 108px stat tiles, smaller card/question padding and a 1.5 line-height. Those values now render at 80% scale.
+
+**Verified:** `npm run build` clean (51 modules); at a 1424×805 viewport the rendered sidebar is 198px wide, the header 51px tall, the 56px button becomes 45px on screen, the dashboard document is 1409×845, and there is no horizontal overflow. Narrow (500px) and desktop passes across dashboard, notifications, log-memory, recall, chat, analytics, exercises and profile show no clipping or horizontal scroll. The `125vh` rule fills the viewport where content is short and permits normal scrolling where it is taller.
+
+## 29. Text Presets Actually Scale; Display Settings Only in the Header; Landing Photos
+
+**Text size now works.** The presets previously changed `--font-scale` and the root `html` size, but almost every declaration used absolute `px`, so nothing visibly moved. All 180 `font-size` declarations in `global.css` are now `calc(<size>px * var(--font-scale-text))`; `:root` defaults the multiplier to 1, and `body[data-font-size='large']` / `xlarge` set it to 1.15 / 1.3. `body` and `.app-shell` also multiply `--body-font-size`, covering inherited text. Widths, heights, padding and the 56px touch targets are untouched — the setting changes type, not the interface scale. At a 1424×805 viewport the measured app sizes are: shell/body 18 → 20.7 → 23.4px, greeting heading 28 → 32.2 → 36.4px, stat figure 36 → 41.4 → 46.8px, with no horizontal overflow at any preset.
+
+**Display settings moved out of the sidebar.** `A11yBar` is no longer imported or rendered by `AppLayout`; the header settings popover is its only signed-in home. The nested panel now expands inline under its trigger (`.header-panel .a11y-panel`), because the old upward-opening sidebar treatment would have opened above the viewport. Public pages keep their top-navigation control.
+
+**Landing illustrations replaced with real photographs.** The hand-drawn hero portrait and circular testimonial portrait in `Landing.jsx` were removed. The hero now uses `public/landing-hero-senior.jpg` (Pexels photo 11883419, "Portrait of an Elderly Woman Smiling", by Adriane Erthal) and the testimonial uses `public/landing-testimonial-senior.jpg` (Pexels photo 11489432, "A Smiling Woman in Orange Crew Neck Shirt", by Mehmet Turgut Kirkgoz). Both are Pexels-licensed, downloaded at display resolution, and cropped with `object-fit: cover`; the testimonial sits in the existing 168px circular frame with a 4px border. The hero image fills the 260:200 mockup photo area at 360×277 on desktop. No SVG illustrations remain in either slot, and the landing page has no horizontal overflow.
+
+**Verified:** `npm run build` clean (51 modules); the header settings panel opens in the viewport at 1424×805 and at Extra large, the size buttons update `body[data-font-size]` and `localStorage`, sidebar contains zero display-settings controls while the header contains one, both landing images load with natural sizes 1000×667 and 480×480, and all eight signed-in routes pass at Extra large on desktop (1440×900) and narrow (500px) widths without horizontal overflow or clipped content.
+
+
 

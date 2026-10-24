@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1200" width="800" height="1200" role="img" aria-label="A bright sunrise over rolling hills with two people walking together">
+  <defs>
+    <linearGradient id="ma-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFF8E8"/>
+      <stop offset="0.34" stop-color="#FFE9C2"/>
+      <stop offset="0.62" stop-color="#FFD7A0"/>
+      <stop offset="1" stop-color="#F8C68C"/>
+    </linearGradient>
+    <radialGradient id="ma-glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FFFCF0" stop-opacity="0.95"/>
+      <stop offset="0.42" stop-color="#FFE7A2" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#FFD37A" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ma-hill-far" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#D3F0E7"/>
+      <stop offset="1" stop-color="#AEDFCF"/>
+    </linearGradient>
+    <linearGradient id="ma-hill-mid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#A7DCCB"/>
+      <stop offset="1" stop-color="#7BC6B3"/>
+    </linearGradient>
+    <linearGradient id="ma-ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#EDF8F0"/>
+      <stop offset="1" stop-color="#D9EFE0"/>
+    </linearGradient>
+    <linearGradient id="ma-path" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F8DFB4"/>
+      <stop offset="1" stop-color="#EFCB94"/>
+    </linearGradient>
+  </defs>
+
+  <!-- sky -->
+  <rect width="800" height="1200" fill="url(#ma-sky)"/>
+
+  <!-- sun + glow -->
+  <circle cx="400" cy="238" r="262" fill="url(#ma-glow)"/>
+  <circle cx="400" cy="238" r="88" fill="#FFF8DC" opacity="0.95"/>
+  <circle cx="400" cy="238" r="52" fill="#FFFFFF" opacity="0.55"/>
+
+  <!-- soft clouds -->
+  <g fill="#FFFFFF" opacity="0.5">
+    <ellipse cx="132" cy="152" rx="122" ry="32"/>
+    <ellipse cx="204" cy="124" rx="82" ry="40"/>
+    <ellipse cx="646" cy="196" rx="116" ry="30"/>
+    <ellipse cx="586" cy="168" rx="72" ry="34"/>
+    <ellipse cx="96" cy="376" rx="96" ry="24"/>
+    <ellipse cx="694" cy="404" rx="86" ry="22"/>
+  </g>
+
+  <!-- birds -->
+  <g stroke="#FFFFFF" stroke-width="3.5" fill="none" opacity="0.75" stroke-linecap="round">
+    <path d="M556 292 q13 -10 26 0 q13 -10 26 0"/>
+    <path d="M614 336 q10 -8 20 0 q10 -8 20 0"/>
+    <path d="M196 318 q9 -7 18 0 q9 -7 18 0"/>
+  </g>
+
+  <!-- bokeh -->
+  <g fill="#FFF6DA">
+    <circle cx="118" cy="96" r="26" opacity="0.4"/>
+    <circle cx="700" cy="96" r="18" opacity="0.35"/>
+    <circle cx="60" cy="268" r="14" opacity="0.3"/>
+    <circle cx="748" cy="300" r="22" opacity="0.28"/>
+    <circle cx="244" cy="72" r="12" opacity="0.3"/>
+  </g>
+
+  <!-- distant hills -->
+  <path d="M0 604 C 130 528, 248 588, 372 552 C 508 512, 636 574, 800 508 L800 1200 L0 1200 Z" fill="url(#ma-hill-far)" opacity="0.92"/>
+  <!-- rolling hills -->
+  <path d="M0 700 C 118 642, 254 684, 398 650 C 542 616, 662 664, 800 626 L800 1200 L0 1200 Z" fill="url(#ma-hill-mid)"/>
+  <!-- meadow -->
+  <path d="M0 838 C 152 796, 318 830, 476 804 C 618 782, 722 812, 800 796 L800 1200 L0 1200 Z" fill="url(#ma-ground)"/>
+
+  <!-- winding path -->
+  <path d="M484 744 C 470 798, 440 842, 430 890 C 410 980, 360 1080, 330 1200 L660 1200 C 620 1070, 570 970, 560 890 C 552 842, 520 798, 512 744 Z" fill="url(#ma-path)" opacity="0.92"/>
+
+  <!-- shrubs -->
+  <g fill="#6FBFA9" opacity="0.85">
+    <ellipse cx="150" cy="852" rx="46" ry="26"/>
+    <ellipse cx="198" cy="866" rx="30" ry="18"/>
+    <ellipse cx="676" cy="820" rx="40" ry="23"/>
+  </g>
+
+  <!-- people walking together -->
+  <g>
+    <!-- older companion -->
+    <path d="M428 846 L422 892" stroke="#A9552F" stroke-width="14" stroke-linecap="round"/>
+    <path d="M456 846 L464 892" stroke="#A9552F" stroke-width="14" stroke-linecap="round"/>
+    <path d="M416 792 L404 826" stroke="#C9703F" stroke-width="13" stroke-linecap="round"/>
+    <path d="M468 790 L494 810" stroke="#C9703F" stroke-width="13" stroke-linecap="round"/>
+    <path d="M442 760 C 464 760, 472 782, 472 806 L472 848 L412 848 L412 806 C412 782, 420 760, 442 760 Z" fill="#C9703F"/>
+    <circle cx="421" cy="722" r="11" fill="#E6E7E9"/>
+    <circle cx="442" cy="736" r="24" fill="#E7B48C"/>
+  </g>
+  <g>
+    <!-- family member -->
+    <path d="M500 836 L494 884" stroke="#0F4E4C" stroke-width="15" stroke-linecap="round"/>
+    <path d="M532 836 L540 884" stroke="#0F4E4C" stroke-width="15" stroke-linecap="round"/>
+    <path d="M544 780 L558 818" stroke="#14625F" stroke-width="13" stroke-linecap="round"/>
+    <path d="M486 780 L494 808" stroke="#14625F" stroke-width="13" stroke-linecap="round"/>
+    <path d="M516 746 C 540 746, 550 770, 550 796 L550 838 L482 838 L482 796 C482 770, 492 746, 516 746 Z" fill="#14625F"/>
+    <circle cx="516" cy="716" r="27" fill="#3A2E28"/>
+    <circle cx="516" cy="724" r="23" fill="#D79A6E"/>
+  </g>
+
+  <!-- foreground light wash -->
+  <rect width="800" height="1200" fill="#FFFFFF" opacity="0.06"/>
+</svg>

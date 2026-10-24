@@ -1,9 +1,10 @@
 /**
  * Dashboard — the signed-in home screen.
  *
- * Pulls together the morning check-in message (FR-14), today's key numbers,
- * the most recent memories, and the notification feed. Data comes from three
- * endpoints, fetched in parallel.
+ * Pulls together the morning check-in message (FR-14), today's key numbers and
+ * the most recent memories. Notification messages live on their own page
+ * (`/notifications`), linked from the header bell — the dashboard deliberately
+ * no longer repeats that feed.
  */
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -12,7 +13,6 @@ import { useAuth } from '../context/AuthContext.jsx';
 import Icon from '../components/Icon.jsx';
 import {
   categoryBadge,
-  formatDate,
   Loading,
   relativeDay,
   Toast,
@@ -45,20 +45,17 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [checkin, setCheckin] = useState(null);
   const [memories, setMemories] = useState([]);
-  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const { message, showToast } = useToast();
 
   const load = useCallback(async () => {
     try {
-      const [c, m, n] = await Promise.all([
+      const [c, m] = await Promise.all([
         api.getCheckin(),
         api.getMemories(),
-        api.getNotifications(),
       ]);
       setCheckin(c);
       setMemories(m.memories || []);
-      setNotifications(n.notifications || []);
     } catch (err) {
       showToast(err.message);
     } finally {
@@ -85,13 +82,6 @@ export default function Dashboard() {
   const firstName = (user?.fullname || '').split(' ')[0] || 'there';
   const dueCount = checkin?.due_count ?? 0;
   const nextMemory = memories[0];
-
-  // The morning check-in notification repeats the greeting word for word, so
-  // showing it again under "Recent messages" reads as a mistake. It is shown
-  // in the greeting band; the feed keeps only genuinely new messages.
-  const feed = notifications.filter(
-    (n) => n.type !== 'morning_checkin' && n.message !== checkin?.message,
-  );
 
   return (
     <>
@@ -239,27 +229,6 @@ export default function Dashboard() {
               <span className="upnext-when-value">{relativeDay(nextMemory.nextreviewdate)}</span>
             </div>
           </article>
-        </section>
-      )}
-
-      {feed.length > 0 && (
-        <section className="dash-section">
-          <div className="section-head">
-            <h2>Recent messages</h2>
-          </div>
-          <div className="memory-list">
-            {feed.slice(0, 4).map((n) => (
-              <article key={n.notificationid} className="memory-item is-note">
-                <span className="memory-icon is-note">
-                  <Icon name="chat" size={20} />
-                </span>
-                <div className="content">{n.message}</div>
-                <div className="meta">
-                  <span className="badge badge-dim">{formatDate(n.createdat)}</span>
-                </div>
-              </article>
-            ))}
-          </div>
         </section>
       )}
       </div>

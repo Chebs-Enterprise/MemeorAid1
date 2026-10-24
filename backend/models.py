@@ -102,7 +102,11 @@ def delete_user_data(user, session=None):
         (BehaviorPattern, BehaviorPattern.userid),
         (ChatMessage, ChatMessage.userid),
         (Notification, Notification.userid),
+        (NotificationPreference, NotificationPreference.userid),
+        (PushSubscription, PushSubscription.userid),
         (MemoryEntry, MemoryEntry.userid),
+        (UserFact, UserFact.userid),
+        (EmbeddingRecord, EmbeddingRecord.userid),
     ):
         count = session.query(model).filter(column == user.userid).delete(
             synchronize_session=False
@@ -307,22 +311,200 @@ class ChatMessage(db.Model):
 
 
 class Notification(db.Model):
+    """One in-app (and optionally push/email) notification.
+
+    ``status`` is the delivery/lifecycle state and is deliberately the small,
+    ordered set the UI understands:
+
+        pending   created but not delivered anywhere yet (a failed send, or a
+                  notification produced while the user was in quiet hours)
+        sent      delivered to at least one channel (in-app row, push, email)
+        read      the user has seen it in the app
+
+    ``readat`` records when it was marked read, and ``dedupekey`` is the
+    daily-guard that stops the scheduler producing the same reminder every
+    run (see services/notifications.py). ``title`` is a short plain-language
+    heading so the in-app list and the browser push can share wording.
+    """
     __tablename__ = "notifications"
 
     notificationid = db.Column(Integer, primary_key=True)
     userid = db.Column(Integer, ForeignKey("users.userid"))
-    type = db.Column(String(30))     # morning_checkin | due_review | family_alert
+    type = db.Column(String(30))     # morning_checkin | due_review | family_alert | inactivity
+    title = db.Column(String(120))
     message = db.Column(Text)
     recipient = db.Column(String(150))
     status = db.Column(String(20), default="pending")  # pending | sent | read
+    # Stable per-day / per-event key so a job that runs every few minutes can
+    # never create the same notification twice.
+    dedupekey = db.Column(String(160))
+    # Which channels the notification actually reached: "inapp", "push", "email".
+    channels = db.Column(String(60), default="inapp")
     createdat = db.Column(DateTime, default=datetime.utcnow)
+    readat = db.Column(DateTime)
+    # Soft delete: the row disappears from the user's list and counts, but it
+    # is kept so the scheduler's per-day/per-event dedupe still knows the
+    # reminder was already produced and cannot recreate it minutes later.
+    deletedat = db.Column(DateTime)
 
     def to_dict(self):
         return {
             "notificationid": self.notificationid,
             "type": self.type,
+            "title": self.title,
             "message": self.message,
             "recipient": self.recipient,
             "status": self.status,
+            "channels": (self.channels or "inapp").split(","),
+            "createdat": self.createdat.isoformat() if self.createdat else None,
+            "readat": self.readat.isoformat() if self.readat else None,
+            "unread": (self.status or "pending") != "read",
+        }
+
+
+class NotificationPreference(db.Model):
+    """What a user wants to be notified about, and when.
+
+    One row per user (created on first read with sensible defaults, so no
+    migration/backfill is needed for existing accounts). This is where the
+    "configurable preferences, quiet hours and consent" requirements live —
+    kept apart from the ``users`` table so the core account row stays stable.
+
+    Quiet hours are evaluated in the user's own ``timezone`` (an IANA name);
+    nothing in this module needs a paid service or an external clock.
+    """
+    __tablename__ = "notificationpreferences"
+
+    preferenceid = db.Column(Integer, primary_key=True)
+    userid = db.Column(Integer, ForeignKey("users.userid"), unique=True)
+    # Per-category opt-in/opt-out. Defaults preserve today's behaviour.
+    morning_checkin = db.Column(SqlBoolean, default=True)
+    due_review = db.Column(SqlBoolean, default=True)
+    family_alerts = db.Column(SqlBoolean, default=True)
+    # Browser push is opt-in: it also needs the browser's own permission.
+    push_enabled = db.Column(SqlBoolean, default=False)
+    # Consent for contacting the family contact. OFF by default: MemorAid
+    # must never alert a third party without the user explicitly agreeing.
+    family_consent = db.Column(SqlBoolean, default=False)
+    # Quiet hours, local wall-clock minutes since midnight (start inclusive,
+    # end exclusive). Defaults cover a typical night.
+    quiet_hours_start = db.Column(Integer, default=22 * 60)
+    quiet_hours_end = db.Column(Integer, default=7 * 60)
+    quiet_hours_enabled = db.Column(SqlBoolean, default=True)
+    # IANA timezone name, e.g. "Europe/London". Falls back to UTC when the
+    # name is unknown, so a bad value can never break a job.
+    timezone = db.Column(String(64), default="UTC")
+    createdat = db.Column(DateTime, default=datetime.utcnow)
+    updatedat = db.Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "morning_checkin": bool(self.morning_checkin),
+            "due_review": bool(self.due_review),
+            "family_alerts": bool(self.family_alerts),
+            "push_enabled": bool(self.push_enabled),
+            "family_consent": bool(self.family_consent),
+            "quiet_hours_enabled": bool(self.quiet_hours_enabled),
+            "quiet_hours_start": self.quiet_hours_start if self.quiet_hours_start is not None else 22 * 60,
+            "quiet_hours_end": self.quiet_hours_end if self.quiet_hours_end is not None else 7 * 60,
+            "timezone": self.timezone or "UTC",
+        }
+
+
+class PushSubscription(db.Model):
+    """A browser push subscription (one per device/browser).
+
+    The endpoint and keys come straight from the browser's
+    ``PushManager.subscribe()`` call and are unique per device. Rows are kept
+    soft (``isactive``) because a subscription that the browser has rotated or
+    revoked starts returning 404/410 on send — see
+    services/notifications_delivery.py — and is then deactivated rather than
+    deleted, so the failure is visible.
+    """
+    __tablename__ = "pushsubscriptions"
+
+    subscriptionid = db.Column(Integer, primary_key=True)
+    userid = db.Column(Integer, ForeignKey("users.userid"))
+    endpoint = db.Column(Text, nullable=False)
+    p256dh = db.Column(String(255))
+    auth = db.Column(String(255))
+    useragent = db.Column(String(255))
+    isactive = db.Column(SqlBoolean, default=True)
+    # Delivery bookkeeping so failures are tracked safely rather than retried
+    # forever.
+    failurecount = db.Column(Integer, default=0)
+    lastsuccessat = db.Column(DateTime)
+    createdat = db.Column(DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "subscriptionid": self.subscriptionid,
+            "endpoint": self.endpoint,
+            "isactive": bool(self.isactive),
+            "failurecount": self.failurecount or 0,
+            "lastsuccessat": self.lastsuccessat.isoformat() if self.lastsuccessat else None,
             "createdat": self.createdat.isoformat() if self.createdat else None,
         }
+
+
+class UserFact(db.Model):
+    """Durable facts the companion has learned about the user.
+
+    The single biggest reason a memory companion sounds generic is that it
+    forgets what it was told. "My granddaughter is called Lily" is stated once
+    and then lost, so the next reply is generic again. Each fact is a small,
+    self-contained statement about the user, extracted from conversation (or
+    from a logged memory), de-duplicated by ``factkey`` and re-injected into
+    every context pack.
+
+    The user owns this data: facts can be listed and retracted from the UI.
+    """
+    __tablename__ = "userfacts"
+
+    factid = db.Column(Integer, primary_key=True)
+    userid = db.Column(Integer, ForeignKey("users.userid"))
+    # Stable key used for de-duplication, e.g. "family:granddaughter:lily".
+    factkey = db.Column(String(120))
+    facttext = db.Column(Text, nullable=False)
+    facttype = db.Column(String(30), default="general")
+    # family | routine | preference | health | event | place | person | general
+    confidence = db.Column(Float, default=0.5)
+    source = db.Column(String(20), default="chat")  # chat | memory | pattern | manual
+    status = db.Column(String(20), default="active")  # active | superseded | retracted
+    createdat = db.Column(DateTime, default=datetime.utcnow)
+    lastused = db.Column(DateTime)
+    lastverified = db.Column(DateTime)
+
+    def to_dict(self):
+        return {
+            "factid": self.factid,
+            "factkey": self.factkey,
+            "facttext": self.facttext,
+            "facttype": self.facttype,
+            "confidence": round(self.confidence or 0.0, 3),
+            "source": self.source,
+            "status": self.status,
+            "createdat": self.createdat.isoformat() if self.createdat else None,
+            "lastverified": self.lastverified.isoformat() if self.lastverified else None,
+        }
+
+
+class EmbeddingRecord(db.Model):
+    """Vector index over memories, facts and past chat turns.
+
+    Retrieval is what lets the companion reach a memory from three months
+    ago instead of only the six most recent ones. The embedding provider is
+    pluggable (see services/ai/embeddings.py) — the default one runs fully
+    offline, so this table is populated even without an API key.
+    """
+    __tablename__ = "embeddingrecords"
+
+    embeddingid = db.Column(Integer, primary_key=True)
+    userid = db.Column(Integer, ForeignKey("users.userid"))
+    kind = db.Column(String(20))      # memory | fact | chat
+    refid = db.Column(Integer)
+    vector = db.Column(JSONType)
+    provider = db.Column(String(20), default="local")
+    dim = db.Column(Integer, default=384)
+    createdat = db.Column(DateTime, default=datetime.utcnow)
+

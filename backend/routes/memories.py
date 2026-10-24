@@ -3,7 +3,7 @@ Memory logging routes — FR-03, FR-04.
 
 Implements the document's sequence diagram (figure 3.3) exactly:
 POST /api/memories -> validate -> save entry -> build structured prompt
-(content, category, context note, difficulty level 1) -> Claude returns a
+(content, category, context note, difficulty level 1) -> Gemini returns a
 question -> save question linked 1:1 -> create initial ReviewSchedule with
 next review date = the following day -> respond with the generated
 question and next review date.
@@ -16,6 +16,8 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from models import MemoryCategory, MemoryEntry, RecallQuestion, ReviewSchedule, db
 from routes.profile import current_user
 from services import streaks
+from services.ai import memory_store
+from services.ai.facts import extract_facts
 from services.ai.question_generator import generate_question
 
 bp = Blueprint("memories", __name__, url_prefix="/api")
@@ -53,6 +55,12 @@ def create_memory():
     db.session.add(entry)
     db.session.flush()  # obtain entry.memoryid
 
+    # Make the new memory reachable by the companion straight away: it joins
+    # the retrieval index, and anything durable it reveals is learned as a
+    # fact (so "my granddaughter Lily" survives beyond the six most recent
+    # memories).
+    memory_store.index_memory(user, entry)
+
     question_text, by_ai = generate_question(
         content, category.categoryname, contextnote, difficulty=1
     )
@@ -75,6 +83,13 @@ def create_memory():
     db.session.add(schedule)
     streaks.record_activity(user)
     db.session.commit()
+
+    # Learn any durable facts from the memory itself (after the main commit,
+    # so the fact pass cannot disturb the memory transaction).
+    try:
+        extract_facts(user, " ".join(filter(None, [content, contextnote or ""])), source="memory")
+    except Exception as exc:  # pragma: no cover - never block saving a memory
+        print(f"[MemorAid] Fact extraction from memory failed: {exc}")
 
     return jsonify(
         success=True,

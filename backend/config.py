@@ -67,9 +67,56 @@ class Config:
         days=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES_DAYS", "7"))
     )
 
-    # AI (Claude API, section 2.2.2). Empty key => deterministic fallbacks.
-    ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-    CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5")
+    # AI (Google Gemini API, section 2.2.2). The key is read from the
+    # environment / backend/.env and is never hardcoded. Empty key =>
+    # deterministic fallbacks (offline demo).
+    AI_PROVIDER = os.getenv("AI_PROVIDER", "gemini")
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_API_BASE = os.getenv(
+        "GEMINI_API_BASE", "https://generativelanguage.googleapis.com/v1beta"
+    )
+
+    # Model tiering (section 2.2.2 — no custom model training; the backend
+    # structures context and lets Gemini do the thinking):
+    #   GEMINI_MODEL      — the chat companion (the reply the user reads)
+    #   GEMINI_MODEL_FAST — background work (fact extraction, question
+    #                       generation, session digests, pattern detection)
+    #   GEMINI_MODEL_DEEP — optional "deep reflection" mode for the chat
+    GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+    GEMINI_MODEL_FAST = os.getenv("GEMINI_MODEL_FAST", "gemini-3.5-flash-lite")
+    GEMINI_MODEL_DEEP = os.getenv("GEMINI_MODEL_DEEP", "gemini-3.8-flash")
+
+    # Optional thinking override. Gemini 3/4 models take a thinking level
+    # (MINIMAL | LOW | MEDIUM | HIGH); Gemini 2.5 models take a token budget.
+    # Leave empty to let the client pick per tier (fast=MINIMAL, chat=LOW,
+    # deep=HIGH). GEMINI_THINKING_BUDGET applies to 2.5 models only.
+    GEMINI_THINKING_LEVEL = os.getenv("GEMINI_THINKING_LEVEL", "")
+    GEMINI_THINKING_BUDGET = int(os.getenv("GEMINI_THINKING_BUDGET", "0"))
+    AI_TIMEOUT_SECONDS = float(os.getenv("AI_TIMEOUT_SECONDS", "60"))
+
+    # AI_MOCK_MODE runs the whole personalisation pipeline (retrieval, fact
+    # memory, understanding pass) with a deterministic offline stand-in for
+    # the model, so the flow is testable before an API key exists.
+    AI_MOCK_MODE = os.getenv("AI_MOCK_MODE", "0") == "1"
+
+    # Pause between the mock's streamed words, so the offline demo behaves
+    # like the real thing (words appearing one by one) instead of dumping
+    # the whole reply at once.
+    MOCK_STREAM_DELAY = float(os.getenv("MOCK_STREAM_DELAY", "0.02"))
+
+    # Embeddings for retrieval. "local" is an offline hashing embedder (no key,
+    # no network); "voyage"/"openai" upgrade the semantic search when a key
+    # is available. The interface is identical either way.
+    EMBEDDING_PROVIDER = os.getenv("EMBEDDING_PROVIDER", "local")
+    EMBEDDING_API_KEY = os.getenv("EMBEDDING_API_KEY", "")
+    EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIM", "384"))
+    EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "voyage-3")
+
+    # Retrieval tuning (how many memories/facts go into one context pack).
+    RETRIEVAL_MEMORY_LIMIT = int(os.getenv("RETRIEVAL_MEMORY_LIMIT", "8"))
+    RETRIEVAL_FACT_LIMIT = int(os.getenv("RETRIEVAL_FACT_LIMIT", "8"))
+    RETRIEVAL_CHAT_LIMIT = int(os.getenv("RETRIEVAL_CHAT_LIMIT", "4"))
+    CHAT_HISTORY_TURNS = int(os.getenv("CHAT_HISTORY_TURNS", "20"))
 
     # Email (family connection mode, section 3.4.1)
     EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "console")
@@ -81,6 +128,29 @@ class Config:
 
     # Scheduler
     ENABLE_SCHEDULER = os.getenv("ENABLE_SCHEDULER", "1") == "1"
+
+    # Notifications (section 3.5.1). All notification text is predefined in
+    # services/notifications.py — no AI is ever called to build or send one.
+    #   NOTIFICATION_DUE_REVIEW    master switch for SM-2 due-review nudges
+    #   NOTIFICATION_INACTIVITY    master switch for inactivity reminders
+    # Both default on; per-user preferences can still turn each one off.
+    NOTIFICATION_DUE_REVIEW = os.getenv("NOTIFICATION_DUE_REVIEW", "1") == "1"
+    NOTIFICATION_INACTIVITY = os.getenv("NOTIFICATION_INACTIVITY", "1") == "1"
+    # Default IANA timezone for new preference rows (users can override).
+    DEFAULT_TIMEZONE = os.getenv("DEFAULT_TIMEZONE", "UTC")
+    # How often the reminder jobs wake up (minutes). Every run is de-duplicated
+    # per day, so this only controls responsiveness.
+    NOTIFICATION_CHECK_INTERVAL_MINUTES = int(
+        os.getenv("NOTIFICATION_CHECK_INTERVAL_MINUTES", "5")
+    )
+
+    # Web Push (VAPID). Left empty by default: without keys the app simply
+    # falls back to in-app notifications, and services/notifications_delivery
+    # never raises. Generate a key pair with:
+    #   python -c "import base64,os;print(base64.urlsafe_b64encode(os.urandom(65)).decode().rstrip('='))"
+    VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY", "")
+    VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY", "")
+    VAPID_SUBJECT = os.getenv("VAPID_SUBJECT", "mailto:memoraid@example.com")
 
     # Pattern Confidence Module (section 1.7)
     PATTERN_DECAY_RATE = float(os.getenv("PATTERN_DECAY_RATE", "0.9"))

@@ -1,11 +1,11 @@
 """End-to-end API tests against an in-memory SQLite database with the
-Claude API forced offline (fallback generators must carry the flow)."""
+Gemini API forced offline (fallback generators must carry the flow)."""
 import os
 import sys
 
 os.environ["PYTEST_CURRENT_TEST"] = "1"
 os.environ["DATABASE_URL"] = "sqlite://"
-os.environ["ANTHROPIC_API_KEY"] = ""
+os.environ["GEMINI_API_KEY"] = ""
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -156,6 +156,8 @@ class TestExercises:
         assert res["success"] is True
         assert res["exercise"]["technique"]
         assert res["exercise"]["steps"]
+        # The interactive tutor uses the user's own memory when there is one.
+        assert "sample_content" in res["exercise"]
         res = client.post("/api/exercises/complete", json={
             "exerciseid": res["exercise"]["exerciseid"],
         }, headers=auth_headers).get_json()

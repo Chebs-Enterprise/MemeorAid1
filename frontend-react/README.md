@@ -71,7 +71,7 @@ src/
     RequireAuth.jsx     route guard for authenticated areas
     A11yBar.jsx         text-size and high-contrast controls
     Charts.jsx          hand-written SVG bar and line charts
-  pages/                one component per screen (10 screens)
+  pages/                one component per screen (11 screens)
   styles/
     global.css          design system + the document's accessibility rules
 ```
@@ -96,9 +96,10 @@ src/
 | `/login` | `Login` | Sign in | FR-01 |
 | `/signup` | `Signup` | Register | FR-01 |
 | `/dashboard` | `Dashboard` | Morning check-in, streaks, recent memories | FR-14 |
+| `/notifications` | `Notifications` | All check-in and reminder messages, read state, delete | FR-14, FR-15 |
 | `/log-memory` | `LogMemory` | Record a memory; generates a question | FR-03, FR-04 |
 | `/recall` | `Recall` | Recall session: question → reveal → rate → summary | FR-05, FR-06, FR-07 |
-| `/exercises` | `Exercises` | Adaptive memory exercises | FR-08 |
+| `/exercises` | `Exercises` | Guided memory exercises (six techniques) | FR-08 |
 | `/chat` | `Chat` | AI companion conversation | FR-09–FR-11 |
 | `/analytics` | `Analytics` | Accuracy, forgetting by category, trends | FR-13 |
 | `/profile` | `Profile` | Details and accessibility preferences | FR-02 |
@@ -118,6 +119,6 @@ implemented in `src/styles/global.css` and enforced in the components:
 | Headings at least 24px | `h1`/`h2` sizing |
 | Plain-language errors | `FormMessage` component |
 | Password show/hide | `PasswordField` component |
-| Text-size and contrast presets | `A11yBar` component |
+| Text-size and contrast presets | `A11yBar` component; presets multiply all `font-size` values via `--font-scale-text` |
 | Keyboard-operable controls | native buttons; visible `:focus-visible` outlines |
 | Skip-to-content link | first element in `App.jsx` |

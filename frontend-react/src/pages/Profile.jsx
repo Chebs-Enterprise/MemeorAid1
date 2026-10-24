@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../lib/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { formatDate, Loading, FormMessage, Toast, useToast } from '../lib/ui.jsx';
+import NotificationPreferences from '../components/NotificationPreferences.jsx';
 
 export default function Profile() {
   const { refreshUser } = useAuth();
@@ -171,6 +172,8 @@ export default function Profile() {
           </p>
         )}
       </form>
+
+      <NotificationPreferences />
       </div>
     </>
   );

@@ -8,7 +8,7 @@ Frontend and backend live in **separate folders**:
 
 ```
 frontend-react/   React 19 + Vite 8 SPA   (HTML / CSS / JavaScript)
-backend/          Flask + SQLAlchemy + PostgreSQL + Claude API
+backend/          Flask + SQLAlchemy + PostgreSQL + Google Gemini API
 ```
 
 The document of proof (line 107) specifies the frontend languages as HTML, CSS
@@ -75,8 +75,10 @@ Copy `backend/.env.example` to `backend/.env` and edit as needed.
 | Variable | Purpose | Default |
 |---|---|---|
 | `DATABASE_URL` | SQLAlchemy database URL | `postgresql+psycopg2://memoraid:memoraid@localhost:5432/memoraid` |
-| `ANTHROPIC_API_KEY` | Claude API key (section 2.2.2) | *(empty → deterministic fallbacks)* |
-| `CLAUDE_MODEL` | Claude model id | `claude-sonnet-4-5` |
+| `GEMINI_API_KEY` | Google Gemini API key (section 2.2.2) | *(empty → deterministic fallbacks)* |
+| `GEMINI_MODEL` | Gemini model id for chat | `gemini-3.6-flash` |
+| `GEMINI_MODEL_FAST` | Gemini model id for background passes | `gemini-3.5-flash-lite` |
+| `GEMINI_MODEL_DEEP` | Gemini model id for deep reflection | `gemini-3.8-flash` |
 | `SECRET_KEY` / `JWT_SECRET_KEY` | Flask / JWT signing keys | dev values — **change in production** |
 | `EMAIL_BACKEND` | `console` or `smtp` | `console` |
 | `ENABLE_SCHEDULER` | Run the in-process scheduler | `1` |
@@ -209,7 +211,7 @@ cd backend
 20 tests: SM-2 algorithm parity and end-to-end API coverage (auth, memories,
 the full recall flow, reveal endpoint, exercises, chat, check-in, analytics).
 
-The suite runs against in-memory SQLite with the Claude API forced offline, so
+The suite runs against in-memory SQLite with the Gemini API forced offline, so
 the fallback generators are exercised too.
 
 ---

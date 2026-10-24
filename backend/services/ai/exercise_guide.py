@@ -11,14 +11,14 @@ techniques from the document of proof (section 2.2.1):
 
 Exercises are selected adaptively: the user's weakest recall category
 (lowest accuracy with >= 3 attempts) picks the target content, and the
-least-recently-used technique is chosen for rotation. Claude generates
+least-recently-used technique is chosen for rotation. Gemini generates
 step-by-step guidance; a deterministic template per technique is the
 fallback.
 """
 from datetime import datetime
 
 from models import ExerciseSession
-from services.ai.client import call_claude
+from services.ai.client import call_llm
 
 TECHNIQUES = {
     "method_of_loci": {
@@ -150,7 +150,7 @@ def build_exercise(user, weakest_category_name=None, sample_content=None):
     if sample_content:
         prompt += f"A recent memory of theirs: {sample_content}\n"
     prompt += "Write the guided steps now."
-    text = call_claude(SYSTEM_PROMPT, prompt, max_tokens=400)
+    text = call_llm(SYSTEM_PROMPT, prompt, max_tokens=400, tier="fast")
     if text:
         guidance = text
 
@@ -161,4 +161,8 @@ def build_exercise(user, weakest_category_name=None, sample_content=None):
         "steps": spec["steps"],
         "guidance_text": guidance,
         "weak_category": weakest_category_name,
+        # Returned so the interactive tutor can use the user's own memory
+        # instead of a generic example. This is additive: existing clients
+        # ignore it, and no generation logic changes.
+        "sample_content": sample_content,
     }

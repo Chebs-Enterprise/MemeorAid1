@@ -106,7 +106,7 @@
   --heading-min-size: 24px;
   --min-touch-target: 56px;
 
-  --font-scale: 1;
+  --font-scale-text: 1;
   --transition-fast: 0.16s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -129,8 +129,10 @@
   --border-subtle: #2b3331;
 }
 
-body[data-font-size='large'] { --font-scale: 1.15; }
-body[data-font-size='xlarge'] { --font-scale: 1.3; }
+/* Text presets scale type only: every font-size below multiplies by this
+   factor, while widths, heights and touch targets stay put. */
+body[data-font-size='large'] { --font-scale-text: 1.15; }
+body[data-font-size='xlarge'] { --font-scale-text: 1.3; }
 
 /* The solid teal chips and badges invert in high-contrast so the type on them
    stays readable against the dark surfaces. */
@@ -151,8 +153,7 @@ body[data-font-size='xlarge'] { --font-scale: 1.3; }
 [data-high-contrast='true'] .stat-value { color: #ffffff; }
 [data-high-contrast='true'] .stat-body .stat-label { color: var(--text-muted); }
 [data-high-contrast='true'] .stat-card.is-due .stat-label { color: #ffffff; }
-[data-high-contrast='true'] .greeting-card {
-  background: #0d0f0e; border-color: var(--teal-300);
+[data-high-contrast='true'] .greeting-card {\n  background: radial-gradient(1200px 340px at 15% 50%, rgba(0, 181, 165, 0.22) 0%, rgba(0, 181, 165, 0) 72%),\n              radial-gradient(900px 300px at 85% 35%, rgba(245, 166, 35, 0.18) 0%, rgba(245, 166, 35, 0) 68%),\n              linear-gradient(90deg, #f8fffe 0%, #ffffff 62%, #fff9f0 100%);
 }
 [data-high-contrast='true'] .greeting-card::after { display: none; }
 [data-high-contrast='true'] .greeting-card h2 { color: #fff; }
@@ -179,11 +180,19 @@ body[data-font-size='xlarge'] { --font-scale: 1.3; }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { font-size: calc(16px * var(--font-scale)); scroll-behavior: smooth; }
+html { font-size: 16px; scroll-behavior: smooth; }
+
+/* Readers who ask for less motion get instant jumps instead of smooth ones. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .lp-feature-card:hover,
+  .lp-step-card:hover,
+  .lp-family-card:hover { transform: none; }
+}
 
 body {
   font-family: var(--font-base);
-  font-size: var(--body-font-size);
+  font-size: calc(var(--body-font-size) * var(--font-scale-text));
   line-height: 1.6;
   color: var(--text-main);
   background: var(--bg-cream);
@@ -194,10 +203,10 @@ body {
    carried by size and colour rather than faux-bold weights — h3 was the odd
    one out at 700, which the font renders as a synthesised smear. */
 h1, h2, h3, h4 { font-family: var(--font-display); color: var(--text-main); }
-h1 { font-size: max(32px, var(--heading-min-size)); font-weight: 400; line-height: 1.18; letter-spacing: -0.01em; }
-h2 { font-size: max(26px, var(--heading-min-size)); font-weight: 400; line-height: 1.24; letter-spacing: -0.005em; }
-h3 { font-size: var(--heading-min-size); font-weight: 400; line-height: 1.32; }
-h4 { font-size: 20px; font-weight: 400; line-height: 1.4; }
+h1 { font-size: max(calc(32px * var(--font-scale-text)), calc(var(--heading-min-size) * var(--font-scale-text))); font-weight: 400; line-height: 1.18; letter-spacing: -0.01em; }
+h2 { font-size: max(calc(26px * var(--font-scale-text)), calc(var(--heading-min-size) * var(--font-scale-text))); font-weight: 400; line-height: 1.24; letter-spacing: -0.005em; }
+h3 { font-size: calc(var(--heading-min-size) * var(--font-scale-text)); font-weight: 400; line-height: 1.32; }
+h4 { font-size: calc(20px * var(--font-scale-text)); font-weight: 400; line-height: 1.4; }
 p { color: var(--text-muted); line-height: 1.65; }
 a { color: var(--teal-forest); text-decoration: none; font-weight: 600; }
 a:hover { text-decoration: underline; text-underline-offset: 2px; }
@@ -242,7 +251,7 @@ a:hover { text-decoration: underline; text-underline-offset: 2px; }
   display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
   min-height: var(--min-touch-target); padding: 12px 28px;
   border: 2px solid transparent; border-radius: var(--radius-pill);
-  font-family: var(--font-base); font-size: 18px; font-weight: 400; line-height: 1.2;
+  font-family: var(--font-base); font-size: calc(18px * var(--font-scale-text)); font-weight: 400; line-height: 1.2;
   cursor: pointer; text-align: center;
   transition: background-color var(--transition-fast), border-color var(--transition-fast),
               box-shadow var(--transition-fast), transform var(--transition-fast);
@@ -251,11 +260,11 @@ a:hover { text-decoration: underline; text-underline-offset: 2px; }
 .btn:active { transform: translateY(1px); }
 .btn:focus-visible { outline: 3px solid var(--teal-300); outline-offset: 2px; }
 
-.btn-primary { background: var(--teal-forest); color: #fff; box-shadow: var(--shadow-pill); }
+.btn-primary {\n  background: linear-gradient(135deg, var(--teal-forest) 0%, #008a7e 100%); color: #fff; box-shadow: var(--shadow-pill); }
 .btn-primary:hover { background: var(--teal-forest-hover); color: #fff; transform: translateY(-1px); }
 .btn-primary:active { transform: translateY(0); }
 
-.btn-secondary { background: var(--teal-mint); color: var(--teal-mint-text); }
+.btn-secondary {\n  background: linear-gradient(135deg, var(--teal-mint) 0%, #e6f7f5 100%); color: var(--teal-mint-text); }
 .btn-secondary:hover { background: var(--teal-mint-hover); color: var(--teal-mint-text); }
 
 .btn-outline { background: transparent; border-color: var(--border-card); color: var(--teal-forest); }
@@ -268,7 +277,7 @@ a:hover { text-decoration: underline; text-underline-offset: 2px; }
 .btn-danger:hover { background: var(--rose-danger); border-color: var(--rose-danger); color: #fff; }
 
 .btn-block { width: 100%; }
-.btn-lg { min-height: 64px; font-size: 20px; padding: 16px 36px; }
+.btn-lg { min-height: 64px; font-size: calc(20px * var(--font-scale-text)); padding: 16px 36px; }
 .btn[disabled], .btn[aria-disabled='true'] { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
 /* ------------------------------------------------------------------ forms */
@@ -277,19 +286,39 @@ a:hover { text-decoration: underline; text-underline-offset: 2px; }
 .form-group { margin-bottom: var(--space-6); }
 .form-group label {
   display: block; margin-bottom: var(--space-2);
-  font-size: 18px; font-weight: 400; line-height: 1.4; color: var(--text-main);
+  font-size: calc(18px * var(--font-scale-text)); font-weight: 400; line-height: 1.4; color: var(--text-main);
 }
 .form-hint {
   display: block; margin-bottom: var(--space-2);
-  font-size: 16px; line-height: 1.5; color: var(--text-dim);
+  font-size: calc(16px * var(--font-scale-text)); line-height: 1.5; color: var(--text-dim);
 }
+
+/* A labelled checkbox row used by the notification-settings card. Kept large
+   and tappable for elderly users. */
+.checkbox-row {
+  display: flex; align-items: flex-start; gap: var(--space-3);
+  padding: var(--space-3) 0; font-size: calc(18px * var(--font-scale-text)); line-height: 1.45;
+  color: var(--text-main); cursor: pointer;
+}
+.checkbox-row input[type='checkbox'] {
+  width: 24px; height: 24px; margin: 2px 0 0; flex: 0 0 auto; cursor: pointer;
+}
+.checkbox-row input[type='checkbox']:disabled { cursor: not-allowed; }
+
+/* A small inline text action (e.g. "Mark read" on a dashboard message). */
+.link-btn {
+  border: none; background: none; cursor: pointer; padding: 0 0 0 var(--space-2);
+  font-family: var(--font-base); font-size: calc(16px * var(--font-scale-text)); color: var(--teal-text);
+}
+.link-btn:hover { text-decoration: underline; }
+.link-btn.is-danger { color: var(--rose-danger); }
 
 /* Figma's mono label treatment (chips, panel labels, voice hint). It is
    opt-in via .label-mono so the default label keeps the document's 18px
    minimum body-text size. */
 .label-mono {
   font-family: var(--font-mono);
-  font-size: 16px; font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase;
+  font-size: calc(16px * var(--font-scale-text)); font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase;
 }
 
 input[type='text'], input[type='email'], input[type='password'],
@@ -297,7 +326,7 @@ input[type='time'], input[type='number'], select, textarea {
   width: 100%; min-height: var(--input-height); padding: 12px 16px;
   border: 2px solid var(--border-card); border-radius: var(--radius-field);
   background: var(--bg-card); color: var(--text-main);
-  font-family: var(--font-base); font-size: 18px; line-height: 1.4;
+  font-family: var(--font-base); font-size: calc(18px * var(--font-scale-text)); line-height: 1.4;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
               background-color var(--transition-fast);
 }
@@ -324,7 +353,7 @@ select {
   position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
   min-height: 48px; padding: 8px 22px; border: none; border-radius: var(--radius-pill);
   background: var(--teal-mint); color: var(--teal-mint-text);
-  font-size: 16px; font-weight: 400; cursor: pointer;
+  font-size: calc(16px * var(--font-scale-text)); font-weight: 400; cursor: pointer;
   transition: background-color var(--transition-fast);
 }
 .password-toggle:hover { background: var(--teal-mint-hover); }
@@ -333,27 +362,27 @@ select {
 .form-message {
   margin-top: var(--space-4); padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md); border-left: 4px solid currentColor;
-  font-size: 17px; font-weight: 400; line-height: 1.55;
+  font-size: calc(17px * var(--font-scale-text)); font-weight: 400; line-height: 1.55;
   background: #fdf6ee; color: #8a5a10;
 }
 .form-message.is-success { background: #eefaf7; color: #0f6b5c; }
 .form-message.is-error { background: #fdf6ee; color: #8a5a10; }
+.form-message.is-info { background: var(--teal-mint); color: var(--teal-mint-text); }
 
 /* ------------------------------------------------------------------ cards */
 /* One surface treatment for every content card: hairline border, single
    radius, one low shadow. Previously .card, .question-card and .info panels
    each picked their own radius and only some had a shadow. */
-.card {
-  background: var(--bg-card); border: 1px solid var(--border-card);
-  border-radius: var(--radius-xl); padding: var(--space-7);
+.card {\n  background: linear-gradient(180deg, #ffffff 0%, #fdfcfa 100%); border: 1px solid var(--border-card);
+  border-radius: var(--radius-xl); padding: var(--space-6);
   box-shadow: var(--shadow-sm);
 }
-.card-title { font-size: 20px; font-weight: 400; margin-bottom: var(--space-1); color: var(--text-main); }
+.card-title { font-size: calc(20px * var(--font-scale-text)); font-weight: 400; margin-bottom: var(--space-1); color: var(--text-main); }
 
 .badge {
   display: inline-flex; align-items: center; gap: var(--space-1);
   padding: 5px 12px; border-radius: var(--radius-xs);
-  font-size: 14px; font-weight: 400; letter-spacing: 0.06em; line-height: 1.5;
+  font-size: calc(14px * var(--font-scale-text)); font-weight: 400; letter-spacing: 0.06em; line-height: 1.5;
   text-transform: uppercase; white-space: nowrap;
 }
 .badge-teal { background: var(--teal-900); color: #fff; }
@@ -374,16 +403,16 @@ select {
   min-height: var(--min-touch-target); padding: 8px var(--space-5);
   border: 2px solid var(--border-card); border-radius: var(--radius-pill);
   background: var(--bg-card); color: var(--text-muted);
-  font-family: var(--font-base); font-size: 16px; cursor: pointer;
+  font-family: var(--font-base); font-size: calc(16px * var(--font-scale-text)); cursor: pointer;
   transition: background-color var(--transition-fast), color var(--transition-fast),
               border-color var(--transition-fast);
 }
 .a11y-trigger:hover { border-color: var(--teal-forest); color: var(--teal-forest); }
 .a11y-trigger.is-open { background: var(--teal-mint); border-color: var(--teal-forest); color: var(--teal-mint-text); }
 
-/* The panel opens upward when the trigger is in the sidebar footer, and
-   downward inside the top navigation; `bottom: 100%` covers the sidebar case
-   and the top-nav case is corrected below. */
+/* The panel opens downward inside the top navigation. When the control is
+   nested in the header settings popover it expands in place, so the choices
+   never open above the viewport. */
 .a11y-panel {
   position: absolute; bottom: calc(100% + var(--space-2)); left: 0;
   z-index: 80; width: 264px;
@@ -393,9 +422,13 @@ select {
   box-shadow: var(--shadow-lg);
 }
 .top-nav .a11y-panel { bottom: auto; top: calc(100% + var(--space-2)); left: auto; right: 0; }
+.header-panel .a11y-panel {
+  position: static; width: 100%; margin-top: var(--space-2);
+  padding: var(--space-3); box-shadow: none; background: var(--bg-surface);
+}
 
 .a11y-panel-label {
-  font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.07em;
+  font-family: var(--font-mono); font-size: calc(14px * var(--font-scale-text)); letter-spacing: 0.07em;
   text-transform: uppercase; color: var(--text-dim);
   margin-top: var(--space-1);
 }
@@ -407,7 +440,7 @@ select {
   min-height: 48px; padding: 8px var(--space-3);
   border: 2px solid var(--border-card); border-radius: var(--radius-md);
   background: var(--bg-card); color: var(--text-muted);
-  font-family: var(--font-base); font-size: 15px; cursor: pointer;
+  font-family: var(--font-base); font-size: calc(15px * var(--font-scale-text)); cursor: pointer;
   transition: background-color var(--transition-fast), color var(--transition-fast),
               border-color var(--transition-fast);
 }
@@ -415,18 +448,6 @@ select {
 .a11y-opt-wide { width: 100%; }
 .a11y-opt:hover { border-color: var(--teal-forest); color: var(--teal-forest); }
 .a11y-opt.is-active { background: var(--teal-forest); border-color: var(--teal-forest); color: #fff; }
-
-/* In the dark sidebar the trigger adopts the sidebar's own link styling so it
-   sits with Sign out rather than looking pasted in. */
-.app-sidebar .a11y-menu { width: 100%; }
-.app-sidebar .a11y-trigger {
-  width: 100%; justify-content: flex-start;
-  background: transparent; border-color: transparent; color: var(--text-sidebar);
-  padding-left: var(--space-3);
-}
-.app-sidebar .a11y-trigger:hover { background: var(--bg-sidebar-hover); color: var(--text-sidebar-hover); border-color: transparent; }
-.app-sidebar .a11y-trigger.is-open { background: var(--bg-sidebar-active); color: var(--text-sidebar-hover); border-color: transparent; }
-.app-sidebar .a11y-panel { width: 100%; }
 
 /* --------------------------------------------------- public page chrome */
 .top-nav {
@@ -436,7 +457,7 @@ select {
 }
 .brand {
   display: flex; align-items: center; gap: var(--space-3);
-  font-family: var(--font-display); font-size: 24px; font-weight: 400;
+  font-family: var(--font-display); font-size: calc(24px * var(--font-scale-text)); font-weight: 400;
   color: var(--teal-forest); letter-spacing: -0.01em;
 }
 .brand:hover { text-decoration: none; }
@@ -444,7 +465,7 @@ select {
   width: 40px; height: 40px; border-radius: var(--radius-md);
   background: var(--teal-forest);
   display: inline-flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 20px; font-weight: 400;
+  color: #fff; font-size: calc(20px * var(--font-scale-text)); font-weight: 400;
   box-shadow: var(--shadow-pill);
 }
 .nav-links { display: flex; align-items: center; gap: var(--space-1); flex-wrap: wrap; }
@@ -466,7 +487,7 @@ select {
   display: flex; flex-direction: column; justify-content: center; gap: var(--space-4);
 }
 .auth-aside h2 { color: #fff; }
-.auth-aside p { color: rgba(255, 255, 255, 0.88); font-size: 18px; }
+.auth-aside p { color: rgba(255, 255, 255, 0.88); font-size: calc(18px * var(--font-scale-text)); }
 
 /* The two figures in the landing aside. Previously inline styles; now a class
    so they inherit the spacing scale and don't drift from the token palette. */
@@ -478,17 +499,28 @@ select {
   border-radius: var(--radius-md); padding: var(--space-4);
 }
 .aside-stat-value {
-  font-family: var(--font-display); font-size: 32px; line-height: 1;
+  font-family: var(--font-display); font-size: calc(32px * var(--font-scale-text)); line-height: 1;
   color: #fff; font-variant-numeric: tabular-nums;
 }
-.aside-stat-label { font-size: 16px; line-height: 1.35; color: rgba(255, 255, 255, 0.82); }
+.aside-stat-label { font-size: calc(16px * var(--font-scale-text)); line-height: 1.35; color: rgba(255, 255, 255, 0.82); }
 
 /* -------------------------------------------------------------- app shell */
-.app-shell { display: grid; grid-template-columns: 272px 1fr; min-height: 100vh; }
+/* The signed-in shell matches the user-approved 80% browser-zoom view at the
+   default 100% zoom. `zoom` scales layout as well as paint (unlike transform),
+   and the auto-width grid still fills the window. Viewport lengths have to be
+   divided by the zoom so the rail and stage still reach the real viewport
+   edges: 100 / 0.8 = 125. */
+.app-shell {
+  display: grid; grid-template-columns: 248px 1fr; min-height: 125vh;
+  font-size: calc(var(--body-font-size) * var(--font-scale-text));
+  line-height: 1.5;
+  zoom: 0.8;
+}
+.app-stage p { line-height: 1.55; }
 .app-sidebar {
   background: var(--bg-sidebar); padding: var(--space-6) var(--space-3);
   display: flex; flex-direction: column; gap: var(--space-1);
-  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  position: sticky; top: 0; height: 125vh; overflow-y: auto;
 }
 .app-sidebar .brand { color: #fff; padding: 0 var(--space-3) var(--space-6); }
 .app-sidebar .brand-mark { background: var(--teal-forest); box-shadow: none; }
@@ -496,7 +528,7 @@ select {
   display: flex; align-items: center; gap: var(--space-3);
   min-height: var(--min-touch-target); padding: 12px var(--space-3);
   border-radius: var(--radius-md); color: var(--text-sidebar);
-  font-size: 18px; font-weight: 400;
+  font-size: calc(18px * var(--font-scale-text)); font-weight: 400;
   transition: background-color var(--transition-fast), color var(--transition-fast);
   position: relative;
 }
@@ -526,7 +558,7 @@ select {
    reads as chrome and never competes with the page heading below it. */
 .app-header {
   display: flex; align-items: center; justify-content: flex-end;
-  padding: var(--space-5) var(--space-7) 0;
+  padding: var(--space-4) var(--space-6) 0;
   background: var(--bg-cream);
 }
 .header-actions { display: flex; align-items: center; gap: var(--space-3); }
@@ -542,8 +574,10 @@ select {
   width: 48px; height: 48px; padding: 0;
   border: none; border-radius: var(--radius-md);
   background: none; color: var(--text-muted); cursor: pointer;
+  text-decoration: none;
   transition: background-color var(--transition-fast), color var(--transition-fast);
 }
+a.header-btn:hover { text-decoration: none; }
 .header-btn:hover { background: var(--bg-surface); color: var(--teal-forest); }
 .header-btn.is-open { background: var(--teal-mint); color: var(--teal-mint-text); }
 
@@ -554,7 +588,7 @@ select {
   display: inline-flex; align-items: center; justify-content: center;
   border-radius: var(--radius-pill);
   background: var(--teal-500); color: #fff;
-  font-size: 12px; font-weight: 400; line-height: 1;
+  font-size: calc(12px * var(--font-scale-text)); font-weight: 400; line-height: 1;
   border: 2px solid var(--bg-cream);
 }
 
@@ -563,7 +597,7 @@ select {
   width: 48px; height: 48px; padding: 0;
   border: 1px solid var(--border-card); border-radius: 50%;
   background: var(--teal-mint); color: var(--teal-mint-text);
-  font-family: var(--font-base); font-size: 18px; letter-spacing: 0.02em;
+  font-family: var(--font-base); font-size: calc(18px * var(--font-scale-text)); letter-spacing: 0.02em;
   cursor: pointer;
   transition: border-color var(--transition-fast);
 }
@@ -582,24 +616,44 @@ select {
 }
 .header-panel-wide { width: 340px; }
 .header-panel-title {
-  font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.07em;
+  font-family: var(--font-mono); font-size: calc(13px * var(--font-scale-text)); letter-spacing: 0.07em;
   text-transform: uppercase; color: var(--text-dim);
 }
 .header-panel-title + .header-panel-title { margin-top: var(--space-2); }
-.header-account-name { font-size: 18px; color: var(--text-main); margin: 0; }
-.header-empty { font-size: 16px; color: var(--text-muted); margin: 0; }
+.header-account-name { font-size: calc(18px * var(--font-scale-text)); color: var(--text-main); margin: 0; }
+.header-empty { font-size: calc(16px * var(--font-scale-text)); color: var(--text-muted); margin: 0; }
 .header-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; }
 .header-list-item {
-  font-size: 16px; line-height: 1.45; color: var(--text-main);
+  font-size: calc(16px * var(--font-scale-text)); line-height: 1.45; color: var(--text-main);
   padding: var(--space-3); border-radius: var(--radius-md);
   background: var(--bg-surface);
+}
+/* A genuinely new (unread) reminder gets a soft accent and a visible marker
+   so it is distinguishable without relying on colour alone. */
+.header-list-item.is-unread {
+  border-left: 4px solid var(--teal-text);
+  background: var(--bg-card);
+}
+.header-list-text { display: block; }
+.header-list-read {
+  margin-top: 8px; padding: 0; border: none; background: none; cursor: pointer;
+  font-family: var(--font-mono); font-size: calc(13px * var(--font-scale-text)); letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--teal-text);
+}
+.header-panel-head {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-2);
+}
+.header-panel-action {
+  border: none; background: none; cursor: pointer; padding: 4px 0;
+  font-family: var(--font-mono); font-size: calc(12px * var(--font-scale-text)); letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--teal-text);
 }
 .header-panel-link {
   display: flex; align-items: center;
   min-height: 44px; padding: 8px var(--space-3);
   border: none; background: none; cursor: pointer;
   border-radius: var(--radius-md);
-  font-family: var(--font-base); font-size: 16px; color: var(--teal-text);
+  font-family: var(--font-base); font-size: calc(16px * var(--font-scale-text)); color: var(--teal-text);
   text-align: left;
 }
 .header-panel-link:hover { background: var(--bg-surface); text-decoration: none; }
@@ -607,7 +661,7 @@ select {
 
 /* The mobile menu strip: hidden on desktop, where the sidebar is always
    visible, and shown alongside the header on small screens. */
-.app-menu-bar { display: none; padding: var(--space-3) var(--space-7) 0; }
+.app-menu-bar { display: none; padding: var(--space-3) var(--space-6) 0; }
 
 /* The stage is the content column beside the sidebar: a centred 1140px reading
    column with real horizontal padding. Pages wrap their normal content in
@@ -615,13 +669,18 @@ select {
    `.banner-bleed`, which cancels the stage's side padding so the fill reaches
    both edges of the content column — and no further, so it never runs under
    the sidebar. */
-.app-stage { padding: var(--space-5) var(--space-7) var(--space-8); width: 100%; }
+.app-stage { padding: var(--space-4) var(--space-6) var(--space-8); width: 100%; }
 /* Inside `.banner-bleed` the column is already edge-to-edge, so `.stage-inner`
    contributes only its vertical rhythm there — no padding, no cap. */
 .banner-bleed .stage-inner { max-width: none; padding: 0; }
-.stage-header { margin-bottom: var(--space-7); }
+.stage-header { margin-bottom: var(--space-6); }
 .stage-header h1 { margin-bottom: var(--space-2); }
-.stage-header p { font-size: 18px; }
+.stage-header p { font-size: calc(18px * var(--font-scale-text)); }
+/* Signed-in pages are read at a glance, so their display headings sit closer
+   to the body size than the marketing page's hero type. */
+.app-stage > h1,
+.app-stage .stage-inner > h1,
+.stage-header h1 { font-size: calc(30px * var(--font-scale-text)); }
 
 .menu-toggle {
   display: none; min-height: 48px; min-width: 48px;
@@ -635,17 +694,17 @@ select {
    fill of its own, so the coloured elements below it are what draw the eye.
    It still spans the full width of the content column via `.banner-bleed`. */
 .banner-bleed {
-  margin-left: calc(-1 * var(--space-7));
-  margin-right: calc(-1 * var(--space-7));
-  margin-bottom: var(--space-7);
+  margin-left: calc(-1 * var(--space-6));
+  margin-right: calc(-1 * var(--space-6));
+  margin-bottom: var(--space-6);
 }
 .greeting-card {
   position: relative; overflow: hidden;
   background: var(--bg-cream);
-  padding: var(--space-7) var(--space-7);
+  padding: var(--space-6);
   margin: 0;
   display: flex; align-items: center; justify-content: space-between;
-  gap: var(--space-6); flex-wrap: wrap;
+  gap: var(--space-5); flex-wrap: wrap;
 }
 /* The copy is held to the same content column as the rest of the page. */
 .greeting-copy, .greeting-side { position: relative; z-index: 1; }
@@ -671,16 +730,15 @@ select {
 .greeting-copy { position: relative; z-index: 1; min-width: 260px; flex: 1 1 420px; }
 .greeting-eyebrow {
   display: block; margin-bottom: var(--space-2);
-  font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.1em;
+  font-family: var(--font-mono); font-size: calc(14px * var(--font-scale-text)); letter-spacing: 0.1em;
   text-transform: uppercase; color: var(--teal-text);
 }
 .greeting-card h2 {
-  color: var(--teal-900); margin-bottom: 0; font-size: 31px; line-height: 1.2;
+  color: var(--teal-900); margin-bottom: 0; font-size: calc(28px * var(--font-scale-text)); line-height: 1.2;
 }
 .greeting-side { position: relative; z-index: 1; flex-shrink: 0; }
 /* On the plain band the check-in button is the brand action, so it fills. */
-.greeting-card .btn-primary {
-  background: var(--teal-forest); color: #fff; box-shadow: var(--shadow-pill);
+.greeting-card .btn-primary {\n  background: linear-gradient(135deg, var(--teal-forest) 0%, #008a7e 100%); color: #fff; box-shadow: var(--shadow-pill);
 }
 .greeting-card .btn-primary:hover { background: var(--teal-900); color: #fff; }
 .checkin-done {
@@ -688,7 +746,7 @@ select {
   min-height: var(--min-touch-target); padding: 12px var(--space-5);
   border-radius: var(--radius-pill);
   background: var(--bg-card); border: 1px solid var(--border-card);
-  color: var(--teal-forest); font-size: 17px;
+  color: var(--teal-forest); font-size: calc(17px * var(--font-scale-text));
 }
 
 /* Stat tiles carry the colour now that the greeting band does not. The fill
@@ -701,16 +759,16 @@ select {
    text measures 6.4:1, so the whole tile stays compliant no matter which end of
    the gradient a label happens to sit over. */
 .stat-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: var(--space-4); margin-bottom: var(--space-6);
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: var(--space-3); margin-bottom: var(--space-5);
 }
 .stat-card {
   position: relative; overflow: hidden;
-  display: flex; align-items: center; gap: var(--space-4);
+  display: flex; align-items: center; gap: var(--space-3);
   background: linear-gradient(150deg, var(--teal-forest), var(--teal-900) 96%);
   border: 1px solid var(--teal-900);
-  border-radius: var(--radius-lg); padding: var(--space-6);
-  min-height: 132px; box-shadow: var(--shadow-pill);
+  border-radius: var(--radius-lg); padding: var(--space-5);
+  min-height: 108px; box-shadow: var(--shadow-pill);
 }
 /* The sheen: a wide, low-opacity highlight across the upper-left corner, which
    is what makes the surface read as glossy rather than flat. */
@@ -728,7 +786,7 @@ select {
 .stat-card > * { position: relative; z-index: 1; }
 .stat-icon {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 58px; height: 58px; flex-shrink: 0;
+  width: 50px; height: 50px; flex-shrink: 0;
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.22);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -736,13 +794,13 @@ select {
 }
 .stat-body { min-width: 0; }
 .stat-value {
-  font-family: var(--font-display); font-size: 42px; font-weight: 400;
+  font-family: var(--font-display); font-size: calc(36px * var(--font-scale-text)); font-weight: 400;
   color: #fff; line-height: 1.05; letter-spacing: 0.01em;
   font-variant-numeric: tabular-nums;
   text-shadow: 0 1px 2px rgba(0, 62, 57, 0.22);
 }
 .stat-label {
-  font-size: 17px; color: rgba(255, 255, 255, 0.9); font-weight: 400;
+  font-size: calc(17px * var(--font-scale-text)); color: rgba(255, 255, 255, 0.9); font-weight: 400;
   line-height: 1.35; margin-top: var(--space-1);
 }
 /* The tile that is asking for something deepens rather than changes hue, so it
@@ -762,90 +820,91 @@ select {
   padding: var(--space-5); min-height: 0; gap: var(--space-1);
 }
 .session-summary .stat-value,
-.analytics-page .stat-value { font-size: 32px; }
+.analytics-page .stat-value { font-size: calc(32px * var(--font-scale-text)); }
 
 /* "Up next" band: the page's single most important call to action, presented
    as a quiet bordered strip rather than another filled card. */
 .next-up {
-  display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap;
+  display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap;
   background: var(--bg-card); border: 1px solid var(--border-card);
   border-left: 4px solid var(--teal-forest);
-  border-radius: var(--radius-lg); padding: var(--space-5) var(--space-6);
-  margin-bottom: var(--space-7); box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-6); box-shadow: var(--shadow-sm);
 }
 .next-up-icon {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 52px; height: 52px; flex-shrink: 0;
+  width: 48px; height: 48px; flex-shrink: 0;
   border-radius: var(--radius-md);
   background: var(--teal-mint); color: var(--teal-mint-text);
 }
 .next-up-body { flex: 1 1 320px; min-width: 220px; }
-.next-up-body h3 { font-size: 20px; color: var(--text-main); margin-bottom: var(--space-1); }
-.next-up-body p { font-size: 17px; color: var(--text-muted); margin: 0; }
+.next-up-body h3 { font-size: calc(20px * var(--font-scale-text)); color: var(--text-main); margin-bottom: var(--space-1); }
+.next-up-body p { font-size: calc(17px * var(--font-scale-text)); color: var(--text-muted); margin: 0; }
 
 /* Section header: title on the left, its action on the right. */
-.dash-section { margin-bottom: var(--space-7); }
+.dash-section { margin-bottom: var(--space-6); }
 .section-head {
   display: flex; align-items: center; justify-content: space-between;
-  gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-4);
+  gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-3);
 }
-.section-head h2 { font-size: 24px; }
+.section-head h2 { font-size: calc(24px * var(--font-scale-text)); }
 .section-link {
-  font-size: 17px; color: var(--teal-forest); font-weight: 400;
+  font-size: calc(17px * var(--font-scale-text)); color: var(--teal-forest); font-weight: 400;
 }
 
 .memory-list { display: flex; flex-direction: column; gap: var(--space-3); }
 /* Memory card: cream panel, hairline edge, category icon on the left so a row
    can be identified at a glance without reading it. */
 .memory-item {
-  display: flex; align-items: center; gap: var(--space-4);
+  display: flex; align-items: center; gap: var(--space-3);
   background: var(--cream); border: 1px solid #f2e7d6;
-  border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4);
   flex-wrap: wrap;
   transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
 .memory-item:hover { box-shadow: var(--shadow-sm); border-color: #e6d5bd; }
 .memory-icon {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 42px; height: 42px; flex-shrink: 0;
+  width: 40px; height: 40px; flex-shrink: 0;
   border-radius: var(--radius-md);
   background: #fdf7ee; border: 1px solid #f2e7d6;
   color: var(--brown);
 }
-.memory-item .content { font-size: 18px; font-weight: 400; flex: 1 1 320px; color: var(--text-main); line-height: 1.5; }
+.memory-item .content { font-size: calc(18px * var(--font-scale-text)); font-weight: 400; flex: 1 1 320px; color: var(--text-main); line-height: 1.5; }
 .memory-item .meta { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 /* Notification rows sit on the plain page surface, not the cream memory tone. */
 .memory-item.is-note { background: var(--bg-card); border-color: var(--border-card); }
+.memory-item.is-note.is-unread { border-left: 4px solid var(--teal-text); }
 .memory-item.is-note .content { color: var(--text-muted); }
 .memory-icon.is-note { background: var(--bg-surface); border-color: var(--border-card); color: var(--teal-text); }
 
 /* "Up next" spotlight: one memory, given room, with its review timing called
    out on the right. */
 .upnext-card {
-  display: flex; align-items: center; gap: var(--space-5); flex-wrap: wrap;
+  display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap;
   background: var(--bg-card); border: 1px solid var(--border-card);
-  border-radius: var(--radius-xl); padding: var(--space-6);
+  border-radius: var(--radius-xl); padding: var(--space-5);
   box-shadow: var(--shadow-sm);
 }
 .upnext-icon {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 54px; height: 54px; flex-shrink: 0;
+  width: 48px; height: 48px; flex-shrink: 0;
   border-radius: var(--radius-md);
   background: var(--teal-mint); color: var(--teal-mint-text);
 }
 .upnext-body { flex: 1 1 340px; min-width: 220px; }
 .upnext-category {
   display: block; margin-bottom: var(--space-1);
-  font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.08em;
+  font-family: var(--font-mono); font-size: calc(14px * var(--font-scale-text)); letter-spacing: 0.08em;
   text-transform: uppercase; color: var(--teal-text);
 }
-.upnext-text { font-size: 20px; color: var(--text-main); line-height: 1.45; margin: 0; }
+.upnext-text { font-size: calc(20px * var(--font-scale-text)); color: var(--text-main); line-height: 1.45; margin: 0; }
 .upnext-when { text-align: right; flex-shrink: 0; }
 .upnext-when-label {
-  display: block; font-size: 14px; color: var(--text-dim);
+  display: block; font-size: calc(14px * var(--font-scale-text)); color: var(--text-dim);
   text-transform: uppercase; letter-spacing: 0.06em;
 }
-.upnext-when-value { display: block; font-size: 18px; color: var(--teal-forest); margin-top: var(--space-1); }
+.upnext-when-value { display: block; font-size: calc(18px * var(--font-scale-text)); color: var(--teal-forest); margin-top: var(--space-1); }
 
 .empty-state {
   text-align: center; padding: var(--space-10) var(--space-7);
@@ -872,12 +931,12 @@ select {
    primary panel rather than a differently-styled box. */
 .question-card {
   background: var(--bg-card); border: 1px solid var(--border-card);
-  border-radius: var(--radius-xl); padding: var(--space-8);
+  border-radius: var(--radius-xl); padding: var(--space-7);
   box-shadow: var(--shadow-sm);
 }
 .question-text {
-  font-size: 34px; font-weight: 400; line-height: 1.25;
-  margin: var(--space-5) 0 var(--space-6); color: var(--teal-900);
+  font-size: calc(30px * var(--font-scale-text)); font-weight: 400; line-height: 1.25;
+  margin: var(--space-4) 0 var(--space-5); color: var(--teal-900);
 }
 
 .reveal-panel {
@@ -885,8 +944,8 @@ select {
   background: var(--teal-mint); border-radius: var(--radius-md);
   border-left: 4px solid var(--teal-forest);
 }
-.reveal-panel h3 { color: var(--teal-mint-text); margin-bottom: var(--space-2); font-size: 18px; }
-.reveal-panel p { color: var(--teal-mint-text); font-size: 18px; }
+.reveal-panel h3 { color: var(--teal-mint-text); margin-bottom: var(--space-2); font-size: calc(18px * var(--font-scale-text)); }
+.reveal-panel p { color: var(--teal-mint-text); font-size: calc(18px * var(--font-scale-text)); }
 
 .rating-scale { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-2); margin: var(--space-4) 0 var(--space-3); }
 .rating-btn {
@@ -898,16 +957,16 @@ select {
   transition: border-color var(--transition-fast), background-color var(--transition-fast),
               transform var(--transition-fast);
 }
-.rating-btn .num { font-size: 26px; font-weight: 400; color: var(--teal-forest); line-height: 1; }
-.rating-btn .word { font-size: 14px; font-weight: 400; color: var(--text-dim); text-align: center; line-height: 1.3; }
+.rating-btn .num { font-size: calc(26px * var(--font-scale-text)); font-weight: 400; color: var(--teal-forest); line-height: 1; }
+.rating-btn .word { font-size: calc(14px * var(--font-scale-text)); font-weight: 400; color: var(--text-dim); text-align: center; line-height: 1.3; }
 .rating-btn:hover { border-color: var(--teal-forest); transform: translateY(-2px); }
 .rating-btn.is-selected { border-color: var(--teal-forest); background: var(--teal-mint); }
 .rating-btn.is-selected .num { color: var(--teal-900); }
 .rating-btn.is-selected .word { color: var(--teal-mint-text); }
 
-.session-summary { text-align: center; padding: var(--space-9) var(--space-7); }
+.session-summary { text-align: center; padding: var(--space-7) var(--space-6); }
 .session-summary .big {
-  font-family: var(--font-display); font-size: 64px; font-weight: 400;
+  font-family: var(--font-display); font-size: calc(64px * var(--font-scale-text)); font-weight: 400;
   color: var(--teal-forest); line-height: 1;
   font-variant-numeric: tabular-nums;
 }
@@ -931,14 +990,14 @@ select {
   min-height: var(--min-touch-target);
   background: var(--bg-card); border: 1px solid var(--border-card);
   border-radius: var(--radius-md); padding: var(--space-3) var(--space-5);
-  font-family: var(--font-mono); font-size: 17px;
+  font-family: var(--font-mono); font-size: calc(17px * var(--font-scale-text));
   color: var(--text-muted);
   transition: border-color var(--transition-fast), background-color var(--transition-fast),
               color var(--transition-fast);
 }
 .technique-chip small {
   display: block; font-family: var(--font-base); font-weight: 400;
-  color: var(--text-dim); margin-top: var(--space-1); font-size: 15px;
+  color: var(--text-dim); margin-top: var(--space-1); font-size: calc(15px * var(--font-scale-text));
 }
 .technique-chip.is-current {
   border-color: var(--teal-forest); background: var(--teal-mint);
@@ -954,23 +1013,29 @@ select {
   counter-increment: step; position: relative;
   padding: var(--space-4) var(--space-5) var(--space-4) 64px;
   background: var(--bg-surface); border-radius: var(--radius-md);
-  font-size: 18px; line-height: 1.55; color: var(--text-main);
+  font-size: calc(18px * var(--font-scale-text)); line-height: 1.55; color: var(--text-main);
 }
 .steps-list li::before {
   content: counter(step); position: absolute; left: var(--space-4); top: 50%; transform: translateY(-50%);
   width: 34px; height: 34px; border-radius: 50%; background: var(--teal-forest); color: #fff;
-  display: flex; align-items: center; justify-content: center; font-size: 17px;
+  display: flex; align-items: center; justify-content: center; font-size: calc(17px * var(--font-scale-text));
   font-variant-numeric: tabular-nums;
 }
 
+/* Action row shared by the guided session, pause panel and summary. Wrap on
+   narrow screens so the primary action never gets squeezed. */
+.tutor-actions {
+  display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap;
+}
+
 /* ------------------------------------------------------------------ chat */
-.chat-shell { display: flex; flex-direction: column; height: calc(100vh - 240px); min-height: 420px; }
+.chat-shell { display: flex; flex-direction: column; height: calc(125vh - 240px); min-height: 420px; }
 .chat-thread { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-4); padding: var(--space-3) var(--space-1) var(--space-5); }
 .chat-row { display: flex; }
 .chat-row.is-user { justify-content: flex-end; }
 .chat-bubble {
   max-width: 76%; padding: var(--space-4) var(--space-5);
-  border-radius: var(--radius-lg); font-size: 18px; line-height: 1.6;
+  border-radius: var(--radius-lg); font-size: calc(18px * var(--font-scale-text)); line-height: 1.6;
   white-space: pre-wrap;
 }
 .chat-row.is-user .chat-bubble {
@@ -980,20 +1045,125 @@ select {
   background: var(--bg-card); border: 1px solid var(--border-card);
   border-bottom-left-radius: var(--radius-xs); box-shadow: var(--shadow-sm);
 }
-.chat-sender { font-size: 14px; font-weight: 400; color: var(--text-dim); margin-bottom: var(--space-1); letter-spacing: 0.03em; }
+.chat-sender { font-size: calc(14px * var(--font-scale-text)); font-weight: 400; color: var(--text-dim); margin-bottom: var(--space-1); letter-spacing: 0.03em; }
 .chat-row.is-user .chat-sender { color: rgba(255, 255, 255, 0.75); }
 .chat-input-row {
   display: flex; align-items: flex-end; gap: var(--space-3);
   padding-top: var(--space-4); border-top: 1px solid var(--border-subtle);
 }
 .chat-input-field { flex: 1; }
-.chat-input-field label { display: block; margin-bottom: var(--space-2); font-size: 18px; font-weight: 400; }
+.chat-input-field label { display: block; margin-bottom: var(--space-2); font-size: calc(18px * var(--font-scale-text)); font-weight: 400; }
 .chat-input-row textarea { min-height: 64px; }
+
+/* Voice input — a wide, clearly labelled button so "Speak" reads as a real
+   alternative to typing rather than an icon the user has to decode. */
+.chat-voice-hint {
+  margin-top: var(--space-2); font-size: calc(15px * var(--font-scale-text)); color: var(--text-dim); line-height: 1.4;
+}
+.chat-mic { min-width: 132px; }
+.chat-mic.is-listening {
+  background: var(--rose-danger); border-color: var(--rose-danger); color: #fff;
+  animation: mic-pulse 1.6s ease-in-out infinite;
+}
+.chat-mic.is-listening:hover { background: var(--rose-danger); color: #fff; }
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201, 62, 62, 0.45); }
+  50% { box-shadow: 0 0 0 9px rgba(201, 62, 62, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-mic.is-listening { animation: none; }
+}
+
+/* ------------------------------------------ chat: personalisation affordances
+   The reply is streamed, so the user sees words appear instead of a pause.
+   Under each reply, the chips show WHY it was personal — the memories and
+   facts Aria drew on. This is what turns a reply from "nice" into "mine". */
+.chat-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--space-5); flex-wrap: wrap;
+}
+.chat-mode-toggle {
+  display: inline-flex; align-items: center; gap: var(--space-3);
+  min-height: var(--input-height); padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-pill); border: 1px solid var(--border-card);
+  background: var(--bg-card); color: var(--text-muted);
+  font-family: var(--font-base); font-size: calc(16px * var(--font-scale-text)); cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.chat-mode-toggle:hover { background: var(--teal-mint); color: var(--teal-mint-text); }
+.chat-mode-toggle.is-on { background: var(--teal-forest); border-color: var(--teal-forest); color: #fff; }
+.chat-mode-toggle:focus-visible { outline: 3px solid var(--teal-300); outline-offset: 2px; }
+.chat-mode-label { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.25; text-align: left; }
+.chat-mode-label small { font-size: calc(13px * var(--font-scale-text)); opacity: 0.8; }
+
+.chat-bubble-wrap { max-width: 76%; display: flex; flex-direction: column; }
+.chat-row.is-user .chat-bubble-wrap { align-items: flex-end; }
+.chat-row.is-ai .chat-bubble-wrap { align-items: flex-start; }
+.chat-bubble-wrap .chat-bubble { max-width: 100%; }
+
+.chat-context { margin-top: var(--space-2); display: flex; flex-direction: column; gap: var(--space-2); }
+.chat-context-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: calc(14px * var(--font-scale-text)); color: var(--text-dim); letter-spacing: 0.02em;
+}
+.chat-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.chat-chip {
+  display: inline-block; max-width: min(320px, 87.5vw); padding: 6px 12px;
+  border-radius: var(--radius-pill); font-size: calc(14px * var(--font-scale-text)); line-height: 1.4;
+  border: 1px solid var(--border-card); background: var(--teal-mint);
+  color: var(--teal-mint-text);
+}
+.chat-chip.is-memory { background: var(--bg-card); color: var(--text-muted); }
+
+/* The "shall I keep this?" card under one of Aria's replies. It only ever
+   turns into "Saved to your memories" when the backend confirmed the row. */
+.chat-memory-card {
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-card);
+  border-left: 3px solid var(--teal-300);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  display: flex; flex-direction: column; gap: var(--space-2);
+  max-width: min(440px, 105vw);
+}
+.chat-memory-card.is-saved { border-left-color: var(--teal-500); }
+.chat-memory-card-head {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-weight: 600; color: var(--text-main);
+}
+.chat-memory-card-body { margin: 0; color: var(--text-muted); line-height: 1.5; }
+.chat-memory-card-actions {
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+.chat-memory-card-actions .chat-chip { margin-right: auto; }
+.chat-memory-save, .chat-memory-skip { font-size: calc(15px * var(--font-scale-text)); padding: 8px 14px; }
+
+.chat-typing { display: inline-flex; gap: 6px; align-items: center; height: 22px; }
+.chat-typing span {
+  width: 9px; height: 9px; border-radius: 50%; background: var(--teal-300);
+  animation: chat-typing-bounce 1.2s infinite ease-in-out;
+}
+.chat-typing span:nth-child(2) { animation-delay: 0.18s; }
+.chat-typing span:nth-child(3) { animation-delay: 0.36s; }
+@keyframes chat-typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-typing span { animation: none; opacity: 0.7; }
+}
+@media (max-width: 560px) {
+  .chat-bubble-wrap { max-width: 92%; }
+  .chat-mode-toggle { width: 100%; justify-content: center; }
+}
 
 /* ------------------------------------------------------------- analytics */
 .analytics-page {
   background: var(--bg-dark-analytics); border-radius: var(--radius-xl);
-  padding: var(--space-8); color: var(--text-dark-main);
+  padding: var(--space-7); color: var(--text-dark-main);
 }
 .analytics-page h1, .analytics-page h2 { color: var(--text-dark-main); }
 .analytics-page p { color: var(--text-dark-muted); }
@@ -1006,8 +1176,8 @@ select {
   border-radius: var(--radius-lg); padding: var(--space-5);
   display: flex; flex-direction: column; gap: var(--space-1);
 }
-.dark-card .stat-value { color: var(--teal-300); font-size: 32px; }
-.dark-card .stat-label { color: var(--text-dark-muted); font-size: 16px; max-width: none; }
+.dark-card .stat-value { color: var(--teal-300); font-size: calc(32px * var(--font-scale-text)); }
+.dark-card .stat-label { color: var(--text-dark-muted); font-size: calc(16px * var(--font-scale-text)); max-width: none; }
 .chart-card {
   background: var(--bg-dark-card); border: 1px solid var(--border-dark);
   border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-5);
@@ -1017,13 +1187,13 @@ select {
   background: rgba(0, 181, 165, 0.12);
   border: 1px solid var(--border-dark); border-left: 4px solid var(--teal-300);
   border-radius: var(--radius-md);
-  padding: var(--space-5) var(--space-6); font-size: 19px; font-weight: 400;
+  padding: var(--space-5) var(--space-6); font-size: calc(19px * var(--font-scale-text)); font-weight: 400;
   color: #fff; margin-top: var(--space-3); line-height: 1.6;
 }
-.chart-empty { color: var(--text-dark-muted); font-size: 16px; padding: var(--space-6) 0; }
+.chart-empty { color: var(--text-dark-muted); font-size: calc(16px * var(--font-scale-text)); padding: var(--space-6) 0; }
 .chart-legend {
   display: flex; gap: var(--space-5); flex-wrap: wrap;
-  font-size: 15px; margin-top: var(--space-3); color: var(--text-dark-muted);
+  font-size: calc(15px * var(--font-scale-text)); margin-top: var(--space-3); color: var(--text-dark-muted);
 }
 .chart-legend span { display: inline-flex; align-items: center; gap: var(--space-2); }
 .chart-legend .swatch { width: 14px; height: 14px; border-radius: var(--radius-xs); flex-shrink: 0; }
@@ -1033,10 +1203,10 @@ select {
   position: fixed; left: 50%; bottom: var(--space-7);
   transform: translateX(-50%) translateY(16px);
   background: var(--bg-sidebar); color: #fff; padding: var(--space-4) var(--space-6);
-  border-radius: var(--radius-pill); font-size: 17px; font-weight: 400;
+  border-radius: var(--radius-pill); font-size: calc(17px * var(--font-scale-text)); font-weight: 400;
   box-shadow: var(--shadow-lg); opacity: 0; pointer-events: none;
   transition: opacity var(--transition-normal), transform var(--transition-normal);
-  z-index: 1000; max-width: min(90vw, 520px); text-align: center;
+  z-index: 1000; max-width: min(112.5vw, 520px); text-align: center;
 }
 .toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -1076,7 +1246,7 @@ select {
   .app-stage { padding: var(--space-5) var(--space-4) var(--space-8); }
   .app-header { padding: var(--space-4) var(--space-4) 0; }
   .app-menu-bar { display: block; padding: var(--space-3) var(--space-4); }
-  .header-panel, .header-panel-wide { width: min(320px, calc(100vw - 32px)); }
+  .header-panel, .header-panel-wide { width: min(320px, calc(125vw - 32px)); }
   .banner-bleed {
     margin-left: calc(-1 * var(--space-4));
     margin-right: calc(-1 * var(--space-4));
@@ -1091,13 +1261,13 @@ select {
     padding: var(--space-6) var(--space-5);
     flex-direction: column; align-items: flex-start;
   }
-  .greeting-card h2 { font-size: 26px; }
+  .greeting-card h2 { font-size: calc(26px * var(--font-scale-text)); }
   .greeting-side { width: 100%; }
   .greeting-side .btn, .checkin-done { width: 100%; justify-content: center; }
   .stat-card { min-height: 108px; padding: var(--space-5); }
   .stat-icon { width: 50px; height: 50px; }
-  .stat-value { font-size: 34px; }
-  .a11y-panel { width: min(264px, calc(100vw - 40px)); }
+  .stat-value { font-size: calc(34px * var(--font-scale-text)); }
+  .a11y-panel { width: min(264px, calc(125vw - 40px)); }
   .next-up { padding: var(--space-5); }
   .next-up .btn { width: 100%; }
   .upnext-card { padding: var(--space-5); }
@@ -1105,13 +1275,1727 @@ select {
   .memory-item { padding: var(--space-4); gap: var(--space-3); }
   .memory-icon { width: 38px; height: 38px; }
   .card, .question-card, .analytics-page { padding: var(--space-5); }
-  .question-text { font-size: 26px; }
+  .question-text { font-size: calc(26px * var(--font-scale-text)); }
   .memory-item { padding: var(--space-4) var(--space-5); }
   .chat-bubble { max-width: 88%; }
   .chat-input-row { flex-direction: column; align-items: stretch; }
+  .chat-input-row .btn { width: 100%; }
   .chat-shell { height: auto; min-height: 0; }
-  .chat-thread { max-height: 60vh; }
+  .chat-thread { max-height: 75vh; }
   .steps-list li { padding: var(--space-4) var(--space-4) var(--space-4) 56px; }
-  .steps-list li::before { left: var(--space-3); width: 30px; height: 30px; font-size: 15px; }
-  .toast { width: calc(100vw - 32px); }
+  .steps-list li::before { left: var(--space-3); width: 30px; height: 30px; font-size: calc(15px * var(--font-scale-text)); }
+  .toast { width: calc(125vw - 32px); }
+}
+
+/* ==========================================================================
+   Landing page — public marketing surface
+   All classes prefixed `lp-` to avoid clashing with the app shell.
+   ========================================================================== */
+
+/* Root wrapper — resets the app-shell background */
+.lp-root {
+  background: #ffffff;
+  color: #1a2e2b;
+  min-height: 100vh;
+  font-family: var(--font-base);
+}
+
+/* ── Shared logo treatment ── */
+.lp-logo {
+  font-family: var(--font-display);
+  font-size: calc(22px * var(--font-scale-text));
+  font-weight: 400;
+  color: var(--teal-900);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+
+/* ── 1. NAV ─────────────────────────────────────────────────────────────── */
+.lp-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.lp-nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 var(--space-7);
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-7);
+}
+
+.lp-nav-links {
+  display: flex;
+  gap: var(--space-7);
+  flex: 1;
+  justify-content: center;
+}
+
+.lp-nav-link {
+  font-size: calc(15px * var(--font-scale-text));
+  color: #4a5e5a;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.lp-nav-link:hover { color: var(--teal-900); }
+
+.lp-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.lp-nav-login {
+  font-size: calc(15px * var(--font-scale-text));
+  color: var(--teal-900);
+  text-decoration: none;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--teal-900);
+  transition: background var(--transition-fast), color var(--transition-fast);
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.lp-nav-login:hover {
+  background: var(--teal-mint);
+}
+
+.lp-nav-cta {
+  font-size: calc(15px * var(--font-scale-text));
+  padding: var(--space-2) var(--space-5);
+  min-height: 40px;
+  border-radius: var(--radius-pill);
+}
+
+/* Mobile menu trigger — hidden on desktop, where the links sit inline. */
+.lp-nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  flex-shrink: 0;
+  background: #ffffff;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-pill);
+  color: var(--teal-900);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.lp-nav-toggle:hover {
+  background: var(--teal-mint);
+  border-color: var(--teal-900);
+}
+
+/* ── 2. HERO ─────────────────────────────────────────────────────────────── */
+.lp-hero {`n  background: radial-gradient(1200px 600px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 60%),`n              radial-gradient(900px 500px at 90% 20%, rgba(245, 166, 35, 0.14) 0%, rgba(245, 166, 35, 0) 55%),`n              linear-gradient(135deg, #f7fffd 0%, #f9f9f6 55%, #fff7ec 100%);
+  padding: 72px var(--space-7) 80px;
+}
+
+.lp-hero-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 64px;
+}
+
+.lp-hero-copy {
+  max-width: 500px;
+}
+
+.lp-hero-h1 {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #1a2e2b;
+  margin-bottom: var(--space-5);
+}
+
+.lp-hero-sub {
+  font-size: calc(16px * var(--font-scale-text));
+  color: #5c6f6c;
+  line-height: 1.6;
+  margin-bottom: var(--space-7);
+  max-width: 420px;
+}
+
+.lp-hero-btns {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.lp-btn-lg {
+  padding: var(--space-3) var(--space-6);
+  font-size: calc(16px * var(--font-scale-text));
+  min-height: 56px;
+  border-radius: var(--radius-pill);
+}
+
+/* ── Mockup card ── */
+.lp-hero-mockup {
+  display: flex;
+  justify-content: center;
+}
+
+.lp-mockup-card {
+  background: #f0ece4;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0, 62, 57, 0.12), 0 2px 8px rgba(0, 62, 57, 0.06);
+  width: 100%;
+  max-width: 360px;
+}
+
+.lp-mockup-photo {
+  width: 100%;
+  overflow: hidden;
+}
+
+.lp-mockup-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 260 / 200;
+  object-fit: cover;
+  object-position: center 32%;
+}
+
+.lp-mockup-ui {
+  background: #ffffff;
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.lp-mockup-greeting {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.lp-mockup-avatar {
+  font-size: calc(22px * var(--font-scale-text));
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--teal-mint);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.lp-mockup-name {
+  font-size: calc(14px * var(--font-scale-text));
+  font-weight: 400;
+  color: #1a2e2b;
+  line-height: 1.3;
+}
+
+.lp-mockup-sub-text {
+  font-size: calc(12px * var(--font-scale-text));
+  color: #8a9e9a;
+}
+
+.lp-mockup-stats {
+  display: flex;
+  gap: var(--space-5);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-3);
+}
+
+.lp-mockup-stat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: calc(12px * var(--font-scale-text));
+  color: #5c6f6c;
+}
+
+/* ── 3. TRUST BAR ─────────────────────────────────────────────────────────── */
+.lp-trust-bar {
+  background: #faf5ec;
+  border-top: 1px solid #f0e8d8;
+  border-bottom: 1px solid #f0e8d8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 48px;
+  padding: var(--space-5) var(--space-7);
+  flex-wrap: wrap;
+}
+
+.lp-trust-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: calc(11px * var(--font-scale-text));
+  letter-spacing: 0.08em;
+  color: #8a6a30;
+  text-transform: uppercase;
+}
+
+.lp-trust-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #c89040;
+}
+
+/* ── 5. FEATURES ─────────────────────────────────────────────────────────── */
+.lp-features {
+  background: #ffffff;
+  padding: 80px var(--space-7);
+}
+
+.lp-section-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.lp-section-title {
+  text-align: center;
+  font-size: clamp(24px, 3vw, 32px);
+  color: #1a2e2b;
+  margin-bottom: var(--space-4);
+}
+
+.lp-section-rule {
+  width: 48px;
+  height: 3px;
+  background: var(--teal-900);
+  border-radius: 2px;
+  margin: 0 auto var(--space-9);
+}
+
+/* One or two sentences of context under a section heading. */
+.lp-section-lede {
+  max-width: 640px;
+  margin: 0 auto var(--space-6);
+  text-align: center;
+  font-size: calc(16px * var(--font-scale-text));
+  color: #5c6f6c;
+  line-height: 1.65;
+}
+
+/* The sticky header is 64px tall; this keeps the scrolled-to heading clear of it. */
+.lp-how,
+.lp-features,
+.lp-families {
+  scroll-margin-top: 84px;
+}
+
+/* ── 4. HOW IT WORKS ───────────────────────────────────────────────────────── */
+.lp-how {
+  background: #f9f9f6;
+  padding: 80px var(--space-7);
+}
+
+.lp-step-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+
+.lp-step-card {
+  background: #ffffff;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+
+.lp-step-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.lp-step-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.lp-step-number {
+  font-family: var(--font-mono);
+  font-size: calc(13px * var(--font-scale-text));
+  letter-spacing: 0.08em;
+  color: #8a9e9a;
+}
+
+.lp-step-icon-wrap {
+  width: 48px;
+  height: 48px;
+  background: var(--teal-mint);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--teal-900);
+  flex-shrink: 0;
+}
+
+.lp-step-title {
+  font-size: calc(20px * var(--font-scale-text));
+  color: #1a2e2b;
+  margin-bottom: var(--space-3);
+  font-weight: 400;
+}
+
+.lp-step-body {
+  font-size: calc(15px * var(--font-scale-text));
+  color: #5c6f6c;
+  line-height: 1.65;
+}
+
+.lp-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+}
+
+.lp-feature-card {
+  background: #ffffff;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-7);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+
+.lp-feature-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.lp-feature-icon-wrap {
+  width: 48px;
+  height: 48px;
+  background: var(--teal-mint);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-5);
+}
+
+.lp-feature-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--teal-900);
+}
+
+.lp-feature-title {
+  font-size: calc(20px * var(--font-scale-text));
+  color: #1a2e2b;
+  margin-bottom: var(--space-3);
+  font-weight: 400;
+}
+
+.lp-feature-body {
+  font-size: calc(15px * var(--font-scale-text));
+  color: #5c6f6c;
+  line-height: 1.65;
+}
+
+/* ── 6. FOR FAMILIES ───────────────────────────────────────────────────────── */
+.lp-families {
+  background: #ffffff;
+  border-top: 1px solid var(--border-subtle);
+  padding: 80px var(--space-7);
+}
+
+.lp-family-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+
+.lp-family-card {
+  background: var(--teal-mint);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+
+.lp-family-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.lp-family-icon-wrap {
+  width: 48px;
+  height: 48px;
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--teal-900);
+  margin-bottom: var(--space-5);
+}
+
+.lp-family-title {
+  font-size: calc(20px * var(--font-scale-text));
+  color: #1a2e2b;
+  margin-bottom: var(--space-3);
+  font-weight: 400;
+}
+
+.lp-family-body {
+  font-size: calc(15px * var(--font-scale-text));
+  color: #5c6f6c;
+  line-height: 1.65;
+}
+
+/* ── 7. TESTIMONIAL ──────────────────────────────────────────────────────── */
+.lp-testimonial {
+  background: linear-gradient(135deg, #eaf5f2 0%, #f3fbfa 60%, #e8f5f0 100%);
+  padding: 88px var(--space-7);
+}
+
+.lp-testimonial-inner {
+  display: flex;
+  align-items: center;
+  gap: 56px;
+}
+
+.lp-testimonial-photo {
+  flex-shrink: 0;
+  width: 168px;
+  height: 168px;
+  border: 4px solid #c8e0d8;
+  border-radius: 50%;
+  overflow: hidden;
+  filter: drop-shadow(0 4px 16px rgba(0, 62, 57, 0.14));
+}
+
+.lp-testimonial-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 28%;
+}
+
+.lp-testimonial-content {
+  position: relative;
+}
+
+.lp-quote-mark {
+  display: block;
+  font-size: calc(72px * var(--font-scale-text));
+  line-height: 1;
+  color: var(--teal-900);
+  font-family: Georgia, serif;
+  opacity: 0.5;
+  margin-bottom: -8px;
+}
+
+.lp-quote-text {
+  font-size: clamp(18px, 2.2vw, 22px);
+  color: #1a2e2b;
+  line-height: 1.6;
+  font-style: normal;
+  margin-bottom: var(--space-6);
+  max-width: 540px;
+}
+
+.lp-quote-author {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lp-author-name {
+  font-size: calc(20px * var(--font-scale-text));
+  font-weight: 400;
+  color: var(--teal-900);
+}
+
+.lp-author-detail {
+  font-size: calc(14px * var(--font-scale-text));
+  color: #5c6f6c;
+}
+
+/* ── 8. FOOTER ───────────────────────────────────────────────────────────── */
+.lp-footer {
+  background: #ffffff;
+  border-top: 1px solid var(--border-subtle);
+  padding: var(--space-7) var(--space-7);
+}
+
+.lp-footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.lp-footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lp-footer-copy {
+  font-size: calc(13px * var(--font-scale-text));
+  color: #8a9e9a;
+}
+
+.lp-footer-links {
+  display: flex;
+  gap: var(--space-6);
+}
+
+.lp-footer-link {
+  font-size: calc(14px * var(--font-scale-text));
+  color: #5c6f6c;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.lp-footer-link:hover { color: var(--teal-900); }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .lp-hero-inner {
+    grid-template-columns: 1fr;
+    gap: var(--space-9);
+    text-align: center;
+  }
+  .lp-hero-copy { max-width: none; }
+  .lp-hero-sub { max-width: none; margin-left: auto; margin-right: auto; }
+  .lp-hero-btns { justify-content: center; }
+  .lp-hero-mockup { justify-content: center; }
+  .lp-feature-grid { grid-template-columns: 1fr; gap: var(--space-5); }
+  .lp-step-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-5); }
+  .lp-family-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-5); }
+  .lp-testimonial-inner { flex-direction: column; text-align: center; }
+  .lp-testimonial-photo { margin: 0 auto; }
+  .lp-quote-mark { text-align: center; }
+  .lp-trust-bar { gap: var(--space-6); }
+  .lp-nav-links { display: none; }
+
+  /* The inline links no longer fit, so they collapse behind a menu button. */
+  .lp-nav-toggle { display: inline-flex; }
+  .lp-nav-links.is-open {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    padding: var(--space-5) var(--space-7);
+    border-bottom: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-lg);
+  }
+  .lp-nav-links.is-open .lp-nav-link { font-size: calc(18px * var(--font-scale-text)); }
+}
+
+@media (max-width: 580px) {
+  .lp-hero { padding: 48px var(--space-5) 56px; }
+  .lp-how { padding: 56px var(--space-5); }
+  .lp-features { padding: 56px var(--space-5); }
+  .lp-families { padding: 56px var(--space-5); }
+  .lp-testimonial { padding: 56px var(--space-5); }
+  .lp-footer-inner { flex-direction: column; align-items: flex-start; }
+  .lp-hero-btns { flex-direction: column; }
+  .lp-btn-lg { width: 100%; justify-content: center; }
+  .lp-step-grid { grid-template-columns: 1fr; }
+  .lp-family-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Landing page link hover underline removal ───────────────────────────── */
+.lp-root a,
+.lp-root a:hover,
+.lp-nav-link,
+.lp-nav-link:hover,
+.lp-nav-login,
+.lp-nav-login:hover,
+.lp-nav-cta,
+.lp-nav-cta:hover,
+.lp-logo,
+.lp-logo:hover,
+.lp-footer-link,
+.lp-footer-link:hover {
+  text-decoration: none !important;
+}
+
+/* ==========================================================================
+   Auth Pages (Login & Signup) — Two-Panel Card Design
+   Matching user reference mockups
+   ========================================================================== */
+
+.ap-page {
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: #fbf8f3;
+  padding: 20px 20px 16px;
+  box-sizing: border-box;
+  font-family: var(--font-base);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.ap-page--signup {\n  min-height: 100vh;\n  min-height: 100svh;\n  min-height: 100dvh;\n  padding: var(--space-4) var(--space-4);\n  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),\n              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),\n              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);\n}
+
+@supports not (height: 100dvh) {
+  .ap-page--signup {\n  min-height: 100vh;\n  min-height: 100svh;\n  min-height: 100dvh;\n  padding: var(--space-4) var(--space-4);\n  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),\n              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),\n              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);\n}
+}
+
+.ap-card {
+  display: flex;
+  width: 100%;
+  max-width: 980px;
+  margin: auto 0;
+  background: #ffffff;
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.07), 0 2px 6px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  box-sizing: border-box;
+  min-height: 0;
+}
+
+.ap-card--signup {
+  max-width: 920px;
+  width: 100%;
+  margin: 0;
+  max-height: min(790px, calc(100svh - 50px));
+  max-height: min(790px, calc(100dvh - 50px));
+  min-height: 0;
+  box-sizing: border-box;
+  flex-shrink: 1;
+}
+
+@supports (height: 100vh) {
+  .ap-card--signup {
+    max-height: min(790px, calc(100vh - 50px));
+  }
+}
+
+/* ── Left panel ── */
+.ap-panel {
+  flex: 1 1 45%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.ap-panel--login {
+  background: #f8f4ec;
+  padding: 36px 28px;
+}
+
+.ap-login-photo-box {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ap-login-img {
+  width: 100%;
+  height: auto;
+  max-height: 600px;
+  object-fit: contain;
+  display: block;
+}
+
+/* On side-by-side layouts give the portrait more room: a wider card and a
+   slightly larger art panel, so the photo is the focal point of the page. */
+@media (min-width: 861px) {
+  .ap-card:not(.ap-card--signup) {
+    max-width: 1040px;
+  }
+  .ap-panel--login {
+    flex: 1.05 1 50%;
+    padding: 28px 22px;
+  }
+}
+
+/* ── Signup photo panel: bright artwork + teal gradient + write-up ── */
+.ap-panel--signup {
+  flex: 0.95 1 43%;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: #004d44;
+  overflow: hidden;
+  align-items: stretch;
+  min-height: 0;
+  padding: 34px 30px;
+  color: #ffffff;
+}
+
+.ap-signup-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 26%;
+  display: block;
+}
+
+/* Teal wash: barely there over the portrait, deepening behind the write-up so
+   the photo stays the hero but the white copy is still readable. */
+.ap-panel-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(12, 90, 76, 0.08) 0%,
+    rgba(12, 90, 76, 0.18) 42%,
+    rgba(12, 90, 76, 0.72) 74%,
+    rgba(12, 90, 76, 0.92) 100%
+  );
+  z-index: 1;
+}
+
+.ap-panel-content {
+  position: relative;
+  z-index: 2;
+}
+
+.ap-panel-badge {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-size: calc(11.5px * var(--font-scale-text));
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+}
+
+.ap-panel-quote {
+  font-family: var(--font-display);
+  font-size: calc(23px * var(--font-scale-text));
+  font-weight: 700;
+  line-height: 1.32;
+  margin-bottom: 12px;
+  color: #ffffff;
+}
+
+.ap-panel-author {
+  font-size: calc(12.5px * var(--font-scale-text));
+  font-weight: 500;
+  line-height: 1.5;
+  color: #dff2ef;
+}
+
+/* ── Right form panel ── */
+.ap-form-panel {
+  flex: 1.15 1 55%;
+  min-width: 0;
+  min-height: 0;
+  background: #ffffff;
+  padding: 36px 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.ap-card--signup .ap-form-panel {
+  padding: 12px 30px 10px;
+  justify-content: flex-start;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.ap-form-inner {
+  width: 100%;
+  max-width: 430px;
+  margin: auto;
+  box-sizing: border-box;
+  min-height: 0;
+}
+
+.ap-header-center {
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.ap-card--signup .ap-header-center {
+  margin-bottom: 14px;
+}
+
+.ap-brand {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: calc(22px * var(--font-scale-text));
+  font-weight: 700;
+  color: #006b62;
+  text-decoration: none;
+  margin-bottom: 12px;
+}
+
+.ap-brand:hover {
+  text-decoration: none;
+}
+
+.ap-title {
+  font-family: var(--font-display);
+  font-size: calc(32px * var(--font-scale-text));
+  font-weight: 400;
+  color: #1e2926;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.ap-subtitle {
+  font-size: calc(15px * var(--font-scale-text));
+  color: #64746f;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.ap-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.ap-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.ap-label {
+  font-size: calc(14px * var(--font-scale-text));
+  font-weight: 500;
+  color: #3b4d48;
+}
+
+.ap-input {
+  width: 100%;
+  height: 50px;
+  border: 1.5px solid #c9d8d3;
+  border-radius: 12px;
+  padding: 0 16px;
+  font-size: calc(15px * var(--font-scale-text));
+  font-family: inherit;
+  color: #1e2926;
+  background: #ffffff;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  outline: none;
+}
+
+.ap-input::placeholder {
+  color: #9cb1ab;
+}
+
+/* Login fields: the value text matches the placeholder in size and colour, so
+   the field reads as one calm surface instead of turning dark once filled.
+   Scoped to the login card so the signup form keeps its own metrics. */
+.ap-card:not(.ap-card--signup) .ap-input {
+  font-size: calc(14px * var(--font-scale-text));
+  color: #9cb1ab;
+}
+
+.ap-input:focus {
+  border-color: #006b62;
+  box-shadow: 0 0 0 3px rgba(0, 107, 98, 0.12);
+}
+
+.ap-pw-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.ap-pw-wrap .ap-input {
+  padding-right: 48px;
+}
+
+.ap-pw-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #7a8c87;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color var(--transition-fast);
+}
+
+.ap-pw-toggle:hover {
+  color: #006b62;
+}
+
+.ap-pw-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.ap-select-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.ap-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 42px;
+  cursor: pointer;
+}
+
+.ap-select-arrow {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #5a6e69;
+  display: flex;
+  align-items: center;
+}
+
+.ap-check-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  margin-top: 2px;
+  user-select: none;
+}
+
+.ap-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #006b62;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ap-check-text {
+  font-size: calc(14px * var(--font-scale-text));
+  color: #435450;
+}
+
+.ap-check-row--terms {
+  background: #ddeadf;
+  border-radius: 10px;
+  padding: 12px 14px;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ap-check-terms-text {
+  font-size: calc(13px * var(--font-scale-text));
+  color: #324a44;
+  line-height: 1.45;
+}
+
+.ap-terms-link {
+  color: #006b62;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ap-btn-primary {
+  width: 100%;
+  height: 52px;
+  margin-top: 4px;
+  background: #006b62;
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  font-size: calc(16.5px * var(--font-scale-text));
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ap-btn-primary:hover:not(:disabled) {
+  background: #00564f;
+}
+
+.ap-btn-primary:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.ap-btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.ap-switch-text {
+  text-align: center;
+  font-size: calc(14px * var(--font-scale-text));
+  color: #5c6f6c;
+  margin-top: 20px;
+}
+
+.ap-switch-link {
+  color: #006b62;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ap-switch-link:hover {
+  text-decoration: underline;
+}
+
+/* ── Signup page specific fine-tuned layout to fit cleanly and align ── */
+.ap-card--signup .ap-header-center {
+  margin-bottom: 8px;
+}
+
+.ap-card--signup .ap-brand {
+  font-size: calc(18px * var(--font-scale-text));
+  margin-bottom: 2px;
+}
+
+.ap-card--signup .ap-title {
+  font-size: calc(22px * var(--font-scale-text));
+  margin-bottom: 1px;
+}
+
+.ap-card--signup .ap-subtitle {
+  font-size: calc(12px * var(--font-scale-text));
+  margin-bottom: 0;
+}
+
+.ap-card--signup .ap-form {
+  gap: 10px;
+}
+
+.ap-card--signup .ap-form-group {
+  gap: 3px;
+}
+
+.ap-card--signup .ap-input {
+  height: 38px;
+  /* the global field rule sets min-height: var(--input-height) (56px),
+     which would stop the signup fields from ever scaling down */
+  min-height: 0;
+  padding: 0 16px;
+  font-size: calc(14px * var(--font-scale-text));
+}
+
+/* Signup fields use the same calm treatment as the login page: the typed
+   value is the placeholder's colour, so the field reads as one surface. */
+.ap-card--signup .ap-input,
+.ap-card--signup .ap-select {
+  color: #9cb1ab;
+}
+
+.ap-card--signup .ap-pw-wrap .ap-input {
+  padding-right: 48px;
+}
+
+.ap-card--signup .ap-select {
+  padding-right: 42px;
+}
+
+.ap-card--signup .ap-check-row--terms {
+  padding: 6px 8px;
+}
+
+.ap-card--signup .ap-btn-primary {
+  height: 40px;
+  margin-top: -1px;
+  font-size: calc(15px * var(--font-scale-text));
+}
+
+.ap-card--signup .ap-switch-text {
+  margin-top: 4px;
+}
+
+.ap-page--signup .ap-footer {
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+/* ── Auth page footer ── */
+.ap-footer {
+  width: 100%;
+  max-width: 980px;
+  margin-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: calc(13.5px * var(--font-scale-text));
+  color: #5c6f6c;
+  padding: 0 8px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.ap-footer-copy {
+  color: #5c6f6c;
+}
+
+.ap-footer-nav {
+  display: flex;
+  gap: 24px;
+}
+
+.ap-footer-link {
+  color: #445551;
+  text-decoration: none;
+  font-size: calc(13.5px * var(--font-scale-text));
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.ap-footer-link:hover {
+  color: #006b62;
+  text-decoration: none;
+}
+
+/* ── Compact viewport height responsiveness (short laptop screens / short windows) ── */
+@media (max-height: 700px) {
+  .ap-page {
+    padding: 6px 12px 4px;
+  }
+  .ap-page--signup {\n  min-height: 100vh;\n  min-height: 100svh;\n  min-height: 100dvh;\n  padding: var(--space-4) var(--space-4);\n  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),\n              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),\n              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);\n}
+  .ap-panel--login {
+    padding: 16px 20px;
+  }
+  .ap-login-img {
+    /* Short windows: let the portrait keep its natural width and grow in
+       height instead of being letterboxed inside the old 300px cap. The
+       72vh ceiling keeps it inside the panel all the way down to 460px. */
+    width: auto;
+    max-width: 100%;
+    max-height: min(460px, 78vh);
+  }
+  .ap-form-panel {
+    padding: 14px 32px 12px;
+  }
+  .ap-card--signup {
+    max-height: min(790px, calc(100svh - 46px));
+    max-height: min(790px, calc(100dvh - 46px));
+  }
+  @supports (height: 100vh) {
+    .ap-card--signup {
+      max-height: min(790px, calc(100vh - 46px));
+    }
+  }
+  .ap-card--signup .ap-form-panel {
+    padding: 10px 26px 8px;
+  }
+  .ap-header-center {
+    margin-bottom: 8px;
+  }
+  .ap-brand {
+    font-size: calc(18px * var(--font-scale-text));
+    margin-bottom: 2px;
+  }
+  .ap-title {
+    font-size: calc(22px * var(--font-scale-text));
+    margin-bottom: 1px;
+  }
+  .ap-subtitle {
+    font-size: calc(12.5px * var(--font-scale-text));
+  }
+  .ap-form {
+    gap: 8px;
+  }
+  .ap-form-group {
+    gap: 4px;
+  }
+  .ap-input {
+    height: 42px;
+    font-size: calc(14px * var(--font-scale-text));
+  }
+  .ap-btn-primary {
+    height: 44px;
+    margin-top: 2px;
+    font-size: calc(15px * var(--font-scale-text));
+  }
+  .ap-switch-text {
+    margin-top: 8px;
+    font-size: calc(12.5px * var(--font-scale-text));
+  }
+  .ap-footer {
+    margin-top: 4px;
+    font-size: calc(11.5px * var(--font-scale-text));
+  }
+  .ap-page--signup .ap-footer {
+    margin-top: 4px;
+  }
+
+  /* ── Signup card: scale the form down so every field, the
+        "Create my account" button and the footer stay in view ── */
+  .ap-card--signup .ap-header-center {
+    margin-bottom: 5px;
+  }
+  .ap-card--signup .ap-brand {
+    font-size: calc(16px * var(--font-scale-text));
+    margin-bottom: 1px;
+  }
+  .ap-card--signup .ap-title {
+    font-size: calc(19px * var(--font-scale-text));
+    margin-bottom: 0;
+  }
+  .ap-card--signup .ap-subtitle {
+    font-size: calc(11.5px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-form {
+    gap: 8px;
+  }
+  .ap-card--signup .ap-form-group {
+    gap: 3px;
+  }
+  .ap-card--signup .ap-label {
+    font-size: calc(12px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-input {
+    height: 34px;
+    font-size: calc(13px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-pw-toggle {
+    padding: 4px;
+  }
+  .ap-card--signup .ap-check-row--terms {
+    padding: 5px 8px;
+  }
+  .ap-card--signup .ap-check-terms-text {
+    font-size: calc(11.5px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-btn-primary {
+    height: 36px;
+    margin-top: 0;
+    font-size: calc(14px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-switch-text {
+    margin-top: 3px;
+    font-size: calc(12px * var(--font-scale-text));
+  }
+
+  /* Left panel write-up scales down with the viewport so it never clips */
+  .ap-panel--signup {
+    padding: 26px 26px;
+  }
+  .ap-panel-badge {
+    font-size: calc(11px * var(--font-scale-text));
+    margin-bottom: 10px;
+    padding: 5px 11px;
+  }
+  .ap-panel-quote {
+    font-size: calc(20px * var(--font-scale-text));
+    margin-bottom: 9px;
+  }
+  .ap-panel-author {
+    font-size: calc(11.5px * var(--font-scale-text));
+  }
+}
+
+/* ── Very short viewports (e.g. 400 - 520px tall windows) ── */
+@media (max-height: 520px) {
+  .ap-page {
+    padding: 4px 8px 3px;
+  }
+  .ap-page--signup {\n  min-height: 100vh;\n  min-height: 100svh;\n  min-height: 100dvh;\n  padding: var(--space-4) var(--space-4);\n  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),\n              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),\n              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);\n}
+  .ap-card--signup {
+    max-height: min(700px, calc(100svh - 28px));
+    max-height: min(700px, calc(100dvh - 28px));
+  }
+  @supports (height: 100vh) {
+    .ap-card--signup {
+      max-height: min(700px, calc(100vh - 28px));
+    }
+  }
+  .ap-card--signup .ap-form-panel {
+    padding: 5px 16px 5px;
+  }
+  .ap-card--signup .ap-header-center {
+    margin-bottom: 2px;
+  }
+  .ap-card--signup .ap-brand {
+    font-size: calc(14px * var(--font-scale-text));
+    margin-bottom: 0;
+  }
+  .ap-card--signup .ap-title {
+    font-size: calc(16px * var(--font-scale-text));
+    margin-bottom: 0;
+  }
+  .ap-card--signup .ap-subtitle {
+    font-size: calc(10.5px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-form {
+    gap: 5px;
+  }
+  .ap-card--signup .ap-form-group {
+    gap: 2px;
+  }
+  .ap-card--signup .ap-label {
+    font-size: calc(11px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-input {
+    height: 28px;
+    font-size: calc(12.5px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-check-row--terms {
+    padding: 3px 6px;
+  }
+  .ap-card--signup .ap-check-terms-text {
+    font-size: calc(10.5px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-btn-primary {
+    height: 30px;
+    font-size: calc(13px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-switch-text {
+    margin-top: 2px;
+    font-size: calc(11px * var(--font-scale-text));
+  }
+
+  /* Left panel write-up scales down with the viewport so it never clips */
+  .ap-panel--signup {
+    padding: 18px 18px;
+  }
+  .ap-panel-badge {
+    font-size: calc(10px * var(--font-scale-text));
+    margin-bottom: 8px;
+    padding: 4px 10px;
+  }
+  .ap-panel-quote {
+    font-size: calc(16px * var(--font-scale-text));
+    margin-bottom: 7px;
+  }
+  .ap-panel-author {
+    font-size: calc(10.5px * var(--font-scale-text));
+  }
+  .ap-footer {
+    margin-top: 2px;
+    font-size: calc(10.5px * var(--font-scale-text));
+  }
+  .ap-page--signup .ap-footer {
+    margin-top: 2px;
+  }
+}
+
+/* ── Extremely short viewports (windows under ~460px tall) ── */
+@media (max-height: 460px) {
+  .ap-page--signup {\n  min-height: 100vh;\n  min-height: 100svh;\n  min-height: 100dvh;\n  padding: var(--space-4) var(--space-4);\n  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),\n              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),\n              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);\n}
+  .ap-card--signup {
+    max-height: min(700px, calc(100svh - 24px));
+    max-height: min(700px, calc(100dvh - 24px));
+  }
+  @supports (height: 100vh) {
+    .ap-card--signup {
+      max-height: min(700px, calc(100vh - 24px));
+    }
+  }
+  .ap-card--signup .ap-form-panel {
+    padding: 4px 14px 4px;
+  }
+  .ap-card--signup .ap-header-center {
+    margin-bottom: 1px;
+  }
+  .ap-card--signup .ap-brand {
+    font-size: calc(13px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-title {
+    font-size: calc(15px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-subtitle {
+    font-size: calc(10px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-form {
+    gap: 5px;
+  }
+  .ap-card--signup .ap-form-group {
+    gap: 1px;
+  }
+  .ap-card--signup .ap-label {
+    font-size: calc(10.5px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-input {
+    height: 24px;
+    font-size: calc(12px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-check-row--terms {
+    padding: 2px 5px;
+  }
+  .ap-card--signup .ap-check-terms-text {
+    font-size: calc(10px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-btn-primary {
+    height: 27px;
+    font-size: calc(12.5px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-switch-text {
+    margin-top: 1px;
+    font-size: calc(10.5px * var(--font-scale-text));
+  }
+  .ap-footer {
+    margin-top: 1px;
+    font-size: calc(10px * var(--font-scale-text));
+  }
+  .ap-page--signup .ap-footer {
+    margin-top: 1px;
+  }
+}
+
+/* ── Responsive auth ── */
+@media (max-width: 860px) {
+  .ap-page {
+    justify-content: flex-start;
+  }
+  /* Stacked layout: the card owns the viewport height, so the page itself
+     never scrolls (field spacing is handled by --signup-gap below). */
+  .ap-page--signup {\n  min-height: 100vh;\n  min-height: 100svh;\n  min-height: 100dvh;\n  padding: var(--space-4) var(--space-4);\n  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),\n              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),\n              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);\n}
+  .ap-card {
+    flex-direction: column;
+    max-width: 500px;
+    max-height: none;
+  }
+  .ap-card--signup {
+    max-height: none;
+  }
+  .ap-panel--login {
+    padding: 24px 16px;
+  }
+  /* The illustration is decorative: on a phone it would push the form below
+     the fold, so the form gets the whole card instead. */
+  .ap-panel--signup {
+    display: none;
+  }
+  .ap-panel-badge {
+    font-size: calc(11px * var(--font-scale-text));
+    margin-bottom: 10px;
+    padding: 5px 11px;
+  }
+  .ap-panel-quote {
+    font-size: calc(18px * var(--font-scale-text));
+    margin-bottom: 9px;
+  }
+  .ap-panel-author {
+    font-size: calc(11px * var(--font-scale-text));
+  }
+  /* Touch-friendly form rhythm on small screens (the page scrolls here) */
+  .ap-card--signup .ap-header-center {
+    margin-bottom: 10px;
+  }
+  .ap-card--signup .ap-brand {
+    font-size: calc(17px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-title {
+    font-size: calc(21px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-subtitle {
+    font-size: calc(12px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-form {
+    gap: 14px;
+  }
+  .ap-card--signup .ap-form-group {
+    gap: 5px;
+  }
+  .ap-card--signup .ap-label {
+    font-size: calc(13px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-input {
+    height: 44px;
+    font-size: calc(15px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-btn-primary {
+    height: 48px;
+    font-size: calc(15.5px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-check-row--terms {
+    padding: 10px 12px;
+  }
+  .ap-card--signup .ap-check-terms-text {
+    font-size: calc(12.5px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-switch-text {
+    margin-top: 12px;
+    font-size: calc(13px * var(--font-scale-text));
+  }
+  .ap-form-panel {
+    padding: 36px 28px;
+    overflow-y: visible;
+  }
+  .ap-card--signup .ap-form-panel {
+    overflow-y: visible;
+  }
+  .ap-footer {
+    flex-direction: column;
+    gap: 14px;
+    text-align: center;
+  }
+  .ap-footer-nav {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .ap-page {
+    padding: 16px 14px;
+  }
+  .ap-page--signup {\n  min-height: 100vh;\n  min-height: 100svh;\n  min-height: 100dvh;\n  padding: var(--space-4) var(--space-4);\n  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),\n              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),\n              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);\n}
+  .ap-form-panel {
+    padding: 28px 18px;
+  }
+  .ap-card--signup .ap-form-panel {
+    padding: 22px 18px 18px;
+  }
+  .ap-pw-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+
+
+
+
+/* -- Signup: one spacing token for every field box --
+   The gap between Full Name, Email, the password pair and Age Group is a
+   single value per breakpoint, so the boxes stay evenly spaced while the
+   layout compresses to fit the viewport (no page scrolling). */
+.ap-card--signup {
+  --signup-gap: 16px;
+}
+
+.ap-card--signup .ap-form,
+.ap-card--signup .ap-pw-row {
+  gap: var(--signup-gap);
+}
+
+.ap-card--signup .ap-check-row--terms,
+.ap-card--signup .ap-btn-primary {
+  margin-top: 0;
+}
+
+@media (max-height: 700px) {
+  .ap-card--signup {
+    --signup-gap: 12px;
+  }
+}
+
+@media (max-height: 520px) {
+  .ap-card--signup {
+    --signup-gap: 8px;
+  }
+}
+
+@media (max-height: 460px) {
+  .ap-card--signup {
+    --signup-gap: 6px;
+  }
+}
+
+@media (max-width: 860px) {
+  .ap-card--signup {
+    --signup-gap: 16px;
+  }
+}
+
+/* Phones: keep the same even spacing but tighten the chrome so the whole
+   form fits on screen without a scrollbar. */
+@media (max-width: 860px) and (max-height: 780px) {
+  .ap-page--signup {\n  min-height: 100vh;\n  min-height: 100svh;\n  min-height: 100dvh;\n  padding: var(--space-4) var(--space-4);\n  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),\n              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),\n              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);\n}
+  .ap-page--signup .ap-footer {
+    display: none;
+  }
+  .ap-card--signup .ap-form-panel {
+    padding: 18px 18px 14px;
+  }
+  .ap-card--signup .ap-header-center {
+    margin-bottom: 8px;
+  }
+  .ap-card--signup .ap-brand {
+    font-size: calc(16px * var(--font-scale-text));
+    margin-bottom: 1px;
+  }
+  .ap-card--signup .ap-title {
+    font-size: calc(19px * var(--font-scale-text));
+    margin-bottom: 0;
+  }
+  .ap-card--signup .ap-subtitle {
+    font-size: calc(11.5px * var(--font-scale-text));
+  }
+  .ap-card--signup {
+    --signup-gap: 12px;
+  }
+  .ap-card--signup .ap-form-group {
+    gap: 3px;
+  }
+  .ap-card--signup .ap-label {
+    font-size: calc(12px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-input {
+    height: 38px;
+    font-size: calc(14px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-check-row--terms {
+    padding: 6px 10px;
+  }
+  .ap-card--signup .ap-check-terms-text {
+    font-size: calc(11.5px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-btn-primary {
+    height: 40px;
+    font-size: calc(14.5px * var(--font-scale-text));
+  }
+  .ap-card--signup .ap-switch-text {
+    margin-top: 6px;
+    font-size: calc(12.5px * var(--font-scale-text));
+  }
 }

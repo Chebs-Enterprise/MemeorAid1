@@ -1,0 +1,15 @@
+
+==============================================================================
+[MemorAid] WARNING: PostgreSQL is not usable — falling back to a local
+  SQLite file (memoraid.db).
+  Reason: connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "memoraid"
+  The document of proof mandates PostgreSQL for any real deployment.
+  To use PostgreSQL, create the database and credentials, then set
+  DATABASE_URL in backend/.env (see backend/.env.example).
+  To force SQLite for local development: DATABASE_URL=sqlite:///memoraid.db
+==============================================================================
+
+[MemorAid] Scheduler started: morning check-in, due-review and inactivity reminders (every 5 min), pattern decay (daily 02:00 UTC). All notifications are predefined — no AI is called.
+[MemorAid] API on http://127.0.0.1:5000/api  (DB: sqlite:///memoraid.db)
+ * Serving Flask app 'app'
+ * Debug mode: on

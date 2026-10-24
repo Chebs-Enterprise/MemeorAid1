@@ -1,14 +1,54 @@
 /**
  * Sign-in page (public) — FR-01 Login.
  *
- * Uses the shared PasswordField (show/hide toggle) and shows the backend's
- * friendly message on failure. On success the auth context stores the session
- * and we return the visitor to wherever they were headed.
+ * Two-panel card layout matching the reference design:
+ *   Left  — warm cream panel with tilted photo card of Margaret using tablet
+ *   Right — form: brand, "Welcome back", email, password, keep-me-logged-in, Login button
+ * Footer — copyright and legal links
  */
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { FormMessage, PasswordField } from '../lib/ui.jsx';
+import { FormMessage } from '../lib/ui.jsx';
+
+function PwField({ id, label, value, onChange, autoComplete }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="ap-form-group">
+      <label htmlFor={id} className="ap-label">{label}</label>
+      <div className="ap-pw-wrap">
+        <input
+          id={id}
+          type={show ? 'text' : 'password'}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          autoComplete={autoComplete}
+          placeholder="••••••••"
+          className="ap-input"
+          required
+        />
+        <button
+          type="button"
+          className="ap-pw-toggle"
+          aria-label={show ? 'Hide password' : 'Show password'}
+          onClick={() => setShow((s) => !s)}
+        >
+          {show ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+              <line x1="1" y1="1" x2="23" y2="23" />
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function Login() {
   const { login } = useAuth();
@@ -16,6 +56,7 @@ export default function Login() {
   const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [keepLogged, setKeepLogged] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -34,53 +75,80 @@ export default function Login() {
   };
 
   return (
-    <section className="auth-shell">
-      <div className="auth-panel">
-        <h1>Welcome back</h1>
-        <p style={{ margin: '10px 0 26px' }}>
-          Sign in to pick up where you left off.
-        </p>
+    <div className="ap-page">
+      <div className="ap-card">
 
-        <form onSubmit={submit} noValidate>
-          <div className="form-group">
-            <label htmlFor="email">Email address</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="email"
-              required
+        {/* ── Left illustrated panel ── */}
+        <div className="ap-panel ap-panel--login">
+          <div className="ap-login-photo-box">
+            <img
+              src="/login-photo.png"
+              alt="Elderly woman smiling warmly while using MemorAid on a tablet"
+              className="ap-login-img"
             />
           </div>
+        </div>
 
-          <PasswordField
-            id="password"
-            label="Your password"
-            value={password}
-            onChange={setPassword}
-            autoComplete="current-password"
-          />
+        {/* ── Right form panel ── */}
+        <div className="ap-form-panel">
+          <div className="ap-form-inner">
+            <div className="ap-header-center">
+              <Link to="/" className="ap-brand">MemorAid</Link>
+              <h1 className="ap-title">Welcome back</h1>
+              <p className="ap-subtitle">Good to see you again. Your memories are waiting.</p>
+            </div>
 
-          <FormMessage>{error}</FormMessage>
+            <form onSubmit={submit} noValidate className="ap-form">
+              <div className="ap-form-group">
+                <label htmlFor="email" className="ap-label">Email Address</label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@gmail.com"
+                  autoComplete="email"
+                  className="ap-input"
+                  required
+                />
+              </div>
 
-          <button type="submit" className="btn btn-primary btn-block btn-lg" disabled={busy}>
-            {busy ? 'Signing you in…' : 'Sign in'}
-          </button>
-        </form>
+              <PwField
+                id="password"
+                label="Password"
+                value={password}
+                onChange={setPassword}
+                autoComplete="current-password"
+              />
 
-        <p style={{ marginTop: '22px' }}>
-          New here? <Link to="/signup">Create an account</Link>
-        </p>
+              <label className="ap-check-row">
+                <input
+                  type="checkbox"
+                  checked={keepLogged}
+                  onChange={(e) => setKeepLogged(e.target.checked)}
+                  className="ap-checkbox"
+                />
+                <span className="ap-check-text">Keep me logged in</span>
+              </label>
+
+              {error && <FormMessage className="is-error">{error}</FormMessage>}
+
+              <button
+                type="submit"
+                className="ap-btn-primary"
+                disabled={busy}
+              >
+                {busy ? 'Signing you in…' : 'Login'}
+              </button>
+            </form>
+
+            <p className="ap-switch-text">
+              Don't have an account?{' '}
+              <Link to="/signup" className="ap-switch-link">Sign up</Link>
+            </p>
+          </div>
+        </div>
       </div>
-
-      <div className="auth-aside">
-        <h2>A gentle start</h2>
-        <p>
-          Sign in and MemorAid will greet you each morning with what is due, how
-          your streak is going, and one small thing to focus on today.
-        </p>
-      </div>
-    </section>
+    </div>
   );
 }

@@ -3,13 +3,13 @@ AI recall question generation — FR-04, document of proof section 3.4.3.
 
 Sequence (Figure 3.3): the backend builds a structured prompt containing
 the memory content, category, context note and difficulty level, sends it
-to Claude, and stores the returned question linked 1:1 to the memory with
+to Gemini, and stores the returned question linked 1:1 to the memory with
 an initial ReviewSchedule for the following day.
 
-If the Claude API is unavailable a deterministic template generator is
+If the Gemini API is unavailable a deterministic template generator is
 used and the question is flagged generatedbyai = false.
 """
-from services.ai.client import call_claude
+from services.ai.client import call_llm
 
 SYSTEM_PROMPT = (
     "You are MemorAid, a warm memory-support assistant for elderly users. "
@@ -71,7 +71,7 @@ def generate_question(content, category_name, context_note=None, difficulty=1):
         prompt += f"Additional context note: {context_note}\n"
     prompt += "Write the recall question now."
 
-    question = call_claude(SYSTEM_PROMPT, prompt, max_tokens=150)
+    question = call_llm(SYSTEM_PROMPT, prompt, max_tokens=150, tier="fast")
     if question:
         return question.splitlines()[0].strip(), True
 

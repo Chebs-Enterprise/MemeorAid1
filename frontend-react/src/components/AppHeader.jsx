@@ -6,13 +6,13 @@
  * no name or role label beside the avatar. It anchors to the right-hand side of
  * the content area, above the page's own content.
  *
- * The notifications and avatar controls open small popovers rather than
- * navigating away, so the header stays a utility strip and never becomes a
- * place you have to leave the page from. Both close on outside click and on
- * Escape.
+ * The bell is a link to the dedicated /notifications page, so reminders are
+ * read on their own screen rather than in a panel over the dashboard. Only the
+ * settings and avatar controls open popovers; both close on outside click and
+ * on Escape.
  */
-import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import A11yBar from './A11yBar.jsx';
@@ -21,25 +21,41 @@ import { initials } from '../lib/ui.jsx';
 
 export default function AppHeader() {
   const { user, logout } = useAuth();
-  const [openPanel, setOpenPanel] = useState(null); // 'notify' | 'account' | 'settings'
-  const [notifications, setNotifications] = useState([]);
+  const location = useLocation();
+  const [openPanel, setOpenPanel] = useState(null); // 'account' | 'settings'
+  const [unread, setUnread] = useState(0);
   const wrapRef = useRef(null);
+
+  const loadUnread = useCallback(async () => {
+    try {
+      const res = await api.getUnreadCount();
+      setUnread(res.unread_count ?? 0);
+    } catch {
+      /* The header is not essential chrome: if this call fails the page below
+         still works, so the badge simply stays as it was. */
+    }
+  }, []);
 
   useEffect(() => {
     let alive = true;
-    api
-      .getNotifications()
-      .then((n) => {
-        if (alive) setNotifications(n.notifications || []);
-      })
-      .catch(() => {
-        /* The header is not essential chrome: if this call fails the page
-           below still works, so the badge simply stays empty. */
-      });
+    const load = () => {
+      if (alive) loadUnread();
+    };
+    load();
+    // The scheduler creates reminders in the background independent of the
+    // frontend, so poll so the badge appears without a manual reload.
+    const timer = setInterval(load, 60000);
     return () => {
       alive = false;
+      clearInterval(timer);
     };
-  }, []);
+  }, [loadUnread]);
+
+  // Re-read the badge whenever the page changes: reading notifications on the
+  // notifications page must clear the count as soon as the user navigates on.
+  useEffect(() => {
+    loadUnread();
+  }, [location.pathname, loadUnread]);
 
   // Close whichever popover is open on outside click or Escape.
   useEffect(() => {
@@ -63,47 +79,20 @@ export default function AppHeader() {
   return (
     <header className="app-header" ref={wrapRef}>
       <div className="header-actions">
-        {/* Notifications ------------------------------------------------- */}
+        {/* Notifications — a link to their own page ----------------------- */}
         <div className="header-slot">
-          <button
-            type="button"
-            className={`header-btn${openPanel === 'notify' ? ' is-open' : ''}`}
-            aria-label={
-              notifications.length
-                ? `Notifications, ${notifications.length} unread`
-                : 'Notifications'
-            }
-            aria-expanded={openPanel === 'notify'}
-            aria-haspopup="true"
-            onClick={() => toggle('notify')}
+          <NavLink
+            to="/notifications"
+            className={({ isActive }) => `header-btn${isActive ? ' is-open' : ''}`}
+            aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'}
           >
             <Icon name="bell" size={22} />
-            {notifications.length > 0 && (
+            {unread > 0 && (
               <span className="header-dot" aria-hidden="true">
-                {notifications.length > 9 ? '9+' : notifications.length}
+                {unread > 9 ? '9+' : unread}
               </span>
             )}
-          </button>
-
-          {openPanel === 'notify' && (
-            <div className="header-panel header-panel-wide" role="group" aria-label="Notifications">
-              <span className="header-panel-title">Notifications</span>
-              {notifications.length === 0 ? (
-                <p className="header-empty">Nothing new just now.</p>
-              ) : (
-                <ul className="header-list">
-                  {notifications.slice(0, 6).map((n) => (
-                    <li key={n.notificationid || n.id} className="header-list-item">
-                      {n.message}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <Link to="/dashboard" className="header-panel-link" onClick={() => setOpenPanel(null)}>
-                See all on your dashboard
-              </Link>
-            </div>
-          )}
+          </NavLink>
         </div>
 
         {/* Settings ------------------------------------------------------ */}

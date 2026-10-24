@@ -3,7 +3,7 @@
 from datetime import date
 
 from models import MemoryEntry, ReviewSchedule
-from services.ai.client import call_claude
+from services.ai.client import call_llm
 
 SYSTEM_PROMPT = (
     "You are Aria from MemorAid. Write a short, warm morning check-in "
@@ -32,12 +32,13 @@ def generate_checkin_message(user):
         else "Nothing is due for review today — a good day to try a memory exercise."
     )
 
-    text = call_claude(
+    text = call_llm(
         SYSTEM_PROMPT,
         f"User name: {user.fullname}. {due_sentence} "
         f"Recall streak: {user.recall_streak or 0} day(s). "
         f"Exercise streak: {user.exercise_streak or 0} day(s).",
         max_tokens=120,
+        tier="fast",
     )
     if not text:
         first = user.fullname.split()[0]

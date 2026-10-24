@@ -11,7 +11,7 @@ All numbers are computed from real recallsessions/analyticsrecords data.
 from datetime import date, timedelta
 
 from models import MemoryCategory, RecallSession
-from services.ai.client import call_claude
+from services.ai.client import call_llm
 
 MOTIVATIONAL_SYSTEM = (
     "You are Aria from MemorAid. Write ONE short, warm motivational sentence "
@@ -80,12 +80,13 @@ def compute_analytics(user):
             "attempts": len(in_bucket),
         })
 
-    message = call_claude(
+    message = call_llm(
         MOTIVATIONAL_SYSTEM,
         f"Recall accuracy: {overall_accuracy}% over {total} attempts. "
         f"Recall streak: {user.recall_streak or 0} day(s). "
         f"Weakest area: {weakest or 'none yet'}.",
         max_tokens=60,
+        tier="fast",
     )
     if not message:
         message = FALLBACK_MESSAGES[(total or 0) % len(FALLBACK_MESSAGES)]

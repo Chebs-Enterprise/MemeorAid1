@@ -9,12 +9,12 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import A11yBar from './A11yBar.jsx';
 import AppHeader from './AppHeader.jsx';
 import Icon from './Icon.jsx';
 
 const NAV_ITEMS = [
   { to: '/dashboard', icon: 'dashboard', label: 'Dashboard' },
+  { to: '/notifications', icon: 'bell', label: 'Notifications' },
   { to: '/log-memory', icon: 'log-memory', label: 'Log a memory' },
   { to: '/recall', icon: 'recall', label: 'Recall session' },
   { to: '/exercises', icon: 'exercises', label: 'Exercises' },
@@ -60,7 +60,6 @@ export default function AppLayout() {
         </nav>
 
         <div className="sidebar-footer">
-          <A11yBar />
           <button type="button" className="sidebar-link" onClick={handleLogout}>
             <Icon name="signout" size={22} />
             Sign out
