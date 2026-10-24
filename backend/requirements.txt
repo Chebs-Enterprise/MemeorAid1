@@ -8,6 +8,8 @@ apscheduler>=3.10
 psycopg2-binary>=2.9
 python-dotenv>=1.0
 pytest>=8.0
+gunicorn>=21.2.0
+
 
 # Optional: browser push notifications (Web Push). Only required if you set
 # VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY in backend/.env; without it the app
