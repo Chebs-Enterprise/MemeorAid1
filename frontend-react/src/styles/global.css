@@ -153,7 +153,10 @@ body[data-font-size='xlarge'] { --font-scale-text: 1.3; }
 [data-high-contrast='true'] .stat-value { color: #ffffff; }
 [data-high-contrast='true'] .stat-body .stat-label { color: var(--text-muted); }
 [data-high-contrast='true'] .stat-card.is-due .stat-label { color: #ffffff; }
-[data-high-contrast='true'] .greeting-card {\n  background: radial-gradient(1200px 340px at 15% 50%, rgba(0, 181, 165, 0.22) 0%, rgba(0, 181, 165, 0) 72%),\n              radial-gradient(900px 300px at 85% 35%, rgba(245, 166, 35, 0.18) 0%, rgba(245, 166, 35, 0) 68%),\n              linear-gradient(90deg, #f8fffe 0%, #ffffff 62%, #fff9f0 100%);
+[data-high-contrast='true'] .greeting-card {
+  background: radial-gradient(1200px 340px at 15% 50%, rgba(0, 181, 165, 0.22) 0%, rgba(0, 181, 165, 0) 72%),
+              radial-gradient(900px 300px at 85% 35%, rgba(245, 166, 35, 0.18) 0%, rgba(245, 166, 35, 0) 68%),
+              linear-gradient(90deg, #f8fffe 0%, #ffffff 62%, #fff9f0 100%);
 }
 [data-high-contrast='true'] .greeting-card::after { display: none; }
 [data-high-contrast='true'] .greeting-card h2 { color: #fff; }
@@ -260,11 +263,15 @@ a:hover { text-decoration: underline; text-underline-offset: 2px; }
 .btn:active { transform: translateY(1px); }
 .btn:focus-visible { outline: 3px solid var(--teal-300); outline-offset: 2px; }
 
-.btn-primary {\n  background: linear-gradient(135deg, var(--teal-forest) 0%, #008a7e 100%); color: #fff; box-shadow: var(--shadow-pill); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--teal-forest) 0%, #008a7e 100%); color: #fff; box-shadow: var(--shadow-pill);
+}
 .btn-primary:hover { background: var(--teal-forest-hover); color: #fff; transform: translateY(-1px); }
 .btn-primary:active { transform: translateY(0); }
 
-.btn-secondary {\n  background: linear-gradient(135deg, var(--teal-mint) 0%, #e6f7f5 100%); color: var(--teal-mint-text); }
+.btn-secondary {
+  background: linear-gradient(135deg, var(--teal-mint) 0%, #e6f7f5 100%); color: var(--teal-mint-text);
+}
 .btn-secondary:hover { background: var(--teal-mint-hover); color: var(--teal-mint-text); }
 
 .btn-outline { background: transparent; border-color: var(--border-card); color: var(--teal-forest); }
@@ -373,7 +380,8 @@ select {
 /* One surface treatment for every content card: hairline border, single
    radius, one low shadow. Previously .card, .question-card and .info panels
    each picked their own radius and only some had a shadow. */
-.card {\n  background: linear-gradient(180deg, #ffffff 0%, #fdfcfa 100%); border: 1px solid var(--border-card);
+.card {
+  background: linear-gradient(180deg, #ffffff 0%, #fdfcfa 100%); border: 1px solid var(--border-card);
   border-radius: var(--radius-xl); padding: var(--space-6);
   box-shadow: var(--shadow-sm);
 }
@@ -738,7 +746,8 @@ a.header-btn:hover { text-decoration: none; }
 }
 .greeting-side { position: relative; z-index: 1; flex-shrink: 0; }
 /* On the plain band the check-in button is the brand action, so it fills. */
-.greeting-card .btn-primary {\n  background: linear-gradient(135deg, var(--teal-forest) 0%, #008a7e 100%); color: #fff; box-shadow: var(--shadow-pill);
+.greeting-card .btn-primary {
+  background: linear-gradient(135deg, var(--teal-forest) 0%, #008a7e 100%); color: #fff; box-shadow: var(--shadow-pill);
 }
 .greeting-card .btn-primary:hover { background: var(--teal-900); color: #fff; }
 .checkin-done {
@@ -1399,7 +1408,10 @@ a.header-btn:hover { text-decoration: none; }
 }
 
 /* ── 2. HERO ─────────────────────────────────────────────────────────────── */
-.lp-hero {`n  background: radial-gradient(1200px 600px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 60%),`n              radial-gradient(900px 500px at 90% 20%, rgba(245, 166, 35, 0.14) 0%, rgba(245, 166, 35, 0) 55%),`n              linear-gradient(135deg, #f7fffd 0%, #f9f9f6 55%, #fff7ec 100%);
+.lp-hero {
+  background: radial-gradient(1200px 600px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 60%),
+              radial-gradient(900px 500px at 90% 20%, rgba(245, 166, 35, 0.14) 0%, rgba(245, 166, 35, 0) 55%),
+              linear-gradient(135deg, #f7fffd 0%, #f9f9f6 55%, #fff7ec 100%);
   padding: 72px var(--space-7) 80px;
 }
 
@@ -1971,10 +1983,26 @@ a.header-btn:hover { text-decoration: none; }
   overflow-y: auto;
 }
 
-.ap-page--signup {\n  min-height: 100vh;\n  min-height: 100svh;\n  min-height: 100dvh;\n  padding: var(--space-4) var(--space-4);\n  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),\n              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),\n              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);\n}
+.ap-page--signup {
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding: var(--space-4) var(--space-4);
+  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),
+              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),
+              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);
+}
 
 @supports not (height: 100dvh) {
-  .ap-page--signup {\n  min-height: 100vh;\n  min-height: 100svh;\n  min-height: 100dvh;\n  padding: var(--space-4) var(--space-4);\n  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),\n              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),\n              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);\n}
+  .ap-page--signup {
+    min-height: 100vh;
+    min-height: 100svh;
+    min-height: 100dvh;
+    padding: var(--space-4) var(--space-4);
+    background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),
+                radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),
+                linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);
+  }
 }
 
 .ap-card {
@@ -2508,7 +2536,15 @@ a.header-btn:hover { text-decoration: none; }
   .ap-page {
     padding: 6px 12px 4px;
   }
-  .ap-page--signup {\n  min-height: 100vh;\n  min-height: 100svh;\n  min-height: 100dvh;\n  padding: var(--space-4) var(--space-4);\n  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),\n              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),\n              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);\n}
+  .ap-page--signup {
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding: var(--space-4) var(--space-4);
+  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),
+              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),
+              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);
+}
   .ap-panel--login {
     padding: 16px 20px;
   }
@@ -2647,7 +2683,15 @@ a.header-btn:hover { text-decoration: none; }
   .ap-page {
     padding: 4px 8px 3px;
   }
-  .ap-page--signup {\n  min-height: 100vh;\n  min-height: 100svh;\n  min-height: 100dvh;\n  padding: var(--space-4) var(--space-4);\n  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),\n              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),\n              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);\n}
+  .ap-page--signup {
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding: var(--space-4) var(--space-4);
+  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),
+              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),
+              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);
+}
   .ap-card--signup {
     max-height: min(700px, calc(100svh - 28px));
     max-height: min(700px, calc(100dvh - 28px));
@@ -2729,7 +2773,15 @@ a.header-btn:hover { text-decoration: none; }
 
 /* ── Extremely short viewports (windows under ~460px tall) ── */
 @media (max-height: 460px) {
-  .ap-page--signup {\n  min-height: 100vh;\n  min-height: 100svh;\n  min-height: 100dvh;\n  padding: var(--space-4) var(--space-4);\n  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),\n              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),\n              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);\n}
+  .ap-page--signup {
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding: var(--space-4) var(--space-4);
+  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),
+              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),
+              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);
+}
   .ap-card--signup {
     max-height: min(700px, calc(100svh - 24px));
     max-height: min(700px, calc(100dvh - 24px));
@@ -2797,7 +2849,15 @@ a.header-btn:hover { text-decoration: none; }
   }
   /* Stacked layout: the card owns the viewport height, so the page itself
      never scrolls (field spacing is handled by --signup-gap below). */
-  .ap-page--signup {\n  min-height: 100vh;\n  min-height: 100svh;\n  min-height: 100dvh;\n  padding: var(--space-4) var(--space-4);\n  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),\n              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),\n              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);\n}
+  .ap-page--signup {
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding: var(--space-4) var(--space-4);
+  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),
+              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),
+              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);
+}
   .ap-card {
     flex-direction: column;
     max-width: 500px;
@@ -2888,7 +2948,15 @@ a.header-btn:hover { text-decoration: none; }
   .ap-page {
     padding: 16px 14px;
   }
-  .ap-page--signup {\n  min-height: 100vh;\n  min-height: 100svh;\n  min-height: 100dvh;\n  padding: var(--space-4) var(--space-4);\n  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),\n              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),\n              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);\n}
+  .ap-page--signup {
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding: var(--space-4) var(--space-4);
+  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),
+              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),
+              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);
+}
   .ap-form-panel {
     padding: 28px 18px;
   }
@@ -2950,7 +3018,15 @@ a.header-btn:hover { text-decoration: none; }
 /* Phones: keep the same even spacing but tighten the chrome so the whole
    form fits on screen without a scrollbar. */
 @media (max-width: 860px) and (max-height: 780px) {
-  .ap-page--signup {\n  min-height: 100vh;\n  min-height: 100svh;\n  min-height: 100dvh;\n  padding: var(--space-4) var(--space-4);\n  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),\n              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),\n              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);\n}
+  .ap-page--signup {
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding: var(--space-4) var(--space-4);
+  background: radial-gradient(1400px 700px at 10% 10%, rgba(0, 181, 165, 0.18) 0%, rgba(0, 181, 165, 0) 62%),
+              radial-gradient(1000px 600px at 90% 15%, rgba(245, 166, 35, 0.16) 0%, rgba(245, 166, 35, 0) 58%),
+              linear-gradient(135deg, #f7fffd 0%, #faf7f0 48%, #fff4e6 100%);
+}
   .ap-page--signup .ap-footer {
     display: none;
   }
