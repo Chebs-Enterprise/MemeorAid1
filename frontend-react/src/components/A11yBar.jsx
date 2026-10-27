@@ -88,7 +88,7 @@ export default function A11yBar() {
             ))}
           </div>
 
-          <span className="a11y-panel-label">Contrast</span>
+          <span className="a11y-panel-label">Theme</span>
           <button
             type="button"
             className={`a11y-opt a11y-opt-wide${contrast ? ' is-active' : ''}`}
@@ -96,7 +96,7 @@ export default function A11yBar() {
             onClick={() => setContrast((c) => !c)}
           >
             <Icon name={contrast ? 'check' : 'reveal'} size={18} />
-            High contrast
+            Dark high contrast
           </button>
         </div>
       )}

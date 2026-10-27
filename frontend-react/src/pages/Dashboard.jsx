@@ -81,8 +81,6 @@ export default function Dashboard() {
 
   const firstName = (user?.fullname || '').split(' ')[0] || 'there';
   const dueCount = checkin?.due_count ?? 0;
-  const nextMemory = memories[0];
-
   return (
     <>
       <Toast message={message} />
@@ -91,8 +89,8 @@ export default function Dashboard() {
       <section className="greeting-card">
         <div className="greeting-inner">
           <div className="greeting-copy">
-            <span className="greeting-eyebrow">{todayLabel()}</span>
             <h2>Good day, {firstName}</h2>
+            <time className="greeting-date">{todayLabel()}</time>
           </div>
           <div className="greeting-side">
             {checkin && checkin.checked_in_today ? (
@@ -210,27 +208,6 @@ export default function Dashboard() {
         )}
       </section>
 
-      {nextMemory && (
-        <section className="dash-section">
-          <div className="section-head">
-            <h2>Up next</h2>
-            <Link to="/recall" className="section-link">Start a session</Link>
-          </div>
-          <article className="upnext-card">
-            <span className="upnext-icon">
-              <Icon name={categoryIcon(nextMemory.category)} size={24} />
-            </span>
-            <div className="upnext-body">
-              <span className="upnext-category">{nextMemory.category}</span>
-              <p className="upnext-text">{nextMemory.content}</p>
-            </div>
-            <div className="upnext-when">
-              <span className="upnext-when-label">Comes back</span>
-              <span className="upnext-when-value">{relativeDay(nextMemory.nextreviewdate)}</span>
-            </div>
-          </article>
-        </section>
-      )}
       </div>
     </>
   );
