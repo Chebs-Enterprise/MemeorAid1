@@ -99,6 +99,52 @@ const TRUST = [
 
 export default function Landing() {
   const [navOpen, setNavOpen] = useState(false);
+  const [testimonialIndex, setTestimonialIndex] = useState(0);
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) return undefined;
+    const carousel = document.querySelector('[data-testimonial-carousel]');
+    let paused = false;
+    const onEnter = () => { paused = true; };
+    const onLeave = () => { paused = false; };
+    carousel?.addEventListener('mouseenter', onEnter);
+    carousel?.addEventListener('mouseleave', onLeave);
+    const interval = setInterval(() => {
+      if (paused) return;
+      setTestimonialIndex((i) => (i + 1) % 5);
+    }, 4500);
+    return () => {
+      clearInterval(interval);
+      carousel?.removeEventListener('mouseenter', onEnter);
+      carousel?.removeEventListener('mouseleave', onLeave);
+    };
+  }, []);
+
+  useEffect(() => {
+    const carousel = document.querySelector('[data-testimonial-carousel]');
+    const track = carousel?.querySelector('.lp-testimonial-track');
+    const dots = carousel?.querySelectorAll('.lp-testimonial-dot');
+    if (track) {
+      track.style.transform = `translateX(-${testimonialIndex * 100}%)`;
+    }
+    dots?.forEach((dot, idx) => {
+      dot.classList.toggle('is-active', idx === testimonialIndex);
+    });
+  }, [testimonialIndex]);
+
+  useEffect(() => {
+    const carousel = document.querySelector('[data-testimonial-carousel]');
+    const dots = carousel?.querySelectorAll('.lp-testimonial-dot');
+    const handler = (e) => {
+      const btn = e.target.closest('.lp-testimonial-dot');
+      if (!btn) return;
+      const idx = Number(btn.getAttribute('data-dot'));
+      if (!Number.isNaN(idx)) setTestimonialIndex(idx);
+    };
+    carousel?.addEventListener('click', handler);
+    return () => carousel?.removeEventListener('click', handler);
+  }, []);
 
   /**
    * Scrolls to a section and keeps the URL in step.
@@ -196,7 +242,7 @@ export default function Landing() {
             <div className="lp-mockup-card">
               <div className="lp-mockup-photo">
                 <img
-                  src="/landing-hero-senior.jpg"
+                  src="/hero-older-black-adult4.jpg"
                   alt=""
                   width="1000"
                   height="667"
@@ -316,28 +362,69 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* 7. TESTIMONIAL */}
-      <section className="lp-testimonial" aria-label="User testimonial">
-        <div className="lp-section-inner lp-testimonial-inner">
-          <div className="lp-testimonial-photo" aria-hidden="true">
-            <img
-              src="/landing-testimonial-senior.jpg"
-              alt=""
-              width="480"
-              height="480"
-              loading="lazy"
-            />
+      {/* 7. TESTIMONIALS CAROUSEL */}
+      <section className="lp-testimonial" aria-label="User testimonials">
+        <div className="lp-section-inner lp-testimonial-carousel" data-testimonial-carousel onMouseEnter={() => { /* pause handled by interval clear concept - simplified */ }}>
+          <div className="lp-testimonial-track">
+            {[
+              {
+                img: '/testimonial-older-black-family.jpg',
+                quote: '"For the first time in years, I don\'t wake up feeling anxious about what I might forget today. MemorAid is the quiet friend I never knew I needed."',
+                name: 'Grace, 71',
+                detail: 'Living with Mild Cognitive Impairment',
+              },
+              {
+                img: '/testimonial2.jpg',
+                quote: '"MemorAid helps me remember my grandchildren\'s names and all the little things that matter. It gives me confidence again."',
+                name: 'Walter, 74',
+                detail: 'Retired Teacher',
+              },
+              {
+                img: '/testimonial3.jpg',
+                quote: '"I used to worry about forgetting appointments. Now I just check my morning reminder, and it keeps me right on track."',
+                name: 'Dorothy, 69',
+                detail: 'Community Volunteer',
+              },
+              {
+                img: '/testimonial4.jpg',
+                quote: '"Practicing with the gentle questions each day really works. I can see my memory getting stronger, and so can my family."',
+                name: 'James, 76',
+                detail: 'Retired Mechanic',
+              },
+              {
+                img: '/testimonial5.jpg',
+                quote: '"It\'s so easy to use, and the family alerts give my daughter peace of mind. I feel cared for, not watched over."',
+                name: 'Ruth, 72',
+                detail: 'Grandmother',
+              },
+            ].map((t, idx) => (
+              <div className="lp-testimonial-slide" key={idx}>
+                <div className="lp-testimonial-inner">
+                  <div className="lp-testimonial-photo" aria-hidden="true">
+                    <img src={t.img} alt="" width="480" height="480" loading="lazy" />
+                  </div>
+                  <div className="lp-testimonial-content">
+                    <span className="lp-quote-mark" aria-hidden="true">"</span>
+                    <blockquote className="lp-quote-text">{t.quote}</blockquote>
+                    <div className="lp-quote-author">
+                      <span className="lp-author-name">{t.name}</span>
+                      <span className="lp-author-detail">{t.detail}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="lp-testimonial-content">
-            <span className="lp-quote-mark" aria-hidden="true">"</span>
-            <blockquote className="lp-quote-text">
-              "For the first time in years, I don't wake up feeling anxious about what I might
-              forget today. MemorAid is the quiet friend I never knew I needed."
-            </blockquote>
-            <div className="lp-quote-author">
-              <span className="lp-author-name">Grace, 71</span>
-              <span className="lp-author-detail">Living with Mild Cognitive Impairment</span>
-            </div>
+          <div className="lp-testimonial-dots">
+            {[0,1,2,3,4].map((i) => (
+              <button
+                key={i}
+                type="button"
+                className="lp-testimonial-dot"
+                aria-label={`Go to testimonial ${i + 1}`}
+                data-dot={i}
+              />
+            ))}
           </div>
         </div>
       </section>

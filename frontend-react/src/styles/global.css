@@ -532,12 +532,20 @@ select {
 }
 .app-sidebar .brand { color: #fff; padding: 0 var(--space-3) var(--space-6); }
 .app-sidebar .brand-mark { background: var(--teal-forest); box-shadow: none; }
+/* Give every navigation row its own slot. The links used to sit flush against
+   one another, so two adjacent rounded highlights touched and the 160ms fade
+   between them read as one block bleeding into the neighbour. The same 4px
+   rhythm already separates the brand, footer and footer links. */
+.app-sidebar nav { display: flex; flex-direction: column; gap: var(--space-1); }
 .sidebar-link {
   display: flex; align-items: center; gap: var(--space-3);
   min-height: var(--min-touch-target); padding: 12px var(--space-3);
   border-radius: var(--radius-md); color: var(--text-sidebar);
   font-size: calc(18px * var(--font-scale-text)); font-weight: 400;
-  transition: background-color var(--transition-fast), color var(--transition-fast);
+  /* Fade the highlight IN only. On leave there is deliberately no transition,
+     so an outgoing row clears at once and two adjacent rows can never be
+     painted together while the pointer crosses between them. */
+  transition: none;
   position: relative;
 }
 /* The active marker is an inset pseudo-element rather than a border-right, so
@@ -547,7 +555,11 @@ select {
   width: 3px; height: 0; border-radius: 3px 0 0 3px; background: var(--teal-300);
   transition: height var(--transition-fast);
 }
-.sidebar-link:hover { background: var(--bg-sidebar-hover); color: var(--text-sidebar-hover); text-decoration: none; }
+.sidebar-link:hover {
+  background: var(--bg-sidebar-hover); color: var(--text-sidebar-hover);
+  text-decoration: none;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
 .sidebar-link.is-active { background: var(--bg-sidebar-active); color: var(--text-sidebar-hover); }
 .sidebar-link.is-active::after { height: 60%; }
 .sidebar-footer {
@@ -1001,9 +1013,14 @@ a.header-btn:hover { text-decoration: none; }
   border-radius: var(--radius-md); padding: var(--space-3) var(--space-5);
   font-family: var(--font-mono); font-size: calc(17px * var(--font-scale-text));
   color: var(--text-muted);
+  text-align: left; cursor: pointer;
   transition: border-color var(--transition-fast), background-color var(--transition-fast),
               color var(--transition-fast);
 }
+.technique-chip:hover:not(:disabled) {
+  border-color: var(--teal-forest); color: var(--text-main);
+}
+.technique-chip:disabled { cursor: wait; }
 .technique-chip small {
   display: block; font-family: var(--font-base); font-weight: 400;
   color: var(--text-dim); margin-top: var(--space-1); font-size: calc(15px * var(--font-scale-text));
@@ -1106,10 +1123,69 @@ a.header-btn:hover { text-decoration: none; }
 .chat-mode-label { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.25; text-align: left; }
 .chat-mode-label small { font-size: calc(13px * var(--font-scale-text)); opacity: 0.8; }
 
-.chat-bubble-wrap { max-width: 76%; display: flex; flex-direction: column; }
+.chat-bubble-wrap { max-width: 76%; display: flex; flex-direction: column; position: relative; }
 .chat-row.is-user .chat-bubble-wrap { align-items: flex-end; }
 .chat-row.is-ai .chat-bubble-wrap { align-items: flex-start; }
 .chat-bubble-wrap .chat-bubble { max-width: 100%; }
+
+/* Per-message actions (copy / share / delete). On a pointer device the three
+   small icons sit just outside the bubble's top corner and fade in on hover or
+   keyboard focus, so nothing is added to the message's height and the thread
+   does not move. On touch screens and phones there is no room beside a bubble
+   (and no hover to reveal them), so they become a permanently visible row
+   underneath it. */
+.chat-message-actions {
+  position: absolute; top: 6px;
+  display: flex; align-items: center; gap: 2px;
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+/* Start at the bubble edge and use padding for the visual gap. The padding is
+   part of the hover target, so the pointer can travel from the bubble to the
+   icons without a dead strip in between that would hide them mid-move. */
+.chat-row.is-ai .chat-message-actions { left: 100%; padding-left: 8px; }
+.chat-row.is-user .chat-message-actions { right: 100%; padding-right: 8px; }
+.chat-bubble-wrap:hover .chat-message-actions,
+.chat-bubble-wrap:focus-within .chat-message-actions { opacity: 1; pointer-events: auto; }
+
+.chat-action {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; padding: 0;
+  border: 0; border-radius: var(--radius-xs);
+  background: transparent; color: var(--text-dim); cursor: pointer;
+  font-family: var(--font-base); transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+.chat-action:hover { background: rgba(0, 107, 98, 0.09); color: var(--teal-forest); }
+.chat-action:focus-visible { outline: 3px solid var(--teal-300); outline-offset: 2px; }
+.chat-action.is-danger:hover { background: rgba(192, 57, 43, 0.09); color: var(--rose-danger); }
+
+/* The delete confirmation is compact and inline: two words, not a modal. */
+.chat-delete-confirm {
+  display: inline-flex; align-items: center; gap: 2px;
+  padding: 2px; border: 1px solid var(--border-card);
+  border-radius: var(--radius-pill); background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+}
+.chat-delete-confirm .chat-action {
+  width: auto; height: 28px; padding: 0 9px;
+  border-radius: var(--radius-pill);
+  font-size: calc(13px * var(--font-scale-text)); line-height: 1;
+}
+.chat-delete-confirm .chat-action.is-icon { width: 28px; padding: 0; }
+.chat-delete-confirm .chat-action.is-danger { color: var(--rose-danger); }
+.chat-delete-confirm .chat-action.is-danger:hover { background: rgba(192, 57, 43, 0.09); }
+.chat-delete-confirm .chat-action:disabled { opacity: 0.65; cursor: default; }
+
+@media (hover: none), (max-width: 640px) {
+  .chat-message-actions,
+  .chat-row.is-ai .chat-message-actions,
+  .chat-row.is-user .chat-message-actions {
+    position: static; opacity: 1; pointer-events: auto;
+    margin-top: var(--space-1); padding: 0;
+  }
+  .chat-action { width: 40px; height: 40px; }
+  .chat-delete-confirm .chat-action { width: auto; height: 34px; padding: 0 12px; }
+}
 
 .chat-context { margin-top: var(--space-2); display: flex; flex-direction: column; gap: var(--space-2); }
 .chat-context-label {
@@ -1788,6 +1864,24 @@ a.header-btn:hover { text-decoration: none; }
   padding: 88px var(--space-7);
 }
 
+.lp-testimonial-carousel {
+  max-width: 900px;
+  margin: 0 auto;
+  overflow: hidden;
+  position: relative;
+}
+
+.lp-testimonial-track {
+  display: flex;
+  transition: transform 0.8s ease-in-out;
+  will-change: transform;
+}
+
+.lp-testimonial-slide {
+  min-width: 100%;
+  flex-shrink: 0;
+}
+
 .lp-testimonial-inner {
   display: flex;
   align-items: center;
@@ -1910,6 +2004,7 @@ a.header-btn:hover { text-decoration: none; }
   .lp-family-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-5); }
   .lp-testimonial-inner { flex-direction: column; text-align: center; }
   .lp-testimonial-photo { margin: 0 auto; }
+  .lp-testimonial { padding: 56px var(--space-5); }
   .lp-quote-mark { text-align: center; }
   .lp-trust-bar { gap: var(--space-6); }
   .lp-nav-links { display: none; }
@@ -3075,3 +3170,5 @@ a.header-btn:hover { text-decoration: none; }
     font-size: calc(12.5px * var(--font-scale-text));
   }
 }
+
+.lp-testimonial-dots{display:flex;justify-content:center;gap:10px;margin-top:32px}.lp-testimonial-dot{width:10px;height:10px;border-radius:50%;border:none;background:rgba(0,62,57,0.3);cursor:pointer;padding:0}.lp-testimonial-dot.is-active{background:var(--teal-900);width:28px;border-radius:6px}@media (prefers-reduced-motion:reduce){.lp-testimonial-track{transition:none}}

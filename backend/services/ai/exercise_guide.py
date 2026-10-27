@@ -24,88 +24,87 @@ TECHNIQUES = {
     "method_of_loci": {
         "name": "Method of Loci",
         "summary": (
-            "Place each thing you want to remember at a spot along a route you "
-            "know well — like the walk from your front door to the market. To "
-            "recall, walk the route in your mind and collect them."
+            "Put each thing you want to remember in a different spot along a route you "
+            "know well — like moving from your front door to your kitchen. "
+            "To remember them, just walk that route in your mind."
         ),
         "steps": [
-            "Choose a familiar route — for example, your home from room to room.",
-            "Take the items you want to remember, one by one.",
-            "Mentally place each item at the next spot on your route, making the picture a little funny so it sticks.",
-            "Rest for a moment, then walk the route again in your mind.",
-            "Collect each item as you pass its spot and say it aloud.",
+            "Pick a route you know well. For example, from your front door to your room.",
+            "Take the items you want to remember one by one.",
+            "Put each item in a different spot along that route. Make a funny picture in your mind to help you remember.",
+            "Take a short break. Then walk that route in your mind again.",
+            "As you pass each spot in your mind, say the item out loud.",
         ],
     },
     "elaborative_encoding": {
         "name": "Elaborative Encoding",
         "summary": (
-            "Connect new information to something you already know — a story, "
-            "a feeling, or an old memory. Deeper connections make stronger "
-            "memories."
+            "Link what you want to remember to something you already know. "
+            "It could be a person, a place, a story, or how you feel. "
+            "This helps you remember better."
         ),
         "steps": [
-            "Take the new thing you want to remember.",
+            "Pick one thing you want to remember.",
             "Ask yourself: what does this remind me of?",
-            "Link it to a person, a story, or a feeling from your own life.",
-            "Say the connection out loud in one full sentence.",
-            "Repeat the connection once more after a short pause.",
+            "Link it to something from your life — a person, a place, or an event.",
+            "Say that link out loud in one sentence.",
+            "Take a short pause and say the link again.",
         ],
     },
     "spaced_retrieval": {
         "name": "Spaced Retrieval Training",
         "summary": (
-            "Test yourself on the same piece of information several times in "
-            "one sitting, with slightly longer pauses each time. This is the "
-            "technique clinicians use to strengthen name and face recall."
+            "Test yourself on the same thing a few times, with longer breaks each time. "
+            "This helps you remember it better over time."
         ),
         "steps": [
-            "Choose one thing to remember — a name, a date, or an appointment.",
-            "Say it from memory straight away.",
+            "Pick one thing to remember — like a name, a date, or an appointment.",
+            "Say it from memory right away.",
             "Wait about 30 seconds, then say it again from memory.",
-            "Wait about two minutes, and test yourself once more.",
-            "Finish with one last test after five minutes.",
+            "Wait about 2 minutes, then say it again from memory.",
+            "Wait a bit more, then test yourself one last time.",
         ],
     },
     "face_name_association": {
         "name": "Face–Name Association",
         "summary": (
-            "Tie a person's name to one distinctive feature or a mental "
-            "picture. The hook gives your memory something to grab."
+            "Link a person's name to one thing you notice about their face, "
+            "like their smile or glasses. Make a quick picture in your mind to help you remember."
         ),
         "steps": [
-            "Think of the person's face clearly in your mind.",
-            "Notice one distinctive feature — their smile, glasses, or hair.",
-            "Pair the feature with their name in a short rhyme or picture.",
-            "Say the name aloud while you picture the feature.",
-            "Recall the pair once more after a minute.",
+            "Think clearly of the person's face.",
+            "Pick one thing you notice — like their smile, glasses, or hair.",
+            "Make a funny or clear picture linking that thing to their name.",
+            "Say their name out loud as you picture it.",
+            "Try to recall the name again after a short pause.",
         ],
     },
     "chunking": {
         "name": "Chunking",
         "summary": (
-            "Group long lists into small meaningful groups. Smaller groups "
-            "are much easier for your memory to hold."
+            "Split a long list into small groups of things that go together. "
+            "It's easier to remember small groups than a long list."
         ),
         "steps": [
-            "Look at the information you need to remember.",
-            "Find natural groups of two or three items that belong together.",
-            "Give each group a short label in your own words.",
-            "Remember the labels first, then the items inside each group.",
-            "Repeat the groups back in order, then out of order.",
+            "Look at the list you need to remember.",
+            "Put the items into small groups of two or three that make sense together.",
+            "Give each group a short name in your own words.",
+            "Try to remember the group names first, then the items in each group.",
+            "Say the groups back in order, then in a different order.",
         ],
     },
     "active_observation": {
         "name": "Active Observation",
         "summary": (
-            "Study a set of details for a short while, then try to recall as "
-            "many as you can without looking. This keeps your attention sharp."
+            "Look closely at something for a short time, then try to remember as much as you can. "
+            "Do it again to catch what you missed."
         ),
         "steps": [
-            "Choose a scene — a photograph, your street outside the window, or a room.",
-            "Study it carefully for about one minute.",
-            "Look away and list everything you can remember.",
-            "Look back and check what you missed.",
-            "Try once more for the details you missed.",
+            "Pick something to look at — like a room, your street, or a picture.",
+            "Look at it closely for about one minute. Pay attention to small details.",
+            "Look away and say as much as you can remember.",
+            "Look back and see what you missed.",
+            "Try again to remember the things you missed.",
         ],
     },
 }
@@ -135,9 +134,15 @@ def select_technique(user):
     return TECHNIQUE_ORDER[(last_index + 1) % len(TECHNIQUE_ORDER)]
 
 
-def build_exercise(user, weakest_category_name=None, sample_content=None):
-    """Return a dict describing the exercise session to present."""
-    technique_key = select_technique(user)
+def build_exercise(user, weakest_category_name=None, sample_content=None, technique_key=None):
+    """Return a dict describing the exercise session to present.
+
+    ``technique_key`` lets the client open a specific one of the six
+    techniques when the user navigates between them. Without it the existing
+    adaptive least-recently-used choice is used.
+    """
+    if technique_key not in TECHNIQUES:
+        technique_key = select_technique(user)
     spec = TECHNIQUES[technique_key]
 
     guidance = None

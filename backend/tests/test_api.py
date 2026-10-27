@@ -1,5 +1,6 @@
 """End-to-end API tests against an in-memory SQLite database with the
 Gemini API forced offline (fallback generators must carry the flow)."""
+import json
 import os
 import sys
 
@@ -163,6 +164,27 @@ class TestExercises:
         }, headers=auth_headers).get_json()
         assert res["exercise_streak"] == 1
 
+    def test_next_can_open_a_named_technique(self, client, auth_headers):
+        for technique in (
+            "method_of_loci",
+            "elaborative_encoding",
+            "spaced_retrieval",
+            "face_name_association",
+            "chunking",
+            "active_observation",
+        ):
+            res = client.get(
+                f"/api/exercises/next?technique={technique}", headers=auth_headers
+            ).get_json()
+            assert res["success"] is True
+            assert res["exercise"]["technique"] == technique
+            assert res["exercise"]["exerciseid"]
+
+        bad = client.get(
+            "/api/exercises/next?technique=not_a_technique", headers=auth_headers
+        )
+        assert bad.status_code == 400
+
 
 class TestChatAndCheckin:
     def test_chat_reply_is_safe_fallback(self, client, auth_headers):
@@ -192,6 +214,97 @@ class TestAnalytics:
         assert data["recall_streak"] == 1
         assert len(data["trend"]) == 8
         assert data["motivational_message"]
+
+
+class TestChatMessageDeletion:
+    """One turn can be removed without touching anything else.
+
+    The chat rows have no ON DELETE CASCADE to the retrieval vectors, and the
+    vectors have no foreign key, so both tables must be handled explicitly.
+    """
+
+    def test_delete_one_turn_keeps_the_other_and_saved_memories(
+        self, client, auth_headers
+    ):
+        from models import ChatMessage, EmbeddingRecord, MemoryEntry
+
+        cats = client.get("/api/categories", headers=auth_headers).get_json()["categories"]
+        _create_memory(client, auth_headers, cats[0]["categoryid"])
+        memory_ids = sorted(m.memoryid for m in MemoryEntry.query.all())
+        assert memory_ids
+
+        res = client.post(
+            "/api/chat", json={"message": "Where are my glasses?"}, headers=auth_headers
+        )
+        assert res.status_code == 200
+
+        history = client.get("/api/chat/history", headers=auth_headers).get_json()["messages"]
+        assert len(history) == 2
+        user_turn = next(m for m in history if m["role"] == "user")
+        ai_turn = next(m for m in history if m["role"] == "assistant")
+        assert (
+            EmbeddingRecord.query.filter_by(
+                kind="chat", refid=user_turn["messageid"]
+            ).count()
+            == 1
+        )
+
+        deleted = client.delete(
+            f"/api/chat/messages/{user_turn['messageid']}", headers=auth_headers
+        )
+        assert deleted.status_code == 200
+        assert deleted.get_json()["messageid"] == user_turn["messageid"]
+
+        remaining = client.get("/api/chat/history", headers=auth_headers).get_json()["messages"]
+        assert [m["messageid"] for m in remaining] == [ai_turn["messageid"]]
+        assert db.session.get(ChatMessage, user_turn["messageid"]) is None
+        assert db.session.get(ChatMessage, ai_turn["messageid"]) is not None
+
+        # The removed turn's vector is gone; the other turn's vector survives.
+        assert EmbeddingRecord.query.filter_by(kind="chat", refid=user_turn["messageid"]).count() == 0
+        assert EmbeddingRecord.query.filter_by(kind="chat", refid=ai_turn["messageid"]).count() == 1
+
+        # Separately saved memories were not collateral damage.
+        assert sorted(m.memoryid for m in MemoryEntry.query.all()) == memory_ids
+
+    def test_delete_is_scoped_to_the_owner(self, client, auth_headers):
+        client.post("/api/chat", json={"message": "hello"}, headers=auth_headers)
+        history = client.get("/api/chat/history", headers=auth_headers).get_json()["messages"]
+        messageid = history[0]["messageid"]
+
+        other = client.post("/api/auth/register", json={
+            "fullname": "Other User", "email": "other@example.com",
+            "password": "password123", "agegroup": "above-65",
+        }).get_json()
+        other_headers = {"Authorization": f"Bearer {other['token']}"}
+
+        res = client.delete(f"/api/chat/messages/{messageid}", headers=other_headers)
+        assert res.status_code == 404
+
+        still_there = client.get("/api/chat/history", headers=auth_headers).get_json()["messages"]
+        assert [m["messageid"] for m in still_there] == [m["messageid"] for m in history]
+
+    def test_deleting_a_missing_message_is_404(self, client, auth_headers):
+        res = client.delete("/api/chat/messages/999999", headers=auth_headers)
+        assert res.status_code == 404
+        assert res.get_json()["success"] is False
+
+    def test_stream_reports_ids_so_a_new_turn_can_be_deleted(self, client, auth_headers):
+        res = client.post(
+            "/api/chat/stream", json={"message": "Where are my glasses?"}, headers=auth_headers
+        )
+        assert res.status_code == 200
+        payloads = [
+            json.loads(line[6:])
+            for line in res.get_data(as_text=True).splitlines()
+            if line.startswith("data: ")
+        ]
+        done = next(payload for payload in payloads if "messageids" in payload)
+        assert done["messageids"]["user"]
+        assert done["messageids"]["assistant"]
+
+        history = client.get("/api/chat/history", headers=auth_headers).get_json()["messages"]
+        assert {m["messageid"] for m in history} == set(done["messageids"].values())
 
 
 class TestAccountDeletion:

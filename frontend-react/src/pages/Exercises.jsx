@@ -1,15 +1,18 @@
 /**
  * Exercise session — FR-08.
  *
- * The backend chooses one of the six validated techniques (least recently
- * used, aimed at the user's weakest recall category). This page then runs it
- * as a tutor-guided session: one instruction or question at a time, with
- * feedback, examples, hints, pause/resume and a completion summary.
+ * The backend suggests one of the six validated techniques (least recently
+ * used, aimed at the user's weakest recall category), but the user can open any
+ * of them directly and move between them freely. Each technique keeps its own
+ * board — question index, answers, feedback and result — so looking elsewhere
+ * never discards progress. Within a board, Previous and Next let the user
+ * revisit or temporarily skip a question.
  *
- * The session is only recorded as complete after the user has worked through
- * every step and reached the summary — opening the page is not enough.
+ * A question counts as done only once it has feedback, and an exercise is only
+ * recorded as complete after every question has been answered and the user has
+ * reached the summary — opening the page or switching exercises is not enough.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import Icon from '../components/Icon.jsx';
@@ -24,6 +27,37 @@ const ALL_TECHNIQUES = [
   ['chunking', 'Chunking'],
   ['active_observation', 'Active Observation'],
 ];
+
+/** The saved state of one question, kept while the user looks elsewhere. */
+const EMPTY_STEP_STATE = { answer: '', feedback: null };
+
+/**
+ * One independent exercise board. Keeping the built tutor session (and its
+ * closure over earlier answers) is what lets a user leave an exercise and come
+ * back without losing the context their later questions depend on.
+ */
+function createBoard(exercise) {
+  return {
+    exercise,
+    session: buildTutorSession(exercise),
+    phase: 'intro',
+    stepIndex: 0,
+    visited: {},
+    steps: {},
+    answered: 0,
+    correct: 0,
+    result: null,
+    saving: 'idle',
+  };
+}
+
+/** Questions not yet checked. They stay incomplete until answered. */
+function unansweredSteps(board) {
+  if (!board) return [];
+  return board.session.steps.filter(
+    (item) => item.kind === 'ask' && !board.steps[item.id]?.feedback,
+  );
+}
 
 function resolve(value) {
   return typeof value === 'function' ? value() : value;
@@ -43,44 +77,56 @@ function performanceMessage(result) {
 }
 
 export default function Exercises() {
-  const [exercise, setExercise] = useState(null);
+  // One board per technique. Switching exercises only changes which board is
+  // shown; every board keeps its own question index and answers.
+  const [boards, setBoards] = useState({});
+  const [activeTechnique, setActiveTechnique] = useState(null);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [phase, setPhase] = useState('intro');
-  const [stepIndex, setStepIndex] = useState(0);
-  const [answer, setAnswer] = useState('');
   const [answerError, setAnswerError] = useState('');
-  const [feedback, setFeedback] = useState(null);
-  const [hintShown, setHintShown] = useState(false);
-  const [answered, setAnswered] = useState(0);
-  const [correct, setCorrect] = useState(0);
-  const [result, setResult] = useState(null);
-  const [saving, setSaving] = useState('idle');
   const { message, showToast } = useToast();
 
-  const session = useMemo(
-    () => (exercise ? buildTutorSession(exercise) : null),
-    [exercise],
-  );
+  const board = activeTechnique ? boards[activeTechnique] || null : null;
+  const exercise = board?.exercise || null;
+  const session = board?.session || null;
   const steps = session?.steps || [];
+  const phase = board?.phase || 'intro';
+  const stepIndex = board?.stepIndex || 0;
   const step = steps[stepIndex] || null;
   const totalSteps = steps.length;
   const askTotal = session?.askTotal || 0;
   const recallTotal = session?.recallTotal || 0;
+  const stepState = step ? board?.steps[step.id] || EMPTY_STEP_STATE : EMPTY_STEP_STATE;
+  const { answer, feedback } = stepState;
+  const answered = board?.answered || 0;
+  const correct = board?.correct || 0;
+  const result = board?.result || null;
+  const saving = board?.saving || 'idle';
+  const unanswered = unansweredSteps(board);
 
-  const resetSession = useCallback(() => {
-    setPhase('intro');
-    setStepIndex(0);
-    setAnswer('');
-    setAnswerError('');
-    setFeedback(null);
-    setHintShown(false);
-    setAnswered(0);
-    setCorrect(0);
-    setResult(null);
-    setSaving('idle');
+  const updateBoard = useCallback((technique, updater) => {
+    if (!technique) return;
+    setBoards((previous) => {
+      const current = previous[technique];
+      if (!current) return previous;
+      const next = typeof updater === 'function' ? updater(current) : { ...current, ...updater };
+      return next === current ? previous : { ...previous, [technique]: next };
+    });
   }, []);
+
+  const updateStep = useCallback(
+    (technique, stepId, patch) => {
+      updateBoard(technique, (current) => {
+        const existing = current.steps[stepId] || EMPTY_STEP_STATE;
+        return {
+          ...current,
+          steps: { ...current.steps, [stepId]: { ...existing, ...patch } },
+        };
+      });
+    },
+    [updateBoard],
+  );
 
   const load = useCallback(async () => {
     setBusy(true);
@@ -89,97 +135,164 @@ export default function Exercises() {
         api.getNextExercise(),
         api.getExerciseHistory(),
       ]);
-      setExercise(next.exercise);
+      setBoards((previous) => ({
+        ...previous,
+        [next.exercise.technique]: createBoard(next.exercise),
+      }));
+      setActiveTechnique(next.exercise.technique);
+      setAnswerError('');
       setHistory(hist.exercises || []);
-      resetSession();
     } catch (err) {
       showToast(err.message);
     } finally {
       setBusy(false);
       setLoading(false);
     }
-  }, [resetSession, showToast]);
+  }, [showToast]);
 
   useEffect(() => {
     load();
   }, [load]);
 
+  // Open any of the six exercises directly. An exercise already visited is
+  // shown exactly as it was left; a new one is fetched for that technique.
+  const switchExercise = useCallback(
+    async (technique) => {
+      if (!technique || technique === activeTechnique) return;
+      setAnswerError('');
+      if (boards[technique]) {
+        setActiveTechnique(technique);
+        return;
+      }
+
+      setBusy(true);
+      try {
+        const res = await api.getNextExercise(technique);
+        const opened = res.exercise;
+        setBoards((previous) =>
+          previous[opened.technique]
+            ? previous
+            : { ...previous, [opened.technique]: createBoard(opened) },
+        );
+        setActiveTechnique(opened.technique);
+      } catch (err) {
+        showToast(err.message);
+      } finally {
+        setBusy(false);
+      }
+    },
+    [activeTechnique, boards, showToast],
+  );
+
+  // "Show me a different one" and the summary's Finish button both move to the
+  // next exercise without discarding anything already done.
+  const goToDifferentExercise = () => {
+    const index = ALL_TECHNIQUES.findIndex(([key]) => key === activeTechnique);
+    const nextKey = ALL_TECHNIQUES[(index + 1) % ALL_TECHNIQUES.length][0];
+    switchExercise(nextKey);
+  };
+
   const start = () => {
+    if (!board) return;
     // A fresh exercise object rebuilds the tutor script, so a repeat starts
     // with clean answers even though the backend session id is reused.
-    setExercise((current) => (current ? { ...current } : current));
-    setPhase('running');
-    setStepIndex(0);
-    setAnswer('');
+    const fresh = createBoard({ ...board.exercise });
+    fresh.phase = 'running';
+    if (fresh.session.steps[0]) {
+      fresh.visited[fresh.session.steps[0].id] = true;
+    }
+    updateBoard(activeTechnique, () => fresh);
     setAnswerError('');
-    setFeedback(null);
-    setHintShown(false);
-    setAnswered(0);
-    setCorrect(0);
-    setResult(null);
-    setSaving('idle');
   };
 
   const pause = () => {
-    if (phase === 'running') setPhase('paused');
+    if (phase === 'running') updateBoard(activeTechnique, { phase: 'paused' });
   };
 
-  const saveCompletion = async (score) => {
-    if (!exercise) return;
-    setSaving('saving');
+  const goToStep = (index) => {
+    if (!board || !steps[index]) return;
+    const target = steps[index];
+    setAnswerError('');
+    updateBoard(activeTechnique, (current) => ({
+      ...current,
+      stepIndex: index,
+      visited: { ...current.visited, [target.id]: true },
+    }));
+  };
+
+  const saveCompletion = async (technique, exerciseRecord, score) => {
+    if (!exerciseRecord) return;
+    updateBoard(technique, { saving: 'saving' });
     try {
       const res = await api.completeExercise({
-        exerciseid: exercise.exerciseid,
-        technique: exercise.technique,
+        exerciseid: exerciseRecord.exerciseid,
+        technique: exerciseRecord.technique,
         score,
       });
-      setSaving('saved');
-      setResult((current) =>
-        current ? { ...current, streak: res.exercise_streak } : current,
-      );
+      updateBoard(technique, (current) => ({
+        ...current,
+        saving: 'saved',
+        result: current.result
+          ? { ...current.result, streak: res.exercise_streak }
+          : current.result,
+      }));
       showToast(res.message);
       api.getExerciseHistory()
         .then((hist) => setHistory(hist.exercises || []))
         .catch(() => {});
     } catch (err) {
-      setSaving('error');
+      updateBoard(technique, { saving: 'error' });
       showToast(err.message);
     }
   };
 
   const finish = () => {
-    if (!exercise || !session) return;
+    if (!board || !session || unanswered.length > 0) return;
     const score = recallTotal > 0
       ? Math.round((100 * correct) / recallTotal)
       : askTotal > 0
         ? Math.round((100 * answered) / askTotal)
         : 100;
-    setResult({
+    const nextResult = {
       score,
       answered,
       correct,
       recallTotal,
       totalSteps,
       streak: null,
+    };
+    updateBoard(activeTechnique, {
+      phase: 'summary',
+      result: nextResult,
+      saving: 'saving',
     });
-    setPhase('summary');
-    saveCompletion(score);
+    saveCompletion(activeTechnique, board.exercise, score);
   };
 
   const advance = () => {
-    if (stepIndex + 1 >= totalSteps) {
-      finish();
+    if (!board || !step) return;
+    if (stepIndex + 1 < totalSteps) {
+      goToStep(stepIndex + 1);
       return;
     }
-    setStepIndex((index) => index + 1);
-    setAnswer('');
-    setAnswerError('');
-    setFeedback(null);
-    setHintShown(false);
+
+    // Completion keeps the exercise's existing requirement: every question
+    // has been answered. Skipped questions can never be counted as complete.
+    if (unanswered.length > 0) {
+      const firstIndex = steps.findIndex((item) => item.id === unanswered[0].id);
+      goToStep(firstIndex);
+      setAnswerError(
+        unanswered.length === 1
+          ? 'One question still needs an answer before this exercise can be complete. Here it is.'
+          : `${unanswered.length} questions still need answers before this exercise can be complete. Here is the first one.`,
+      );
+      return;
+    }
+    finish();
   };
 
   const submit = () => {
-    if (!step || step.kind !== 'ask' || feedback) return;
+    if (!board || !step || step.kind !== 'ask' || feedback) return;
     if (!answer.trim()) {
       setAnswerError(
         'Take your time. Even a guess is a good start — write whatever comes to mind.',
@@ -196,18 +309,32 @@ export default function Exercises() {
       };
     }
     const isCorrect = Boolean(outcome.correct);
-    setAnswerError('');
-    setFeedback({
+    const nextFeedback = {
       tone: outcome.tone || (isCorrect ? 'success' : 'info'),
       text: outcome.feedback || 'Thank you.',
+    };
+    setAnswerError('');
+    updateBoard(activeTechnique, (current) => {
+      const currentStep = current.steps[step.id] || EMPTY_STEP_STATE;
+      return {
+        ...current,
+        steps: {
+          ...current.steps,
+          [step.id]: {
+            ...currentStep,
+            answer,
+            feedback: nextFeedback,
+          },
+        },
+        answered: current.answered + 1,
+        correct: current.correct + (step.counted && isCorrect ? 1 : 0),
+      };
     });
-    setAnswered((count) => count + 1);
-    if (step.counted && isCorrect) setCorrect((count) => count + 1);
-    if (step.counted && !isCorrect && step.hint) setHintShown(true);
   };
 
   const changeAnswer = (value) => {
-    setAnswer(value);
+    if (!step) return;
+    updateStep(activeTechnique, step.id, { answer: value });
     if (answerError) setAnswerError('');
   };
 
@@ -251,15 +378,32 @@ export default function Exercises() {
         </header>
 
         <section className="technique-grid" aria-label="The six techniques">
-          {ALL_TECHNIQUES.map(([key, label]) => (
-            <div
-              key={key}
-              className={`technique-chip${exercise.technique === key ? ' is-current' : ''}`}
-            >
-              {label}
-              {exercise.technique === key && <small>Today's exercise</small>}
-            </div>
-          ))}
+          {ALL_TECHNIQUES.map(([key, label]) => {
+            const isCurrent = activeTechnique === key;
+            const entry = boards[key];
+            const status = entry?.phase === 'summary'
+              ? 'Completed'
+              : entry && (entry.phase === 'running' || entry.phase === 'paused')
+                ? 'In progress'
+                : null;
+            return (
+              <button
+                key={key}
+                type="button"
+                className={`technique-chip${isCurrent ? ' is-current' : ''}`}
+                onClick={() => switchExercise(key)}
+                disabled={busy}
+                aria-pressed={isCurrent}
+              >
+                {label}
+                {isCurrent ? (
+                  <small>Today's exercise</small>
+                ) : status ? (
+                  <small>{status}</small>
+                ) : null}
+              </button>
+            );
+          })}
         </section>
 
         {phase === 'intro' && (
@@ -284,9 +428,9 @@ export default function Exercises() {
             </ol>
 
             <div className="form-message is-info" style={{ marginBottom: '24px' }}>
-              This is a guided session. You will answer one step at a time, and
-              you can pause whenever you like. MemorAid will only mark the
-              exercise complete once you reach the end.
+              You can move between questions and exercises freely. MemorAid
+              will only mark an exercise complete once every question has been
+              answered.
             </div>
 
             <div className="tutor-actions">
@@ -302,7 +446,7 @@ export default function Exercises() {
               <button
                 type="button"
                 className="btn btn-ghost"
-                onClick={load}
+                onClick={goToDifferentExercise}
                 disabled={busy}
               >
                 <Icon name="refresh" size={20} />
@@ -338,17 +482,22 @@ export default function Exercises() {
             </p>
 
             <div className="recall-progress" aria-hidden="true">
-              {steps.map((item, index) => (
-                <span
-                  key={item.id}
-                  className={`dot${index < stepIndex ? ' is-done' : ''}${index === stepIndex ? ' is-current' : ''}`}
-                  style={{
-                    display: 'inline-block',
-                    width: `${100 / totalSteps}%`,
-                    background: index <= stepIndex ? 'var(--teal-forest)' : 'transparent',
-                  }}
-                />
-              ))}
+              {steps.map((item, index) => {
+                const complete = item.kind === 'ask'
+                  ? Boolean(board?.steps[item.id]?.feedback)
+                  : Boolean(board?.visited?.[item.id]);
+                return (
+                  <span
+                    key={item.id}
+                    className={`dot${complete ? ' is-done' : ''}${index === stepIndex ? ' is-current' : ''}`}
+                    style={{
+                      display: 'inline-block',
+                      width: `${100 / totalSteps}%`,
+                      background: complete ? 'var(--teal-forest)' : 'transparent',
+                    }}
+                  />
+                );
+              })}
             </div>
 
             <article className="question-card">
@@ -384,12 +533,6 @@ export default function Exercises() {
                 </div>
               )}
 
-              {hintShown && step.hint && (
-                <div className="form-message is-info" role="status">
-                  <strong>A little help:</strong> {resolve(step.hint)}
-                </div>
-              )}
-
               {answerError && (
                 <div className="form-message is-error" role="alert">
                   {answerError}
@@ -407,6 +550,15 @@ export default function Exercises() {
               )}
 
               <div className="tutor-actions" style={{ marginTop: '22px' }}>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => goToStep(stepIndex - 1)}
+                  disabled={stepIndex === 0}
+                >
+                  Previous
+                </button>
+
                 {step.kind === 'ask' && !feedback ? (
                   <>
                     <button
@@ -416,15 +568,9 @@ export default function Exercises() {
                     >
                       Check my answer
                     </button>
-                    {step.hint && !hintShown && (
-                      <button
-                        type="button"
-                        className="btn btn-ghost"
-                        onClick={() => setHintShown(true)}
-                      >
-                        Need a hint?
-                      </button>
-                    )}
+                    <button type="button" className="btn btn-ghost" onClick={advance}>
+                      Next
+                    </button>
                   </>
                 ) : (
                   <button
@@ -435,7 +581,9 @@ export default function Exercises() {
                     {stepIndex + 1 >= totalSteps ? (
                       <>
                         <Icon name="check" size={20} />
-                        Finish and see my results
+                        {unanswered.length > 0
+                          ? 'Review incomplete questions'
+                          : 'Finish and see my results'}
                       </>
                     ) : (
                       'Continue'
@@ -463,7 +611,7 @@ export default function Exercises() {
                 <button
                   type="button"
                   className="btn btn-primary btn-lg"
-                  onClick={() => setPhase('running')}
+                  onClick={() => updateBoard(activeTechnique, { phase: 'running' })}
                 >
                   <Icon name="check" size={20} />
                   Resume
@@ -529,7 +677,7 @@ export default function Exercises() {
                   <button
                     type="button"
                     className="link-btn"
-                    onClick={() => saveCompletion(result.score)}
+                    onClick={() => saveCompletion(activeTechnique, exercise, result.score)}
                   >
                     Try saving again
                   </button>
@@ -544,7 +692,7 @@ export default function Exercises() {
               <button
                 type="button"
                 className="btn btn-primary btn-lg"
-                onClick={load}
+                onClick={goToDifferentExercise}
                 disabled={busy || saving === 'saving'}
               >
                 <Icon name="check" size={20} />

@@ -31,9 +31,20 @@ def _sample_for_category(user, category_name):
 @jwt_required()
 def next_exercise():
     user = current_user()
+    # The six techniques can be opened directly. The adaptive choice remains
+    # the default when no technique is named.
+    technique = request.args.get("technique")
+    if technique and technique not in TECHNIQUES:
+        return jsonify(success=False, message="We could not find that exercise."), 400
+
     weakest = weakest_category_for_user(user)
     sample = _sample_for_category(user, weakest)
-    exercise = build_exercise(user, weakest_category_name=weakest, sample_content=sample)
+    exercise = build_exercise(
+        user,
+        weakest_category_name=weakest,
+        sample_content=sample,
+        technique_key=technique,
+    )
 
     # Record the attempt as an incomplete session (completed on POST).
     record = ExerciseSession(

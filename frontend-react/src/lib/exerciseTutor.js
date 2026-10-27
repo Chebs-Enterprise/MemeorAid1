@@ -124,14 +124,14 @@ function retrievalFeedback(answer, target, attempt) {
       tone: 'success',
       feedback:
         attempt === 1
-          ? 'Yes — that is right. Well done.'
-          : 'Yes, again. Each time you bring it back, it gets a little stronger.',
+          ? 'Yes, that is right.'
+          : 'Yes, well done. Keep going.',
     };
   }
   return {
     correct: false,
     tone: 'info',
-    feedback: `Not quite this time. It was ${targetLabel(target)}. That is all right — seeing it again is part of how the practice works.`,
+    feedback: `Not quite. It was ${targetLabel(target)}. That is okay — try again.`,
   };
 }
 
@@ -143,43 +143,41 @@ function methodOfLoci() {
   const itemStep = (index) =>
     ask(
       `loci-item-${index + 1}`,
-      () => `What will you leave at the ${ctx.places[index]}?`,
+      () => `What will you put at the ${ctx.places[index]}?`,
       (answer) => {
         ctx.items[index] = text(answer);
         return {
           tone: 'success',
-          feedback: `Good. Picture it clearly at the ${ctx.places[index]}.`,
+          feedback: `Good. Picture it at the ${ctx.places[index]}.`,
         };
       },
       {
-        placeholder: 'A giant teacup',
-        hint: 'Anything works — keys, a cup of tea, or a favourite flower.',
+        placeholder: 'A big teacup',
       },
     );
 
   const recallStep = (index) =>
     ask(
       `loci-recall-${index + 1}`,
-      () => `At the ${ctx.places[index]}, what did you leave?`,
+      () => `At the ${ctx.places[index]}, what did you put there?`,
       (answer) => {
         const expected = ctx.items[index] || 'something';
         if (overlaps(answer, expected)) {
           return {
             correct: true,
             tone: 'success',
-            feedback: `That's it — ${expected} at the ${ctx.places[index]}. Well done.`,
+            feedback: `Yes — ${expected} at the ${ctx.places[index]}.`,
           };
         }
         return {
           correct: false,
           tone: 'info',
-          feedback: `Not quite. You left ${expected} at the ${ctx.places[index]}. Picture it there once more — every pass makes it stronger.`,
+          feedback: `Not quite. You put ${expected} at the ${ctx.places[index]}. Picture it there again.`,
         };
       },
       {
         counted: true,
-        placeholder: 'I pictured…',
-        hint: 'Picture the place first. The thing you left there will come back.',
+        placeholder: 'I put…',
       },
     );
 
@@ -187,8 +185,8 @@ function methodOfLoci() {
     steps: [
       read(
         'loci-route',
-        'Let’s begin with a route you know very well — the walk through your home, or the short walk to your front gate. We will use three stops along that route.',
-        { example: 'The front door, then the kitchen, then the bedroom.' },
+        'Pick a route you know well, like walking from your front door to your room. We will use three stops.',
+        { example: 'Front door, kitchen, bedroom.' },
       ),
       ask(
         'loci-places',
@@ -198,25 +196,24 @@ function methodOfLoci() {
           ctx.places = [0, 1, 2].map((i) => parts[i] || DEFAULT_PLACES[i]);
           return {
             tone: 'success',
-            feedback: `Lovely. We will use the ${ctx.places.join(', then the ')}.`,
+            feedback: `We will use these stops: ${ctx.places.join(', then the ')}.`,
           };
         },
         {
           placeholder: 'Front door, kitchen, bedroom',
-          hint: 'Any three places you can picture clearly will work.',
         },
       ),
       read(
         'loci-items',
-        'Now picture yourself walking that route. At each stop, leave one thing you want to remember. Make the picture funny, colourful or a little unusual — that is what helps it stick.',
-        { example: 'A giant teacup balanced on the front doormat.' },
+        'Now walk that route in your mind. At each stop, put one thing you want to remember. Make a funny picture in your mind — it helps you remember.',
+        { example: 'A big teacup on the front door mat.' },
       ),
       itemStep(0),
       itemStep(1),
       itemStep(2),
       read(
         'loci-walk',
-        'Now close your eyes for a moment and walk your route slowly in your mind. Take your time. When you are ready, we will check what you found.',
+        'Close your eyes and walk the route slowly in your mind. Take your time. When you are ready, we will check what you remember.',
       ),
       recallStep(0),
       recallStep(1),
@@ -234,24 +231,23 @@ function elaborativeEncoding(exercise) {
     steps.push(
       read(
         'elaborative-target',
-        `Let’s use one of your saved memories: ${targetLabel(sample)}. Read it once and hold it in your mind.`,
+        `We will use one of your saved memories: ${targetLabel(sample)}. Read it and keep it in your mind.`,
       ),
     );
   } else {
     steps.push(
       ask(
         'elaborative-choose',
-        'What is one thing you would like to remember today? It can be a name, an appointment, or something you keep forgetting.',
+        'What is one thing you want to remember today? It can be a name, an appointment, or something you often forget.',
         (answer) => {
           ctx.target = text(answer);
           return {
             tone: 'success',
-            feedback: `Good — we will work with ${targetLabel(ctx.target)}.`,
+            feedback: `We will work with ${targetLabel(ctx.target)}.`,
           };
         },
         {
           placeholder: 'Water the tomatoes on Friday',
-          hint: 'A short phrase is plenty.',
         },
       ),
     );
@@ -261,48 +257,44 @@ function elaborativeEncoding(exercise) {
     ask(
       'elaborative-link',
       () =>
-        `What does ${targetLabel(ctx.target)} remind you of? It can be a person, a place, a story, a smell — anything at all.`,
+        `What does ${targetLabel(ctx.target)} remind you of? It can be a person, a place, a story, or a smell.`,
       (answer) => {
         ctx.link = text(answer);
         return {
           tone: 'success',
-          feedback:
-            'That is a real connection. Connections like that give your memory a hook to hang on.',
+          feedback: 'Good link. This helps you remember it better.',
         };
       },
       {
         placeholder: 'It reminds me of…',
-        hint: 'There is no right answer. The more personal, the stronger the link.',
       },
     ),
     ask(
       'elaborative-sentence',
-      'Now join the two together in one full sentence, in your own words.',
-      thanks('Beautifully put. Saying it in a full sentence makes the link stronger.'),
+      'Put them together in one sentence, in your own words.',
+      thanks('Good. Saying it in one sentence helps it stick.'),
       {
         placeholder: 'I will remember… because…',
-        hint: 'Try starting with: “I will remember … because …”.',
       },
     ),
     ask(
       'elaborative-repeat',
-      'Without looking back, tell me the connection once more, in a different way.',
+      'Without looking back, say the link again in your own words.',
       (answer) =>
         overlaps(answer, `${ctx.link} ${ctx.target}`)
           ? {
               correct: true,
               tone: 'success',
-              feedback: 'You remembered your own link. That is the whole idea.',
+              feedback: 'You remembered it. That is the idea.',
             }
           : {
               correct: false,
               tone: 'info',
-              feedback: `That is all right. Your link was: “${ctx.link || 'your own connection'}”. Say it once more to yourself before we finish.`,
+              feedback: `That’s okay. Your link was: “${ctx.link || 'your link'}”. Try saying it again.`,
             },
       {
         counted: false,
-        placeholder: 'My connection was…',
-        hint: 'Think of the person, place or feeling you chose.',
+        placeholder: 'My link is…',
       },
     ),
   );
@@ -326,17 +318,16 @@ function spacedRetrieval(exercise) {
     steps.push(
       ask(
         'spaced-choose',
-        'What is one thing you want to remember today? A name, a date, or an appointment are all good choices.',
+        'What is one thing you want to remember today? A name, a date, or an appointment is fine.',
         (answer) => {
           ctx.target = text(answer);
           return {
             tone: 'success',
-            feedback: `Good. We will practise ${targetLabel(ctx.target)}.`,
+            feedback: `We will practise ${targetLabel(ctx.target)}.`,
           };
         },
         {
           placeholder: 'Doctor on Tuesday at 10am',
-          hint: 'Choose something short and useful.',
         },
       ),
     );
@@ -349,40 +340,37 @@ function spacedRetrieval(exercise) {
     ),
     ask(
       'spaced-recall-1',
-      'Look away and say it from memory. What was it?',
+      'Look away and say it from memory. What is it?',
       (answer) => retrievalFeedback(answer, ctx.target, 1),
       {
         counted: true,
-        placeholder: 'I was remembering…',
-        hint: 'Have a go — even part of it is useful.',
+        placeholder: 'It is…',
       },
     ),
     read(
       'spaced-pause-1',
-      'Take a slow breath in through your nose… and out. When you are ready, we will try again.',
+      'Take a short break. When you are ready, try again.',
     ),
     ask(
       'spaced-recall-2',
-      'Once more, from memory: what were you remembering?',
+      'From memory, what was it?',
       (answer) => retrievalFeedback(answer, ctx.target, 2),
       {
         counted: true,
-        placeholder: 'It was…',
-        hint: 'The first letter or the shape of the words can help.',
+        placeholder: 'It is…',
       },
     ),
     read(
       'spaced-pause-2',
-      'One last time. Take a moment, then continue when you feel ready.',
+      'Take another short break. When you are ready, one last try.',
     ),
     ask(
       'spaced-recall-3',
-      'Last try. From memory, what was it?',
+      'Last time. From memory, what was it?',
       (answer) => retrievalFeedback(answer, ctx.target, 3),
       {
         counted: true,
-        placeholder: 'I remember…',
-        hint: 'You have done this twice already — trust yourself.',
+        placeholder: 'It is…',
       },
     ),
   );
@@ -397,41 +385,38 @@ function faceNameAssociation() {
     steps: [
       ask(
         'face-name',
-        'Think of someone whose name you would like to remember. Type their name.',
+        'Think of someone whose name you want to remember. Type their name.',
         (answer) => {
           ctx.name = text(answer);
           return {
             tone: 'success',
-            feedback: `Good — we will work with ${ctx.name}.`,
+            feedback: `We will work with ${ctx.name}.`,
           };
         },
         {
           placeholder: 'Margaret',
-          hint: 'A family member, a neighbour, or someone you see often.',
         },
       ),
       ask(
         'face-feature',
-        () => `What is one feature you notice about ${ctx.name}’s face? A smile, glasses, or their hair, for example.`,
+        () => `What is one thing you notice about ${ctx.name}’s face? For example, their smile, glasses, or hair.`,
         (answer) => {
           ctx.feature = text(answer);
           return {
             tone: 'success',
-            feedback: `That is a good hook. Keep that picture in mind.`,
+            feedback: 'Keep that in mind.',
           };
         },
         {
-          placeholder: 'A warm, wide smile',
-          hint: 'Pick something easy to picture.',
+          placeholder: 'A warm smile',
         },
       ),
       ask(
         'face-picture',
-        () => `Now make a silly picture or a short rhyme joining ${ctx.name} and that feature. Describe it in a few words.`,
-        thanks('That is exactly the kind of picture that sticks.'),
+        () => `Make a simple picture linking ${ctx.name} and that feature. Describe it in a few words.`,
+        thanks('A clear picture like this helps you remember.'),
         {
-          placeholder: 'Margaret’s smile is as wide as a watermelon.',
-          hint: 'The sillier it is, the easier it is to remember.',
+          placeholder: 'Margaret with a big smile',
         },
       ),
       ask(
@@ -442,38 +427,36 @@ function faceNameAssociation() {
             ? {
                 correct: true,
                 tone: 'success',
-                feedback: `That’s it — ${ctx.name}.`,
+                feedback: `Yes — ${ctx.name}.`,
               }
             : {
                 correct: false,
                 tone: 'info',
-                feedback: `Their name is ${ctx.name}. Picture the feature again and say the name with it.`,
+                feedback: `Their name is ${ctx.name}. Picture the feature and say the name again.`,
               },
         {
           counted: true,
           placeholder: 'Their name is…',
-          hint: 'Picture the feature first, then the name follows.',
         },
       ),
       ask(
         'face-feature-recall',
-        () => `And when you say ${ctx.name}, which feature do you see?`,
+        () => `When you say ${ctx.name}, what do you picture?`,
         (answer) =>
           overlaps(answer, ctx.feature)
             ? {
                 correct: true,
                 tone: 'success',
-                feedback: 'Yes — that is the pair working both ways.',
+                feedback: 'Yes, that matches.',
               }
             : {
                 correct: false,
                 tone: 'info',
-                feedback: `The feature was: ${ctx.feature}. Picture ${ctx.name} with it once more.`,
+                feedback: `It was: ${ctx.feature}. Picture ${ctx.name} with it again.`,
               },
         {
           counted: true,
           placeholder: 'I picture…',
-          hint: 'Think of the silly picture you made.',
         },
       ),
     ],
@@ -487,11 +470,11 @@ function chunking() {
     steps: [
       read(
         'chunk-list',
-        'Here is a shopping list with six things: milk, bread, apples, stamps, soap and tea. Six separate things can feel like a lot to hold.',
+        'Here is a shopping list with six things: milk, bread, apples, stamps, soap and tea. It is easier to remember them in groups.',
       ),
       ask(
         'chunk-group',
-        'Group the six items into three pairs that make sense to you. Type each pair, with a slash between the pairs.',
+        'Put these six items into three pairs that go together. Type each pair, with a slash between pairs.',
         (answer) => {
           ctx.groups = text(answer);
           const groups = text(answer)
@@ -502,22 +485,21 @@ function chunking() {
             tone: groups.length >= 3 ? 'success' : 'info',
             feedback:
               groups.length >= 3
-                ? 'Three groups — just right. Give each pair a little picture in your mind.'
-                : 'That is a start. Three short pairs will be easier to hold — you can use one slash between each pair.',
+                ? 'Good. Now remember the pairs, not all six at once.'
+                : 'Put them into three pairs. Use a slash between each pair.',
           };
         },
         {
           placeholder: 'milk and bread / apples and tea / stamps and soap',
-          hint: 'A pair can be two things you would buy together, or two things you use together.',
         },
       ),
       read(
         'chunk-hide',
-        'Now look away from the list. Remember your three groups, not the six separate things.',
+        'Look away from the list. Try to remember the three pairs.',
       ),
       ask(
         'chunk-recall-1',
-        'From memory, type your three pairs.',
+        'From memory, type the three pairs.',
         (answer) => {
           const hits = countItems(answer, CHUNK_ITEMS);
           return {
@@ -525,19 +507,18 @@ function chunking() {
             tone: hits >= 4 ? 'success' : 'info',
             feedback:
               hits >= 4
-                ? `You recalled ${hits} of the six items by grouping them. Well done.`
-                : `You remembered ${hits} of the six. The list was: milk, bread, apples, stamps, soap and tea. Look at the pairs once more.`,
+                ? `You remembered ${hits} of the six items. Good.`
+                : `You remembered ${hits} of the six. The list was: milk, bread, apples, stamps, soap and tea. Try again.`,
           };
         },
         {
           counted: true,
           placeholder: 'milk and bread / …',
-          hint: 'Start with the first pair you made, then the next.',
         },
       ),
       ask(
         'chunk-recall-2',
-        'Now say the same three groups in a different order. Type them again.',
+        'Now type the same pairs in a different order.',
         (answer) => {
           const hits = countItems(answer, CHUNK_ITEMS);
           return {
@@ -545,14 +526,13 @@ function chunking() {
             tone: hits >= 4 ? 'success' : 'info',
             feedback:
               hits >= 4
-                ? `That is ${hits} of the six, in a new order. Your memory is using the groups.`
-                : `You remembered ${hits} of the six this time. The pairs are still there — say them once more to yourself.`,
+                ? `You remembered ${hits} of the six in a new order. Good.`
+                : `You remembered ${hits} of the six. Keep the pairs together and try again.`,
           };
         },
         {
           counted: true,
           placeholder: 'stamps and soap / …',
-          hint: 'Change the order but keep each pair together.',
         },
       ),
     ],
@@ -571,14 +551,14 @@ function activeObservation(exercise) {
     steps: [
       read(
         'observe-study',
-        `Study this carefully for a moment. Notice colours, shapes and small details: ${scene}.`,
+        `Look at this for about one minute. Notice colours, shapes, and small details: ${scene}.`,
         {
-          example: 'Picture where each thing sits, as if you were looking at a photograph.',
+          example: 'Look at where each thing is, like a photo.',
         },
       ),
       ask(
         'observe-recall-1',
-        'Without looking back, type as many details as you can remember.',
+        'Look away and type as many details as you can remember.',
         (answer) => {
           const hits = countItems(answer, details);
           ctx.firstHits = hits;
@@ -587,23 +567,22 @@ function activeObservation(exercise) {
             tone: hits > 0 ? 'success' : 'info',
             feedback:
               hits > 0
-                ? `You remembered ${hits} of the ${details.length} details. That is a good first pass.`
-                : 'That is all right — this is a warm-up. We will look at the details again.',
+                ? `You remembered ${hits} of the ${details.length} details. Good start.`
+                : 'That is okay. We will look again.',
           };
         },
         {
           counted: true,
           placeholder: 'I remember…',
-          hint: 'Start with colours or the biggest shapes.',
         },
       ),
       read(
         'observe-review',
-        () => `Here it is again: ${scene}. You found ${ctx.firstHits} of the ${details.length} details. Notice the ones you missed — colours and positions help.`,
+        () => `Look again: ${scene}. You remembered ${ctx.firstHits} of the ${details.length} details. Notice the ones you missed.`,
       ),
       ask(
         'observe-recall-2',
-        'Now try once more. Type every detail you can remember.',
+        'Now look away and type as many details as you can remember this time.',
         (answer) => {
           const hits = countItems(answer, details);
           const target = passMark(details.length);
@@ -612,14 +591,13 @@ function activeObservation(exercise) {
             tone: hits >= target ? 'success' : 'info',
             feedback:
               hits >= target
-                ? `That is ${hits} of ${details.length}. Your second look made a difference.`
-                : `You remembered ${hits} of ${details.length} this time. Keep the scene in your mind and notice one more detail before you finish.`,
+                ? `You remembered ${hits} of ${details.length} details. Good.`
+                : `You remembered ${hits} of ${details.length} details this time. Try to notice one more thing.`,
           };
         },
         {
           counted: true,
           placeholder: 'This time I remember…',
-          hint: 'Go slowly around the scene, one colour at a time.',
         },
       ),
     ],

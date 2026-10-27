@@ -17,13 +17,68 @@ import Icon from '../components/Icon.jsx';
 import { Loading, Toast, useToast } from '../lib/ui.jsx';
 import { useVoiceInput } from '../lib/voice.js';
 
-/** How long to wait after the last spoken word before sending, in ms. */
-const VOICE_AUTO_SEND_DELAY = 1800;
-
 function truncate(text, max = 70) {
   const value = (text || '').trim();
   if (value.length <= max) return value;
   return `${value.slice(0, max).trimEnd()}…`;
+}
+
+/** Copy text, falling back to the old selection-based method where needed. */
+async function copyMessageText(text) {
+  const value = (text || '').trim();
+  if (!value) return false;
+
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value);
+      return true;
+    }
+  } catch {
+    // Permission denied or an insecure context — try the legacy path below.
+  }
+
+  try {
+    const area = document.createElement('textarea');
+    area.value = value;
+    area.setAttribute('readonly', '');
+    area.style.position = 'fixed';
+    area.style.top = '-9999px';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    area.setSelectionRange(0, value.length);
+    const copied = document.execCommand('copy');
+    document.body.removeChild(area);
+    return copied;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Share one message through the device sheet, or copy it when the browser has
+ * no share support. Returns what actually happened so the caller can be honest
+ * with the user instead of claiming a share that never took place.
+ */
+async function shareMessageText(text) {
+  const value = (text || '').trim();
+  if (!value) return 'empty';
+
+  if (typeof navigator.share === 'function') {
+    try {
+      await navigator.share({
+        title: 'A message from my MemorAid companion',
+        text: value,
+      });
+      return 'shared';
+    } catch (err) {
+      if (err?.name === 'AbortError') return 'cancelled';
+      // Some browsers expose share but refuse it (permissions, desktop);
+      // copying is the useful fallback.
+    }
+  }
+
+  return (await copyMessageText(value)) ? 'copied' : 'failed';
 }
 
 /** The little "because you mentioned…" hints under Aria's reply. */
@@ -119,13 +174,15 @@ export default function Chat() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [deepMode, setDeepMode] = useState(false);
-  const [voiceHint, setVoiceHint] = useState('');
   const [memoryBusy, setMemoryBusy] = useState(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(null);
+  const [deleting, setDeleting] = useState(null);
+  const [sendingIds, setSendingIds] = useState(null);
   const { message, showToast } = useToast();
   const threadEnd = useRef(null);
   const abortRef = useRef(null);
+  const skipScrollRef = useRef(false);
   const voiceBaseRef = useRef('');
-  const voiceTimerRef = useRef(null);
   const draftRef = useRef('');
   const busyRef = useRef(false);
   // Filled in by the voice hook below; lets `send` stop dictation without
@@ -147,6 +204,10 @@ export default function Chat() {
   }, [showToast]);
 
   useEffect(() => {
+    if (skipScrollRef.current) {
+      skipScrollRef.current = false;
+      return;
+    }
     threadEnd.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
@@ -154,18 +215,13 @@ export default function Chat() {
   useEffect(() => () => abortRef.current?.abort(), []);
 
   // Dictation sits directly in the message box: as the user speaks, the words
-  // appear in the textarea. When they stop talking, the message is sent on its
-  // own — typing is never required.
-  const clearVoiceTimer = useCallback(() => {
-    if (voiceTimerRef.current) {
-      clearTimeout(voiceTimerRef.current);
-      voiceTimerRef.current = null;
-    }
-  }, []);
+  // appear in the textarea. Recording continues until the user presses Stop or
+  // sends the message explicitly, so a pause in speech-service results can
+  // never end the recording on its own.
 
   // Accepts either a form submit event (Send button / Enter) or a plain
-  // string from the voice auto-send timer. Defined with useCallback so the
-  // voice hook below can hold a stable reference to the latest `send`.
+  // string. Defined with useCallback so the voice hook below can hold a stable
+  // reference to the latest `send`.
   const send = useCallback(
     async (eventOrText) => {
       if (eventOrText && typeof eventOrText.preventDefault === 'function') {
@@ -175,19 +231,19 @@ export default function Chat() {
 
       // Sending ends the dictation: whatever was spoken has been handed over,
       // so the microphone stops rather than keep listening in the background.
-      clearVoiceTimer();
       stopVoiceRef.current?.();
 
       if (!text || busyRef.current) return;
 
       voiceBaseRef.current = '';
-      setVoiceHint('');
 
+      const userId = `user-${Date.now()}`;
       const aiId = `ai-${Date.now()}`;
+      setSendingIds({ user: userId, assistant: aiId });
       setMessages((m) => [
         ...m,
-        { messageid: `user-${Date.now()}`, role: 'user', messagetext: text },
-        { messageid: aiId, role: 'assistant', messagetext: '' },
+        { messageid: userId, clientid: userId, role: 'user', messagetext: text },
+        { messageid: aiId, clientid: aiId, role: 'assistant', messagetext: '' },
       ]);
       setDraft('');
       setBusy(true);
@@ -216,10 +272,25 @@ export default function Chat() {
             } else if (event === 'done') {
               reply = data.reply || reply;
               const finalMeta = data.meta || meta;
+              const ids = data.messageids || {};
+              // The server has now stored both turns. Adopt its ids so the
+              // actions can copy/share/delete this exchange immediately,
+              // without waiting for a reload.
               setMessages((m) =>
-                m.map((msg) =>
-                  msg.messageid === aiId ? { ...msg, messagetext: reply, meta: finalMeta } : msg,
-                ),
+                m.map((msg) => {
+                  if (msg.messageid === aiId) {
+                    return {
+                      ...msg,
+                      messageid: ids.assistant || msg.messageid,
+                      messagetext: reply,
+                      meta: finalMeta,
+                    };
+                  }
+                  if (msg.messageid === userId) {
+                    return { ...msg, messageid: ids.user || msg.messageid };
+                  }
+                  return msg;
+                }),
               );
             } else if (event === 'error') {
               failure = data.message || 'Something went wrong.';
@@ -230,6 +301,7 @@ export default function Chat() {
         failure = err.message;
       } finally {
         abortRef.current = null;
+        setSendingIds(null);
         setBusy(false);
         busyRef.current = false;
       }
@@ -239,7 +311,7 @@ export default function Chat() {
         setMessages((m) => m.filter((msg) => msg.messageid !== aiId));
       }
     },
-    [clearVoiceTimer, deepMode, showToast],
+    [deepMode, showToast],
   );
 
   // Confirming or declining the memory Aria offered on a turn. The card only
@@ -287,22 +359,97 @@ export default function Chat() {
     [memoryBusy, showToast],
   );
 
-  const voice = useVoiceInput({
-    onTranscript: (spoken, isFinal) => {      const base = voiceBaseRef.current;
-      const joined = base && spoken ? `${base} ${spoken}` : base || spoken;
-      setDraft(joined);
-      setVoiceHint(isFinal ? '' : 'Listening…');
-      if (!isFinal) return;
+  const copyMessage = useCallback(
+    async (msg) => {
+      const copied = await copyMessageText(msg.messagetext);
+      showToast(
+        copied
+          ? 'Message copied.'
+          : "I couldn't copy that message. Please try again.",
+      );
+    },
+    [showToast],
+  );
 
+  const shareMessage = useCallback(
+    async (msg) => {
+      const result = await shareMessageText(msg.messagetext);
+      if (result === 'shared') showToast('Message shared.');
+      else if (result === 'copied') {
+        showToast('Sharing is not available here, so the message was copied instead.');
+      } else if (result === 'failed') {
+        showToast("I couldn't share or copy that message. Please try again.");
+      }
+      // 'cancelled' means the user closed the share sheet — say nothing.
+    },
+    [showToast],
+  );
+
+  const deleteMessage = useCallback(
+    async (msg) => {
+      if (deleting) return;
+      const id = msg.messageid;
+      const persisted = typeof id === 'number' || /^\d+$/.test(String(id));
+      setDeleting(id);
+
+      // A message the server never stored (for example an exchange whose save
+      // failed) exists only in this tab, so removing it locally is already
+      // permanent — there is nothing to call.
+      if (!persisted) {
+        skipScrollRef.current = true;
+        setMessages((m) => m.filter((item) => item.messageid !== id));
+        setConfirmingDelete(null);
+        setDeleting(null);
+        showToast('Message removed.');
+        return;
+      }
+
+      try {
+        await api.deleteChatMessage(id);
+        skipScrollRef.current = true;
+        setMessages((m) => m.filter((item) => item.messageid !== id));
+        setConfirmingDelete(null);
+        showToast('Message deleted.');
+      } catch (err) {
+        if (err.status === 404) {
+          // The server no longer has it, so leaving it on screen would be a
+          // false claim that it survived. Removing it matches the truth.
+          skipScrollRef.current = true;
+          setMessages((m) => m.filter((item) => item.messageid !== id));
+          setConfirmingDelete(null);
+          showToast('That message had already been deleted.');
+        } else {
+          // Keep the message visible: the delete did not happen, and the UI
+          // must not suggest otherwise.
+          showToast(err.message || "I couldn't delete that message. Please try again.");
+        }
+      } finally {
+        setDeleting(null);
+      }
+    },
+    [deleting, showToast],
+  );
+
+  const voice = useVoiceInput({
+    onTranscript: (spoken, isFinal, live) => {
+      const base = voiceBaseRef.current;
+      const joined = base && spoken ? `${base} ${spoken}` : base || spoken;
+
+      if (!isFinal) {
+        // Provisional words from a session that has already been stopped must
+        // not repaint the box or look like a new recording session.
+        if (!live) return;
+        setDraft(joined);
+        return;
+      }
+
+      // Final words are real speech and are always kept, even when they arrive
+      // after Stop (the browser finalises the last words asynchronously).
+      // Recording only ends when the user presses Stop or sends the message.
       voiceBaseRef.current = joined;
-      clearVoiceTimer();
-      voiceTimerRef.current = setTimeout(() => {
-        const text = (voiceBaseRef.current || draftRef.current).trim();
-        if (text) send(text);
-      }, VOICE_AUTO_SEND_DELAY);
+      setDraft(joined);
     },
     onError: (message) => {
-      setVoiceHint('');
       showToast(message);
     },
   });
@@ -315,17 +462,11 @@ export default function Chat() {
     ? 'Prefer not to type? Tap “Speak”, say your message, and press “Stop”.'
     : '';
 
-  useEffect(() => () => clearVoiceTimer(), [clearVoiceTimer]);
-
   const toggleVoice = () => {
     if (voice.listening) {
-      clearVoiceTimer();
       voice.stop();
-      setVoiceHint('');
     } else {
-      clearVoiceTimer();
       voiceBaseRef.current = draft.trim();
-      setVoiceHint('Listening…');
       voice.start();
     }
   };
@@ -371,26 +512,97 @@ export default function Chat() {
               </p>
             </div>
           )}
-          {messages.map((m) => (
-            <div key={m.messageid} className={`chat-row ${m.role === 'user' ? 'is-user' : 'is-ai'}`}>
-              <div className="chat-bubble-wrap">
-                <div className="chat-bubble">
-                  <div className="chat-sender">{m.role === 'user' ? 'You' : 'Aria'}</div>
-                  {m.messagetext}
+          {messages.map((m) => {
+            const isSending =
+              Boolean(sendingIds) &&
+              (m.messageid === sendingIds.user || m.messageid === sendingIds.assistant);
+            const canAct = Boolean((m.messagetext || '').trim()) && !isSending;
+            return (
+              <div key={m.clientid || m.messageid} className={`chat-row ${m.role === 'user' ? 'is-user' : 'is-ai'}`}>
+                <div className="chat-bubble-wrap">
+                  <div className="chat-bubble">
+                    <div className="chat-sender">{m.role === 'user' ? 'You' : 'Aria'}</div>
+                    {m.messagetext}
+                  </div>
+                  {canAct && (
+                    <div
+                      className="chat-message-actions"
+                      role="group"
+                      aria-label={m.role === 'user' ? 'Actions for your message' : 'Actions for this reply'}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Escape') setConfirmingDelete(null);
+                      }}
+                    >
+                      {confirmingDelete === m.messageid ? (
+                        <div className="chat-delete-confirm" role="group" aria-label="Delete this message?">
+                          <button
+                            type="button"
+                            className="chat-action is-danger"
+                            onClick={() => deleteMessage(m)}
+                            disabled={deleting === m.messageid}
+                            aria-label="Delete this message"
+                          >
+                            {deleting === m.messageid ? 'Deleting…' : 'Delete'}
+                          </button>
+                          <button
+                            type="button"
+                            className="chat-action is-icon"
+                            onClick={() => setConfirmingDelete(null)}
+                            disabled={deleting === m.messageid}
+                            title="Keep message"
+                            aria-label="Keep this message"
+                            autoFocus
+                          >
+                            <Icon name="close" size={15} />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            className="chat-action"
+                            onClick={() => copyMessage(m)}
+                            title="Copy message"
+                            aria-label="Copy message"
+                          >
+                            <Icon name="copy" size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            className="chat-action"
+                            onClick={() => shareMessage(m)}
+                            title="Share message"
+                            aria-label="Share message"
+                          >
+                            <Icon name="share" size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            className="chat-action is-danger"
+                            onClick={() => setConfirmingDelete(m.messageid)}
+                            title="Delete message"
+                            aria-label="Delete message"
+                          >
+                            <Icon name="trash" size={16} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  {m.role === 'assistant' && (
+                    <MemorySaveCard
+                      memory={m.pending_memory || m.meta?.pending_memory}
+                      saved={m.saved_memory || m.meta?.saved_memory}
+                      busy={memoryBusy === m.messageid}
+                      onConfirm={() => confirmMemory(m.messageid)}
+                      onDecline={() => declineMemory(m.messageid)}
+                    />
+                  )}
+                  {m.role === 'assistant' && <ContextChips meta={m.meta} />}
                 </div>
-                {m.role === 'assistant' && (
-                  <MemorySaveCard
-                    memory={m.pending_memory || m.meta?.pending_memory}
-                    saved={m.saved_memory || m.meta?.saved_memory}
-                    busy={memoryBusy === m.messageid}
-                    onConfirm={() => confirmMemory(m.messageid)}
-                    onDecline={() => declineMemory(m.messageid)}
-                  />
-                )}
-                {m.role === 'assistant' && <ContextChips meta={m.meta} />}
               </div>
-            </div>
-          ))}
+            );
+          })}
           {awaitingText && <TypingIndicator />}
           <div ref={threadEnd} />
         </div>
@@ -410,8 +622,8 @@ export default function Chat() {
             {voice.supported && (
               <p className="chat-voice-hint" aria-live="polite">
                 {voice.listening
-                  ? 'Listening… speak naturally, then pause.'
-                  : voiceHint || voiceIdleHint}
+                  ? 'Listening… keep speaking, then press Stop.'
+                  : voiceIdleHint}
               </p>
             )}
           </div>

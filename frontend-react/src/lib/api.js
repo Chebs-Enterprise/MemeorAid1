@@ -211,7 +211,8 @@ export const api = {
   getRecallSummary: () => request('/recall/summary'),
 
   // --- exercises ---
-  getNextExercise: () => request('/exercises/next'),
+  getNextExercise: (technique) =>
+    request(`/exercises/next${technique ? `?technique=${encodeURIComponent(technique)}` : ''}`),
   completeExercise: (payload) => request('/exercises/complete', { method: 'POST', body: payload }),
   getExerciseHistory: () => request('/exercises/history'),
 
@@ -223,6 +224,8 @@ export const api = {
     streamRequest('/chat/stream', { message, mode }, { onEvent, signal }),
   getChatFacts: () => request('/chat/facts'),
   deleteChatFact: (factid) => request(`/chat/facts/${factid}`, { method: 'DELETE' }),
+  deleteChatMessage: (messageid) =>
+    request(`/chat/messages/${messageid}`, { method: 'DELETE' }),
   confirmChatMemory: () => request('/chat/memory/confirm', { method: 'POST', body: {} }),
   declineChatMemory: () => request('/chat/memory/decline', { method: 'POST', body: {} }),
 

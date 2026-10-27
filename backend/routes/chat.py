@@ -7,6 +7,7 @@ Endpoints
     POST   /api/chat/stream           the same turn, streamed over SSE
     GET    /api/chat/facts            the durable facts the companion knows
     DELETE /api/chat/facts/<factid>   let the user retract a fact
+    DELETE /api/chat/messages/<id>    delete one turn of the conversation
     POST   /api/chat/memory/confirm   save a memory Aria offered in the chat
     POST   /api/chat/memory/decline   say no to an offered memory
 
@@ -20,7 +21,7 @@ import json
 from flask import Blueprint, Response, jsonify, request, stream_with_context
 from flask_jwt_extended import jwt_required
 
-from models import ChatMessage, db
+from models import ChatMessage, EmbeddingRecord, db
 from routes.profile import current_user
 from services.ai import memory_logging
 from services.ai.chat_companion import (
@@ -101,6 +102,43 @@ def stream():
             "X-Accel-Buffering": "no",
         },
     )
+
+
+@bp.delete("/messages/<int:messageid>")
+@jwt_required()
+def delete_message(messageid):
+    """Delete one of the signed-in user's chat turns.
+
+    Only this row (and the retrieval vector built from it) is removed. Saved
+    memories, learned facts, the user's profile and every other turn are left
+    untouched, and the owner check means one account can never reach another's
+    conversation.
+    """
+    user = current_user()
+    row = ChatMessage.query.filter_by(
+        messageid=messageid, userid=user.userid
+    ).first()
+    if not row:
+        return jsonify(success=False, message="That message was not found."), 404
+
+    try:
+        # Embedding rows carry a plain refid, not a foreign key, so they have
+        # to be removed explicitly or a deleted turn would still be retrieved
+        # and could resurface in the companion's context.
+        EmbeddingRecord.query.filter_by(
+            userid=user.userid, kind="chat", refid=messageid
+        ).delete(synchronize_session=False)
+        db.session.delete(row)
+        db.session.commit()
+    except Exception as exc:  # pragma: no cover - defensive
+        db.session.rollback()
+        print(f"[MemorAid] Could not delete chat message {messageid}: {exc}")
+        return jsonify(
+            success=False,
+            message="I could not delete that message. Please try again.",
+        ), 500
+
+    return jsonify(success=True, messageid=messageid)
 
 
 @bp.post("/memory/confirm")

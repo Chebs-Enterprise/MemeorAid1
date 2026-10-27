@@ -802,7 +802,12 @@ def _contextual_fallback(prepared, message):
 
 
 def _store_turns(user, message, reply, prepared):
-    """Persist the exchange, index it for retrieval and learn new facts."""
+    """Persist the exchange, index it for retrieval and learn new facts.
+
+    Returns ``(new_facts, user_messageid, assistant_messageid)``. The ids let
+    the streamed reply tell the client which rows it can copy or delete
+    immediately, before the conversation is reloaded.
+    """
     user_msg = ChatMessage(userid=user.userid, role="user", messagetext=message)
     db.session.add(user_msg)
     db.session.flush()
@@ -829,7 +834,7 @@ def _store_turns(user, message, reply, prepared):
         print(f"[MemorAid] Fact extraction failed: {exc}")
 
     db.session.commit()
-    return new_facts
+    return new_facts, user_msg.messageid, assistant_msg.messageid
 
 
 def _used_in_reply(reply, items, key):
@@ -927,7 +932,7 @@ def handle_message(user, message, mode="standard"):
         reply = _contextual_fallback(prepared, message)
 
     reply = _strip_pending(reply).strip()
-    new_facts = _store_turns(user, message, reply, prepared)
+    new_facts, _, _ = _store_turns(user, message, reply, prepared)
     meta = _build_meta(prepared, new_facts, reply=reply)
     return reply, prepared["pattern_event"], meta
 
@@ -938,7 +943,8 @@ def stream_message(user, message, mode="standard"):
     Yields events as dicts so the route can serialise them as SSE:
         {"event": "meta",   "data": {...}}
         {"event": "token",  "data": {"text": "..."}}
-        {"event": "done",   "data": {"reply": "...", "meta": {...}}}
+        {"event": "done",   "data": {"reply": "...", "meta": {...},
+                                     "messageids": {"user": 1, "assistant": 2}}}
         {"event": "error",  "data": {"message": "..."}}
     """
     message = (message or "").strip()
@@ -975,8 +981,10 @@ def stream_message(user, message, mode="standard"):
         reply = _contextual_fallback(prepared, message)
         yield {"event": "token", "data": {"text": reply}}
 
+    message_ids = {"user": None, "assistant": None}
     try:
-        new_facts = _store_turns(user, message, reply, prepared)
+        new_facts, user_id, assistant_id = _store_turns(user, message, reply, prepared)
+        message_ids = {"user": user_id, "assistant": assistant_id}
     except Exception as exc:  # pragma: no cover - never break the chat
         print(f"[MemorAid] Could not store the exchange: {exc}")
         new_facts = []
@@ -987,5 +995,6 @@ def stream_message(user, message, mode="standard"):
             "reply": reply,
             "meta": _build_meta(prepared, new_facts, reply=reply),
             "pattern_event": prepared.get("pattern_event"),
+            "messageids": message_ids,
         },
     }
