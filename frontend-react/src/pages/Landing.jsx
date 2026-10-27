@@ -136,7 +136,6 @@ export default function Landing() {
 
   useEffect(() => {
     const carousel = document.querySelector('[data-testimonial-carousel]');
-    const dots = carousel?.querySelectorAll('.lp-testimonial-dot');
     const handler = (e) => {
       const btn = e.target.closest('.lp-testimonial-dot');
       if (!btn) return;
@@ -201,6 +200,10 @@ export default function Landing() {
                 {label}
               </a>
             ))}
+            <div className="lp-nav-mobile-actions">
+              <Link to="/login" className="lp-mobile-login">Login</Link>
+              <Link to="/signup" className="btn btn-primary lp-mobile-cta">Get Started</Link>
+            </div>
           </nav>
           <div className="lp-nav-actions">
             <Link to="/login" className="lp-nav-login">Login</Link>
@@ -235,7 +238,13 @@ export default function Landing() {
             </p>
             <div className="lp-hero-btns">
               <Link to="/signup" className="btn btn-primary lp-btn-lg">Get Started</Link>
-              <Link to="/login" className="btn btn-outline lp-btn-lg">Learn how it works</Link>
+              <a
+                href="#how-it-works"
+                className="btn btn-outline lp-btn-lg"
+                onClick={(event) => scrollToSection(event, 'how-it-works')}
+              >
+                Learn how it works
+              </a>
             </div>
           </div>
 

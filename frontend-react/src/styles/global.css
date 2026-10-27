@@ -1405,6 +1405,23 @@ a.header-btn:hover { text-decoration: none; }
 
 /* Root wrapper — resets the app-shell background */
 .lp-root {
+  /* The marketing page has an intentionally light visual world. Keep its
+     palette local so a signed-in user's saved dark preference cannot leak
+     into public navigation, calls to action, cards or footer borders. */
+  --teal-900: #006b62;
+  --teal-forest: #006b62;
+  --teal-forest-hover: #00564f;
+  --teal-mint: #f3fbfa;
+  --teal-mint-hover: #e2f5f2;
+  --teal-mint-text: #006b62;
+  --border-card: #dfe9e4;
+  --border-subtle: #e6f1ef;
+  --action-primary-background: linear-gradient(135deg, #006b62 0%, #008a7e 100%);
+  --action-primary-hover: #00564f;
+  --action-primary-text: #ffffff;
+  --shadow-sm: 0 1px 2px rgba(0, 62, 57, 0.04), 0 2px 8px rgba(0, 62, 57, 0.04);
+  --shadow-lg: 0 16px 40px rgba(0, 62, 57, 0.12);
+  --shadow-pill: 0 6px 18px rgba(0, 107, 98, 0.22);
   background: #ffffff;
   color: #1a2e2b;
   min-height: 100vh;
@@ -1447,6 +1464,8 @@ a.header-btn:hover { text-decoration: none; }
   flex: 1;
   justify-content: center;
 }
+
+.lp-nav-mobile-actions { display: none; }
 
 .lp-nav-link {
   font-size: calc(15px * var(--font-scale-text));
@@ -1891,6 +1910,7 @@ a.header-btn:hover { text-decoration: none; }
 }
 
 .lp-testimonial-carousel {
+  width: 100%;
   max-width: 900px;
   margin: 0 auto;
   overflow: hidden;
@@ -1899,17 +1919,21 @@ a.header-btn:hover { text-decoration: none; }
 
 .lp-testimonial-track {
   display: flex;
+  width: 100%;
   transition: transform 0.8s ease-in-out;
   will-change: transform;
 }
 
 .lp-testimonial-slide {
-  min-width: 100%;
-  flex-shrink: 0;
+  width: 100%;
+  min-width: 0;
+  flex: 0 0 100%;
 }
 
 .lp-testimonial-inner {
   display: flex;
+  width: 100%;
+  min-width: 0;
   align-items: center;
   gap: 56px;
 }
@@ -1934,6 +1958,7 @@ a.header-btn:hover { text-decoration: none; }
 
 .lp-testimonial-content {
   position: relative;
+  min-width: 0;
 }
 
 .lp-quote-mark {
@@ -2052,19 +2077,30 @@ a.header-btn:hover { text-decoration: none; }
     box-shadow: var(--shadow-lg);
   }
   .lp-nav-links.is-open .lp-nav-link { font-size: calc(18px * var(--font-scale-text)); }
+  .lp-nav-links.is-open .lp-nav-mobile-actions {
+    display: flex; align-items: center; gap: var(--space-3);
+    width: 100%; padding-top: var(--space-4); margin-top: var(--space-1);
+    border-top: 1px solid var(--border-subtle);
+  }
+  .lp-mobile-login,
+  .lp-mobile-cta {
+    flex: 1; min-height: 48px; display: inline-flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-pill); font-size: calc(16px * var(--font-scale-text));
+  }
+  .lp-mobile-login { border: 1px solid var(--teal-900); color: var(--teal-900); }
 }
 
 @media (max-width: 580px) {
   .lp-nav-inner {
+    width: 100%;
     padding: 0 var(--space-4);
     gap: var(--space-2);
+    justify-content: space-between;
   }
-  .lp-nav-actions { gap: var(--space-2); }
+  .lp-logo { min-width: 0; flex: 0 1 auto; }
+  .lp-nav-actions { gap: var(--space-2); margin-left: auto; flex: 0 0 auto; }
   .lp-nav-login { display: none; }
-  .lp-nav-cta {
-    padding-inline: var(--space-4);
-    font-size: calc(14px * var(--font-scale-text));
-  }
+  .lp-nav-cta { display: none; }
   .lp-logo .brand-mark {
     width: 36px;
     height: 36px;
@@ -2080,6 +2116,9 @@ a.header-btn:hover { text-decoration: none; }
   .lp-btn-lg { width: 100%; justify-content: center; }
   .lp-step-grid { grid-template-columns: 1fr; }
   .lp-family-grid { grid-template-columns: 1fr; }
+  .lp-step-card,
+  .lp-feature-card,
+  .lp-family-card { padding: var(--space-5); border-radius: var(--radius-md); }
 }
 
 /* ── Landing page link hover underline removal ───────────────────────────── */
