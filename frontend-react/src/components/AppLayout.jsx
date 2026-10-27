@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import AppHeader from './AppHeader.jsx';
+import Brand from './Brand.jsx';
 import Icon from './Icon.jsx';
 
 const NAV_ITEMS = [
@@ -40,10 +41,11 @@ export default function AppLayout() {
         id="app-sidebar"
         aria-label="Main navigation"
       >
-        <NavLink to="/dashboard" className="brand" onClick={() => setMenuOpen(false)}>
-          <span className="brand-mark" aria-hidden="true">M</span>
-          MemorAid
-        </NavLink>
+        <Brand
+          to="/dashboard"
+          label="MemorAid dashboard"
+          onClick={() => setMenuOpen(false)}
+        />
 
         <nav aria-label="Sections">
           {NAV_ITEMS.map((item) => (

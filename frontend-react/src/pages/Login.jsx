@@ -8,6 +8,7 @@
  */
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import Brand from '../components/Brand.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { FormMessage } from '../lib/ui.jsx';
 
@@ -82,8 +83,8 @@ export default function Login() {
         <div className="ap-panel ap-panel--login">
           <div className="ap-login-photo-box">
             <img
-              src="/hero-older-black-adult.jpg"
-              alt="Portrait of an older Black man smiling warmly"
+              src="/login-older-black-adult.jpg"
+              alt="Older Black man doing a guided movement exercise with a caregiver"
               className="ap-login-img"
             />
           </div>
@@ -93,7 +94,7 @@ export default function Login() {
         <div className="ap-form-panel">
           <div className="ap-form-inner">
             <div className="ap-header-center">
-              <Link to="/" className="ap-brand">MemorAid</Link>
+              <Brand to="/" className="ap-brand" label="MemorAid home" />
               <h1 className="ap-title">Welcome back</h1>
               <p className="ap-subtitle">Good to see you again. Your memories are waiting.</p>
             </div>

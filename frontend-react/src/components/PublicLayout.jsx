@@ -4,15 +4,13 @@
  */
 import { NavLink, Outlet } from 'react-router-dom';
 import A11yBar from './A11yBar.jsx';
+import Brand from './Brand.jsx';
 
 export default function PublicLayout() {
   return (
     <>
       <header className="top-nav">
-        <NavLink to="/" className="brand">
-          <span className="brand-mark" aria-hidden="true">M</span>
-          MemorAid
-        </NavLink>
+        <Brand to="/" label="MemorAid home" />
         <nav className="nav-links" aria-label="Site">
           <NavLink to="/" end className={({ isActive }) => (isActive ? 'is-active' : '')}>
             Home

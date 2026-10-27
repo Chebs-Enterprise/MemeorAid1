@@ -10,6 +10,7 @@
  */
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Brand from '../components/Brand.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { FormMessage } from '../lib/ui.jsx';
 
@@ -115,7 +116,7 @@ export default function Signup() {
           />
           <div className="ap-panel-overlay" aria-hidden="true" />
           <div className="ap-panel-content">
-            <span className="ap-panel-badge">✦ Gentle Cognitive Care</span>
+            <span className="ap-panel-badge">Gentle cognitive care</span>
             <p className="ap-panel-quote">
               Stay connected with the moments and loved ones that matter most.
             </p>
@@ -129,7 +130,7 @@ export default function Signup() {
         <div className="ap-form-panel">
           <div className="ap-form-inner">
             <div className="ap-header-center">
-              <Link to="/" className="ap-brand">MemorAid</Link>
+              <Brand to="/" className="ap-brand" label="MemorAid home" />
               <h1 className="ap-title">Let's get you started</h1>
               <p className="ap-subtitle">Create your account in two minutes</p>
             </div>

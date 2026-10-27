@@ -1,0 +1,386 @@
+/*
+ * Authentication surfaces
+ *
+ * This final layer intentionally replaces the older viewport-height-specific
+ * compression rules in global.css. Login and signup now share one readable
+ * layout and scroll naturally instead of shrinking controls to fit a screen.
+ */
+
+.ap-page,
+.ap-page--signup {
+  min-height: 100dvh;
+  padding: clamp(20px, 4vw, 52px);
+  justify-content: center;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #f5f1e9;
+}
+
+.ap-card,
+.ap-card--signup {
+  display: grid;
+  grid-template-columns: minmax(340px, 46%) minmax(0, 54%);
+  width: min(1080px, 100%);
+  max-width: 1080px;
+  min-height: 650px;
+  max-height: none;
+  margin: auto;
+  overflow: hidden;
+  border: 0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 24px 64px rgba(26, 46, 43, 0.12);
+}
+
+.ap-card--signup {
+  min-height: 680px;
+}
+
+.ap-panel {
+  min-width: 0;
+  min-height: 100%;
+}
+
+.ap-panel--login,
+.ap-panel--signup {
+  position: relative;
+  display: flex;
+  padding: 0;
+  overflow: hidden;
+  background: #dce9e5;
+}
+
+.ap-login-photo-box {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+
+.ap-login-img,
+.ap-signup-img {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
+  display: block;
+}
+
+.ap-login-img {
+  object-position: 48% center;
+}
+
+.ap-panel--login::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 77, 68, 0) 58%, rgba(0, 77, 68, 0.22) 100%);
+  pointer-events: none;
+}
+
+.ap-signup-img {
+  position: absolute;
+  inset: 0;
+  object-position: center 28%;
+}
+
+.ap-panel--signup {
+  align-items: flex-end;
+  padding: 40px;
+}
+
+.ap-panel-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 64, 57, 0.02) 20%,
+    rgba(0, 64, 57, 0.26) 56%,
+    rgba(0, 64, 57, 0.94) 100%
+  );
+}
+
+.ap-panel-content {
+  max-width: 34ch;
+}
+
+.ap-panel-badge {
+  margin-bottom: 16px;
+  padding: 7px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(0, 60, 54, 0.36);
+  font-size: calc(13px * var(--font-scale-text));
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.ap-panel-quote {
+  margin-bottom: 14px;
+  font-size: calc(28px * var(--font-scale-text));
+  line-height: 1.24;
+}
+
+.ap-panel-author {
+  font-size: calc(14px * var(--font-scale-text));
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.ap-form-panel,
+.ap-card--signup .ap-form-panel {
+  min-width: 0;
+  min-height: 0;
+  padding: 46px clamp(36px, 5vw, 64px);
+  justify-content: center;
+  overflow: visible;
+  background: #ffffff;
+}
+
+.ap-form-inner {
+  max-width: 460px;
+  margin: auto;
+}
+
+.ap-header-center,
+.ap-card--signup .ap-header-center {
+  margin-bottom: 28px;
+}
+
+.ap-brand,
+.ap-card--signup .ap-brand {
+  gap: 10px;
+  margin-bottom: 18px;
+  font-size: calc(21px * var(--font-scale-text));
+  font-weight: 600;
+}
+
+.ap-brand .brand-mark,
+.ap-card--signup .ap-brand .brand-mark {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  font-size: calc(19px * var(--font-scale-text));
+}
+
+.ap-title,
+.ap-card--signup .ap-title {
+  margin-bottom: 8px;
+  font-size: calc(32px * var(--font-scale-text));
+  line-height: 1.18;
+  color: #1a2e2b;
+}
+
+.ap-subtitle,
+.ap-card--signup .ap-subtitle {
+  font-size: calc(16px * var(--font-scale-text));
+  line-height: 1.5;
+  color: #5b6e69;
+}
+
+.ap-form,
+.ap-card--signup .ap-form,
+.ap-card--signup .ap-pw-row {
+  gap: 18px;
+}
+
+.ap-form-group,
+.ap-card--signup .ap-form-group {
+  gap: 7px;
+}
+
+.ap-label,
+.ap-card--signup .ap-label {
+  font-size: calc(14px * var(--font-scale-text));
+  font-weight: 600;
+  color: #344a45;
+}
+
+.ap-input,
+.ap-card:not(.ap-card--signup) .ap-input,
+.ap-card--signup .ap-input {
+  height: 52px;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid #b9ccc6;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #1a2e2b;
+  font-size: calc(16px * var(--font-scale-text));
+}
+
+.ap-input::placeholder {
+  color: #667c76;
+  opacity: 1;
+}
+
+.ap-input:hover {
+  border-color: #7fa49b;
+}
+
+.ap-input:focus {
+  border-color: #006b62;
+  box-shadow: 0 0 0 3px rgba(0, 107, 98, 0.13);
+}
+
+.ap-pw-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ap-pw-toggle {
+  width: 40px;
+  height: 40px;
+  right: 6px;
+  color: #526d66;
+}
+
+.ap-pw-toggle:focus-visible,
+.ap-btn-primary:focus-visible,
+.ap-checkbox:focus-visible,
+.ap-switch-link:focus-visible,
+.ap-brand:focus-visible {
+  outline: 3px solid rgba(0, 107, 98, 0.28);
+  outline-offset: 3px;
+}
+
+.ap-check-row {
+  gap: 11px;
+  margin-top: 0;
+}
+
+.ap-check-text {
+  font-size: calc(15px * var(--font-scale-text));
+  color: #435852;
+}
+
+.ap-checkbox {
+  width: 20px;
+  height: 20px;
+}
+
+.ap-check-row--terms,
+.ap-card--signup .ap-check-row--terms {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #e6f0ed;
+}
+
+.ap-check-terms-text,
+.ap-card--signup .ap-check-terms-text {
+  font-size: calc(13px * var(--font-scale-text));
+  line-height: 1.48;
+  color: #304741;
+}
+
+.ap-btn-primary,
+.ap-card--signup .ap-btn-primary {
+  height: 52px;
+  margin-top: 2px;
+  border-radius: 12px;
+  font-size: calc(16px * var(--font-scale-text));
+  transition: background-color 160ms ease-out, transform 160ms ease-out, box-shadow 160ms ease-out;
+}
+
+.ap-btn-primary:hover:not(:disabled) {
+  background: #005b53;
+  box-shadow: 0 10px 24px rgba(0, 107, 98, 0.18);
+  transform: translateY(-1px);
+}
+
+.ap-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.ap-btn-primary:disabled {
+  background: #6f8f88;
+  opacity: 1;
+}
+
+.ap-switch-text,
+.ap-card--signup .ap-switch-text {
+  margin-top: 20px;
+  font-size: calc(14px * var(--font-scale-text));
+  color: #536963;
+}
+
+.ap-switch-link {
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 860px) {
+  .ap-page,
+  .ap-page--signup {
+    justify-content: flex-start;
+    padding: 24px;
+  }
+
+  .ap-card,
+  .ap-card--signup {
+    display: block;
+    width: min(560px, 100%);
+    min-height: 0;
+    margin: auto;
+  }
+
+  .ap-panel--login,
+  .ap-panel--signup {
+    display: none;
+  }
+
+  .ap-form-panel,
+  .ap-card--signup .ap-form-panel {
+    padding: 44px 36px;
+  }
+}
+
+@media (max-width: 560px) {
+  .ap-page,
+  .ap-page--signup {
+    padding: 14px;
+  }
+
+  .ap-card,
+  .ap-card--signup {
+    border-radius: 14px;
+  }
+
+  .ap-form-panel,
+  .ap-card--signup .ap-form-panel {
+    padding: 34px 20px 30px;
+  }
+
+  .ap-header-center,
+  .ap-card--signup .ap-header-center {
+    margin-bottom: 26px;
+  }
+
+  .ap-title,
+  .ap-card--signup .ap-title {
+    font-size: calc(28px * var(--font-scale-text));
+  }
+
+  .ap-pw-row {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+@media (max-height: 720px) and (min-width: 861px) {
+  .ap-page,
+  .ap-page--signup {
+    justify-content: flex-start;
+    padding-block: 18px;
+  }
+
+  .ap-card,
+  .ap-card--signup {
+    min-height: 640px;
+  }
+
+  .ap-form-panel,
+  .ap-card--signup .ap-form-panel {
+    padding-block: 34px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ap-btn-primary {
+    transition: none;
+  }
+}

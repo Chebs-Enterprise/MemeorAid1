@@ -476,6 +476,7 @@ select {
   color: #fff; font-size: calc(20px * var(--font-scale-text)); font-weight: 400;
   box-shadow: var(--shadow-pill);
 }
+.brand-wordmark { white-space: nowrap; }
 .nav-links { display: flex; align-items: center; gap: var(--space-1); flex-wrap: wrap; }
 .nav-links a {
   padding: 10px 20px; border-radius: var(--radius-pill); color: var(--text-muted);
@@ -2029,6 +2030,21 @@ a.header-btn:hover { text-decoration: none; }
 }
 
 @media (max-width: 580px) {
+  .lp-nav-inner {
+    padding: 0 var(--space-4);
+    gap: var(--space-2);
+  }
+  .lp-nav-actions { gap: var(--space-2); }
+  .lp-nav-login { display: none; }
+  .lp-nav-cta {
+    padding-inline: var(--space-4);
+    font-size: calc(14px * var(--font-scale-text));
+  }
+  .lp-logo .brand-mark {
+    width: 36px;
+    height: 36px;
+    font-size: calc(18px * var(--font-scale-text));
+  }
   .lp-hero { padding: 48px var(--space-5) 56px; }
   .lp-how { padding: 56px var(--space-5); }
   .lp-features { padding: 56px var(--space-5); }
@@ -2287,13 +2303,29 @@ a.header-btn:hover { text-decoration: none; }
 }
 
 .ap-brand {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
   font-family: var(--font-display);
   font-size: calc(22px * var(--font-scale-text));
   font-weight: 700;
   color: #006b62;
   text-decoration: none;
   margin-bottom: 12px;
+}
+
+.ap-brand .brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: calc(17px * var(--font-scale-text));
+  box-shadow: none;
+}
+
+.ap-card--signup .ap-brand .brand-mark {
+  width: 30px;
+  height: 30px;
+  font-size: calc(15px * var(--font-scale-text));
 }
 
 .ap-brand:hover {

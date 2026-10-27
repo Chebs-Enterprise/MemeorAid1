@@ -17,6 +17,7 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import Brand from '../components/Brand.jsx';
 import Icon from '../components/Icon.jsx';
 
 /* The navbar and the sections it scrolls to. Keeping them together means a
@@ -188,7 +189,7 @@ export default function Landing() {
       {/* 1. NAV */}
       <header className="lp-nav">
         <div className="lp-nav-inner">
-          <Link to="/" className="lp-logo">MemorAid</Link>
+          <Brand to="/" className="lp-logo" label="MemorAid home" />
           <nav className={`lp-nav-links${navOpen ? ' is-open' : ''}`} id="lp-nav-links" aria-label="Main navigation">
             {NAV_LINKS.map(({ label, id }) => (
               <a
@@ -433,7 +434,7 @@ export default function Landing() {
       <footer className="lp-footer">
         <div className="lp-footer-inner">
           <div className="lp-footer-brand">
-            <span className="lp-logo">MemorAid</span>
+            <Brand className="lp-logo" />
             <small className="lp-footer-copy">© 2026 MemorAid. Dignity in every interaction.</small>
           </div>
           <nav className="lp-footer-links" aria-label="Footer navigation">
