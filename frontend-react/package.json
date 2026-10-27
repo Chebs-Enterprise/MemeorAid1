@@ -12,7 +12,8 @@
     "test:voice:browser": "node tests/voice.browser.mjs",
     "test:exercises:browser": "node tests/exercises.browser.mjs",
     "test:chat:browser": "node tests/chat-actions.browser.mjs",
-    "test:dashboard:browser": "node tests/dashboard-theme.browser.mjs"
+    "test:dashboard:browser": "node tests/dashboard-theme.browser.mjs",
+    "test:dark-theme:browser": "node tests/dark-theme-pages.browser.mjs"
   },
   "dependencies": {
     "react": "^19.3.1",

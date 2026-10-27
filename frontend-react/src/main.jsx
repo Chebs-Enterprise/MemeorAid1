@@ -4,6 +4,15 @@ import App from './App.jsx';
 import './styles/global.css';
 import './styles/auth.css';
 
+// Apply saved display preferences before React paints. The controls that edit
+// these values live inside a settings popover, so relying on that component to
+// mount caused dark mode to disappear after a page reload until the popover was
+// opened again.
+document.body.dataset.fontSize = localStorage.getItem('memoraid_font_size') || 'normal';
+document.body.dataset.highContrast = String(
+  localStorage.getItem('memoraid_high_contrast') === 'true',
+);
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />

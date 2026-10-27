@@ -45,6 +45,11 @@
   --bg-memory-icon: #fdf7ee;
   --border-memory: #f2e7d6;
   --border-memory-hover: #e6d5bd;
+  --card-background: linear-gradient(180deg, #ffffff 0%, #fdfcfa 100%);
+  --action-primary-background: linear-gradient(135deg, #006b62 0%, #008a7e 100%);
+  --action-primary-hover: #00564f;
+  --action-primary-text: #ffffff;
+  --question-text: #006b62;
 
   --bg-sidebar: #1a1d1c;
   --bg-sidebar-hover: #25524c;
@@ -132,6 +137,11 @@
   --bg-memory-icon: #0d0f0e;
   --border-memory: #3a4541;
   --border-memory-hover: #5eead4;
+  --card-background: #0a0a0a;
+  --action-primary-background: #2dd4bf;
+  --action-primary-hover: #5eead4;
+  --action-primary-text: #00201d;
+  --question-text: #5eead4;
   /* On black the teal tiles would lose their edge, so they drop to the darker
      brand teal and carry a border. Contrast is the whole point of this mode. */
   --teal-500: #006b62;
@@ -169,7 +179,7 @@ body[data-font-size='xlarge'] { --font-scale-text: 1.3; }
 [data-high-contrast='true'] .greeting-card::after { display: none; }
 [data-high-contrast='true'] .greeting-card h2 { color: #fff; }
 [data-high-contrast='true'] .greeting-date { color: var(--text-muted); }
-[data-high-contrast='true'] .greeting-card .btn-primary { background: var(--teal-300); color: #00201d; }
+[data-high-contrast='true'] .card { border-color: var(--border-card); box-shadow: none; }
 [data-high-contrast='true'] .btn-secondary {
   background-color: #0d3b35; background-image: none;
   border-color: #2f6f66; color: var(--teal-mint-text);
@@ -193,6 +203,11 @@ body[data-font-size='xlarge'] { --font-scale-text: 1.3; }
 [data-high-contrast='true'] .technique-chip { border-color: #3a3f3d; color: var(--text-muted); }
 [data-high-contrast='true'] .technique-chip.is-current { background: var(--teal-mint); color: var(--teal-mint-text); border-color: var(--teal-300); }
 [data-high-contrast='true'] .steps-list li { background: #1c1f1e; }
+[data-high-contrast='true'] .steps-list li::before,
+[data-high-contrast='true'] .chat-mode-toggle.is-on,
+[data-high-contrast='true'] .chat-row.is-user .chat-bubble { color: #00201d; }
+[data-high-contrast='true'] .rating-btn.is-selected .num { color: var(--teal-300); }
+[data-high-contrast='true'] .recall-progress .dot.is-current { background: var(--teal-300) !important; }
 [data-high-contrast='true'] .form-message { background: #1c1f1e; }
 [data-high-contrast='true'] .form-message.is-success { color: #7de3d4; }
 [data-high-contrast='true'] .form-message.is-error { color: #ffcf9a; }
@@ -280,9 +295,9 @@ a:hover { text-decoration: underline; text-underline-offset: 2px; }
 .btn:focus-visible { outline: 3px solid var(--teal-300); outline-offset: 2px; }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--teal-forest) 0%, #008a7e 100%); color: #fff; box-shadow: var(--shadow-pill);
+  background: var(--action-primary-background); color: var(--action-primary-text); box-shadow: var(--shadow-pill);
 }
-.btn-primary:hover { background: var(--teal-forest-hover); color: #fff; transform: translateY(-1px); }
+.btn-primary:hover { background: var(--action-primary-hover); color: var(--action-primary-text); transform: translateY(-1px); }
 .btn-primary:active { transform: translateY(0); }
 
 .btn-secondary {
@@ -384,7 +399,7 @@ select {
 /* Friendly inline messages (3.5.2: plain language, never alarming) */
 .form-message {
   margin-top: var(--space-4); padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md); border-left: 4px solid currentColor;
+  border-radius: var(--radius-md); border: 1px solid currentColor;
   font-size: calc(17px * var(--font-scale-text)); font-weight: 400; line-height: 1.55;
   background: #fdf6ee; color: #8a5a10;
 }
@@ -397,7 +412,7 @@ select {
    radius, one low shadow. Previously .card, .question-card and .info panels
    each picked their own radius and only some had a shadow. */
 .card {
-  background: linear-gradient(180deg, #ffffff 0%, #fdfcfa 100%); border: 1px solid var(--border-card);
+  background: var(--card-background); border: 1px solid var(--border-card);
   border-radius: var(--radius-xl); padding: var(--space-6);
   box-shadow: var(--shadow-sm);
 }
@@ -665,7 +680,7 @@ a.header-btn:hover { text-decoration: none; }
 /* A genuinely new (unread) reminder gets a soft accent and a visible marker
    so it is distinguishable without relying on colour alone. */
 .header-list-item.is-unread {
-  border-left: 4px solid var(--teal-text);
+  border: 1px solid var(--teal-text);
   background: var(--bg-card);
 }
 .header-list-text { display: block; }
@@ -772,9 +787,9 @@ a.header-btn:hover { text-decoration: none; }
 .greeting-side { position: relative; z-index: 1; flex-shrink: 0; }
 /* On the plain band the check-in button is the brand action, so it fills. */
 .greeting-card .btn-primary {
-  background: linear-gradient(135deg, var(--teal-forest) 0%, #008a7e 100%); color: #fff; box-shadow: var(--shadow-pill);
+  background: var(--action-primary-background); color: var(--action-primary-text); box-shadow: var(--shadow-pill);
 }
-.greeting-card .btn-primary:hover { background: var(--teal-900); color: #fff; }
+.greeting-card .btn-primary:hover { background: var(--action-primary-hover); color: var(--action-primary-text); }
 .checkin-done {
   display: inline-flex; align-items: center; gap: var(--space-2);
   min-height: var(--min-touch-target); padding: 12px var(--space-5);
@@ -907,7 +922,7 @@ a.header-btn:hover { text-decoration: none; }
 .memory-item .meta { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 /* Notification rows sit on the plain page surface, not the cream memory tone. */
 .memory-item.is-note { background: var(--bg-card); border-color: var(--border-card); }
-.memory-item.is-note.is-unread { border-left: 4px solid var(--teal-text); }
+.memory-item.is-note.is-unread { border-color: var(--teal-text); }
 .memory-item.is-note .content { color: var(--text-muted); }
 .memory-icon.is-note { background: var(--bg-surface); border-color: var(--border-card); color: var(--teal-text); }
 
@@ -969,13 +984,13 @@ a.header-btn:hover { text-decoration: none; }
 }
 .question-text {
   font-size: calc(30px * var(--font-scale-text)); font-weight: 400; line-height: 1.25;
-  margin: var(--space-4) 0 var(--space-5); color: var(--teal-900);
+  margin: var(--space-4) 0 var(--space-5); color: var(--question-text);
 }
 
 .reveal-panel {
   margin: var(--space-5) 0; padding: var(--space-5) var(--space-6);
   background: var(--teal-mint); border-radius: var(--radius-md);
-  border-left: 4px solid var(--teal-forest);
+  border: 1px solid var(--teal-forest);
 }
 .reveal-panel h3 { color: var(--teal-mint-text); margin-bottom: var(--space-2); font-size: calc(18px * var(--font-scale-text)); }
 .reveal-panel p { color: var(--teal-mint-text); font-size: calc(18px * var(--font-scale-text)); }
@@ -1218,14 +1233,13 @@ a.header-btn:hover { text-decoration: none; }
 .chat-memory-card {
   margin-top: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--border-card);
-  border-left: 3px solid var(--teal-300);
+  border: 1px solid var(--teal-300);
   border-radius: var(--radius-md);
   background: var(--bg-card);
   display: flex; flex-direction: column; gap: var(--space-2);
-  max-width: min(440px, 105vw);
+  max-width: min(440px, 100%);
 }
-.chat-memory-card.is-saved { border-left-color: var(--teal-500); }
+.chat-memory-card.is-saved { border-color: var(--teal-500); }
 .chat-memory-card-head {
   display: inline-flex; align-items: center; gap: 8px;
   font-weight: 600; color: var(--text-main);
@@ -1282,7 +1296,7 @@ a.header-btn:hover { text-decoration: none; }
 .chart-card h3 { color: var(--text-dark-main); margin-bottom: var(--space-4); }
 .motivation-banner {
   background: rgba(0, 181, 165, 0.12);
-  border: 1px solid var(--border-dark); border-left: 4px solid var(--teal-300);
+  border: 1px solid var(--teal-300);
   border-radius: var(--radius-md);
   padding: var(--space-5) var(--space-6); font-size: calc(19px * var(--font-scale-text)); font-weight: 400;
   color: #fff; margin-top: var(--space-3); line-height: 1.6;
