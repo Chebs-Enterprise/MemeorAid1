@@ -2,7 +2,8 @@
  * Registration page (public) — FR-01 Register Account.
  *
  * Two-panel card layout matching the reference design:
- *   Left  — full-bleed photo panel with teal gradient and tagline
+ *   Left  — full-bleed photo of an older Black man with his caregiver,
+ *            with teal gradient and tagline
  *   Right — form: Full Name, Email, Password, Confirm Password,
  *            Friendly Age Group dropdown, Terms checkbox card, Create my account button
  * Footer — copyright and legal links
@@ -108,8 +109,8 @@ export default function Signup() {
         {/* ── Left illustrated/photo panel with teal overlay ── */}
         <div className="ap-panel ap-panel--signup">
           <img
-            src="/signup-photo.jpg"
-            alt="Elderly woman smiling warmly, just like the portrait on the sign-in page."
+            src="/signup-older-black-adult.jpg"
+            alt="Older Black man with his caregiver, sharing a warm moment"
             className="ap-signup-img"
           />
           <div className="ap-panel-overlay" aria-hidden="true" />

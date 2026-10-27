@@ -2,7 +2,7 @@
  * Sign-in page (public) — FR-01 Login.
  *
  * Two-panel card layout matching the reference design:
- *   Left  — warm cream panel with tilted photo card of Margaret using tablet
+ *   Left  — warm cream panel with a portrait photo card of an older Black man
  *   Right — form: brand, "Welcome back", email, password, keep-me-logged-in, Login button
  * Footer — copyright and legal links
  */
@@ -82,8 +82,8 @@ export default function Login() {
         <div className="ap-panel ap-panel--login">
           <div className="ap-login-photo-box">
             <img
-              src="/login-photo.png"
-              alt="Elderly woman smiling warmly while using MemorAid on a tablet"
+              src="/hero-older-black-adult.jpg"
+              alt="Portrait of an older Black man smiling warmly"
               className="ap-login-img"
             />
           </div>
