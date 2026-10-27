@@ -252,10 +252,10 @@ export default function Landing() {
             <div className="lp-mockup-card">
               <div className="lp-mockup-photo">
                 <img
-                  src="/hero-older-black-adult4.jpg"
+                  src="/landing-hero-margaret.webp"
                   alt=""
-                  width="1000"
-                  height="667"
+                  width="960"
+                  height="640"
                   fetchPriority="high"
                 />
               </div>
