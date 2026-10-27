@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { takeNewResults } from '../src/lib/voice.js';
+import { mergeTranscript, takeNewResults } from '../src/lib/voice.js';
 
 /** A minimal stand-in for one SpeechRecognitionResult. */
 function result(transcript, isFinal) {
@@ -96,4 +96,32 @@ test('an empty session is harmless', () => {
     interimText: '',
     finalizedCount: 0,
   });
+});
+
+test('an overlapping finalized phrase is not repeated in the chat draft', () => {
+  const first = mergeTranscript('', "I'm going to school");
+  const repeatedByRecognizer = mergeTranscript(first, "I'm going to school");
+
+  assert.equal(repeatedByRecognizer, "I'm going to school");
+});
+
+test('a replayed single word is kept once', () => {
+  assert.equal(mergeTranscript('school', 'school'), 'school');
+});
+
+test('a partially overlapping speech chunk appends only its new words', () => {
+  const first = mergeTranscript('', 'I am going to school');
+  const continued = mergeTranscript(first, 'going to school today');
+
+  assert.equal(continued, 'I am going to school today');
+});
+
+test('overlap matching ignores capitalization and trailing punctuation', () => {
+  const continued = mergeTranscript('I am going to school.', 'School tomorrow');
+
+  assert.equal(continued, 'I am going to school. tomorrow');
+});
+
+test('intentional repetition within one speech chunk is preserved', () => {
+  assert.equal(mergeTranscript('', 'very very good'), 'very very good');
 });

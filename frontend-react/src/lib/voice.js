@@ -77,6 +77,44 @@ export function takeNewResults(results, finalizedCount) {
 }
 
 /**
+ * Join a committed transcript with the next browser speech chunk.
+ *
+ * SpeechRecognition occasionally starts a new result with words from the end
+ * of the previous result (and may replay the entire phrase after an automatic
+ * session restart). Find the largest word overlap and append only genuinely
+ * new words. Repetition inside a single browser result is left untouched.
+ */
+export function mergeTranscript(base, spoken) {
+  const committed = base.trim();
+  const incoming = spoken.trim();
+  if (!committed || !incoming) return committed || incoming;
+
+  const committedWords = committed.split(/\s+/);
+  const incomingWords = incoming.split(/\s+/);
+  const normalize = (word) => word
+    .toLocaleLowerCase()
+    .replace(/^[^\p{L}\p{N}']+|[^\p{L}\p{N}']+$/gu, '');
+  const normalizedCommitted = committedWords.map(normalize);
+  const normalizedIncoming = incomingWords.map(normalize);
+  const maxOverlap = Math.min(committedWords.length, incomingWords.length);
+
+  let overlap = 0;
+  for (let size = maxOverlap; size > 0; size -= 1) {
+    const committedStart = normalizedCommitted.length - size;
+    const matches = normalizedIncoming
+      .slice(0, size)
+      .every((word, index) => word && word === normalizedCommitted[committedStart + index]);
+    if (matches) {
+      overlap = size;
+      break;
+    }
+  }
+
+  const newWords = incomingWords.slice(overlap).join(' ');
+  return newWords ? `${committed} ${newWords}` : committed;
+}
+
+/**
  * @param {{ onTranscript?: (text: string, isFinal: boolean, live: boolean) => void,
  *           onError?: (message: string) => void }} options
  *   `onTranscript` receives only the new part of the transcript (never the

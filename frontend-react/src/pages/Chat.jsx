@@ -15,7 +15,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '../lib/api.js';
 import Icon from '../components/Icon.jsx';
 import { Loading, Toast, useToast } from '../lib/ui.jsx';
-import { useVoiceInput } from '../lib/voice.js';
+import { mergeTranscript, useVoiceInput } from '../lib/voice.js';
 
 function truncate(text, max = 70) {
   const value = (text || '').trim();
@@ -433,7 +433,7 @@ export default function Chat() {
   const voice = useVoiceInput({
     onTranscript: (spoken, isFinal, live) => {
       const base = voiceBaseRef.current;
-      const joined = base && spoken ? `${base} ${spoken}` : base || spoken;
+      const joined = mergeTranscript(base, spoken);
 
       if (!isFinal) {
         // Provisional words from a session that has already been stopped must

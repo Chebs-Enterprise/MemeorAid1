@@ -267,8 +267,11 @@ try {
   await evaluate(
     `__emitResults([{ t: 'I took my pills', f: true }, { t: 'at eight', f: true }, { t: 'at eight please', f: true }])`,
   );
+  await evaluate(
+    `__emitResults([{ t: 'I took my pills', f: true }, { t: 'at eight', f: true }, { t: 'at eight please', f: true }, { t: 'I took my pills at eight please', f: true }])`,
+  );
   await draftIs(
-    'I took my pills at eight at eight please',
+    'I took my pills at eight please',
     'first draft without duplicate transcripts',
   );
 
@@ -278,10 +281,10 @@ try {
   await isStopped('Stop responds immediately');
   await new Promise((resolve) => setTimeout(resolve, 100));
   await evaluate(
-    `__emitResults([{ t: 'I took my pills', f: true }, { t: 'at eight', f: true }, { t: 'at eight please', f: true }, { t: 'tomorrow', f: true }])`,
+    `__emitResults([{ t: 'I took my pills', f: true }, { t: 'at eight', f: true }, { t: 'at eight please', f: true }, { t: 'I took my pills at eight please', f: true }, { t: 'tomorrow', f: true }])`,
   );
   await draftIs(
-    'I took my pills at eight at eight please tomorrow',
+    'I took my pills at eight please tomorrow',
     'final result after Stop kept',
   );
 
@@ -293,7 +296,7 @@ try {
   await evaluate(`__emitResults([{ t: 'and', f: false }])`);
   await evaluate(`__emitResults([{ t: 'and Friday', f: true }])`);
   await draftIs(
-    'I took my pills at eight at eight please tomorrow and Friday',
+    'I took my pills at eight please tomorrow and Friday',
     'restarted session without duplicates',
   );
 
