@@ -95,8 +95,13 @@ export default function A11yBar() {
             aria-pressed={contrast}
             onClick={() => setContrast((c) => !c)}
           >
-            <Icon name={contrast ? 'check' : 'reveal'} size={18} />
-            Dark high contrast
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <Icon name="reveal" size={18} />
+              Dark high contrast
+            </span>
+            <span className="a11y-switch-indicator" aria-hidden="true">
+              <span className="a11y-switch-thumb" />
+            </span>
           </button>
         </div>
       )}

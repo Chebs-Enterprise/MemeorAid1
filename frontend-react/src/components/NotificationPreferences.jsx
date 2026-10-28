@@ -13,6 +13,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api.js';
 import { FormMessage, Toast, useToast } from '../lib/ui.jsx';
+import ToggleSwitch from './ToggleSwitch.jsx';
 import {
   disablePush,
   enablePush,
@@ -139,52 +140,50 @@ export default function NotificationPreferences() {
         review schedule and activity — never anything invented.
       </p>
 
-      <label className="checkbox-row">
-        <input
-          type="checkbox"
-          checked={prefs.morning_checkin}
+      <div className="pref-toggle-list" style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '18px' }}>
+        <ToggleSwitch
+          id="pref-morning-checkin"
+          checked={Boolean(prefs.morning_checkin)}
           disabled={busy}
-          onChange={(e) => save({ morning_checkin: e.target.checked })}
+          onChange={(checked) => save({ morning_checkin: checked })}
+          label="Morning check-in greeting"
+          description="A gentle, friendly greeting each morning to start your day with warmth."
         />
-        <span>Morning check-in greeting</span>
-      </label>
 
-      <label className="checkbox-row">
-        <input
-          type="checkbox"
-          checked={prefs.due_review}
+        <ToggleSwitch
+          id="pref-due-review"
+          checked={Boolean(prefs.due_review)}
           disabled={busy}
-          onChange={(e) => save({ due_review: e.target.checked })}
+          onChange={(checked) => save({ due_review: checked })}
+          label="Reminders when memories are due for review"
+          description="Timely prompts based on your personalized spaced-repetition memory schedule."
         />
-        <span>Reminders when memories are due for review</span>
-      </label>
 
-      <label className="checkbox-row">
-        <input
-          type="checkbox"
-          checked={prefs.family_alerts}
+        <ToggleSwitch
+          id="pref-family-alerts"
+          checked={Boolean(prefs.family_alerts)}
           disabled={busy}
-          onChange={(e) => save({ family_alerts: e.target.checked })}
+          onChange={(checked) => save({ family_alerts: checked })}
+          label="Gentle check-ins if quiet for a while"
+          description="A soft, supportive nudge if you have not checked in to MemorAid recently."
         />
-        <span>Gentle reminders if I have been quiet for a while</span>
-      </label>
+      </div>
 
       <h3 style={{ marginTop: '22px' }}>Quiet hours</h3>
       <p className="form-hint" style={{ marginBottom: '12px' }}>
         MemorAid stays silent during these hours, in your local time.
       </p>
 
-      <label className="checkbox-row">
-        <input
-          type="checkbox"
-          checked={prefs.quiet_hours_enabled}
-          disabled={busy}
-          onChange={(e) => save({ quiet_hours_enabled: e.target.checked })}
-        />
-        <span>Use quiet hours</span>
-      </label>
+      <ToggleSwitch
+        id="pref-quiet-hours"
+        checked={Boolean(prefs.quiet_hours_enabled)}
+        disabled={busy}
+        onChange={(checked) => save({ quiet_hours_enabled: checked })}
+        label="Use quiet hours"
+        description="MemorAid stays completely silent and peaceful during these scheduled hours."
+      />
 
-      <div className="form-row" style={{ display: 'flex', gap: '18px', flexWrap: 'wrap' }}>
+      <div className="form-row" style={{ display: 'flex', gap: '18px', flexWrap: 'wrap', marginTop: '12px' }}>
         <div className="form-group" style={{ flex: '1 1 160px' }}>
           <label htmlFor="quiet-start">Quiet from</label>
           <input
@@ -227,33 +226,28 @@ export default function NotificationPreferences() {
       </div>
 
       <h3 style={{ marginTop: '22px' }}>Family alerts</h3>
-      <label className="checkbox-row">
-        <input
-          type="checkbox"
-          checked={prefs.family_consent}
-          disabled={busy}
-          onChange={(e) => save({ family_consent: e.target.checked })}
-        />
-        <span>
-          I agree that my family contact may be sent a gentle check-in notice if I
-          have been quiet for a long while.
-        </span>
-      </label>
-      <p className="form-hint">
+      <ToggleSwitch
+        id="pref-family-consent"
+        checked={Boolean(prefs.family_consent)}
+        disabled={busy}
+        onChange={(checked) => save({ family_consent: checked })}
+        label="Consent for family check-in notices"
+        description="I agree that my family contact may be sent a gentle check-in notice if I have been quiet for a long while. MemorAid never shares the contents of your memories."
+      />
+      <p className="form-hint" style={{ marginTop: '4px' }}>
         This is off by default. Even when switched on, the notice never includes
         any of your saved memories.
       </p>
 
       <h3 style={{ marginTop: '22px' }}>Browser notifications</h3>
-      <label className="checkbox-row">
-        <input
-          type="checkbox"
-          checked={prefs.push_enabled}
-          disabled={busy || !pushUsable}
-          onChange={togglePush}
-        />
-        <span>Show reminders on this device</span>
-      </label>
+      <ToggleSwitch
+        id="pref-push-notifications"
+        checked={Boolean(prefs.push_enabled)}
+        disabled={busy || !pushUsable}
+        onChange={() => togglePush()}
+        label="Show reminders on this device"
+        description="Display browser notifications directly on this screen when a reminder is ready."
+      />
       <p className="form-hint">
         {!pushState.supported
           ? 'This browser does not support notifications.'
